@@ -1,0 +1,66 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{9c876eb1-c9eb-4203-b64b-238197673833}</ProjectGuid>
+    <ProjectHome />
+    <StartupFile>gcdxml.py</StartupFile>
+    <SearchPath />
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <ProjectTypeGuids>{888888a0-9f3d-457c-b088-3a5042f75d52}</ProjectTypeGuids>
+    <LaunchProvider>Standard Python launcher</LaunchProvider>
+    <InterpreterId>{6bd23290-f5b3-4b24-bb59-daa4713d687a}</InterpreterId>
+    <InterpreterVersion>2.7</InterpreterVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
+  <PropertyGroup>
+    <VisualStudioVersion Condition=" '$(VisualStudioVersion)' == '' ">10.0</VisualStudioVersion>
+    <PtvsTargetsFile>$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets</PtvsTargetsFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="icon.png" />
+    <Content Include="metadata.txt" />
+    <Content Include="README.html" />
+    <Content Include="README.txt" />
+    <Content Include="Resources\Projects\gcd.xml" />
+    <Content Include="Resources\XMLTags.md" />
+    <Content Include="Resources\XML\gcd_tree.xml" />
+    <Content Include="Resources\XML\schema.xsd" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="gcdxml.py" />
+    <Compile Include="toolbar_viewer.py" />
+    <Compile Include="toolbar_dockwidget.py" />
+    <Compile Include="help\source\conf.py" />
+    <Compile Include="plugin_upload.py" />
+    <Compile Include="resources.py" />
+    <Compile Include="shim.py" />
+    <Compile Include="symbology.py" />
+    <Compile Include="test\qgis_interface.py" />
+    <Compile Include="test\test_toolbar_dockwidget.py" />
+    <Compile Include="test\test_init.py" />
+    <Compile Include="test\test_qgis_environment.py" />
+    <Compile Include="test\test_resources.py" />
+    <Compile Include="test\test_translations.py" />
+    <Compile Include="test\utilities.py" />
+    <Compile Include="test\__init__.py" />
+    <Compile Include="toc_management.py" />
+    <Compile Include="__init__.py" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="help\" />
+    <Folder Include="help\source" />
+    <Folder Include="Resources\" />
+    <Folder Include="Resources\Projects\" />
+    <Folder Include="Resources\XML\" />
+    <Folder Include="test" />
+  </ItemGroup>
+  <ItemGroup>
+    <InterpreterReference Include="{6bd23290-f5b3-4b24-bb59-daa4713d687a}\2.7" />
+  </ItemGroup>
+  <Import Project="$(PtvsTargetsFile)" Condition="Exists($(PtvsTargetsFile))" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="!Exists($(PtvsTargetsFile))" />
+</Project>

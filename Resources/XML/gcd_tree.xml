@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<tree xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+  xsi:schemaLocation="tree http://releases.northarrowresearch.com/GCD/schema/V1/schema.xsd"
+  xsi:noNamespaceSchemaLocation="schema.xsd">
+  <node>
+    <label>GCD</label>
+    <children collapsed="false">
+      <node>
+        <label>Input</label>
+        <children>
+          <repeater>
+            <label>DEM Surveys</label>
+            <xpath>/Project/DEMSurvey</xpath>
+            <node>
+              <label xpath="Name"/>
+              <children collapsed="true">
+                <repeater>
+                  <label>Associated Surfaces</label>
+                  <xpath>AssociatedSurface</xpath>
+                  <node>
+                    <label xpath="Name"/>
+                    <type>ASS_SRF</type>
+                    <entity>
+                      <type>raster</type>
+                      <xpath>Source</xpath>
+                      <symbology>BlueToRed</symbology>
+                    </entity>
+                  </node>
+                </repeater>
+                <repeater>
+                  <label>Error Surfaces</label>
+                  <xpath>ErrorSurface</xpath>
+                  <node>
+                    <label xpath="Name"/>
+                    <type>ERR_SRF</type>
+                    <entity>
+                      <type>raster</type>
+                      <xpath>Source</xpath>
+                      <symbology>DEM</symbology>
+                    </entity>
+                  </node>
+                </repeater>
+                <node>
+                  <label xpath="Name"/>
+                  <type>DEM</type>
+                  <entity>
+                    <type>raster</type>
+                    <xpath>Source</xpath>
+                    <symbology>DEM</symbology>
+                  </entity>
+                </node>
+              </children>
+            </node>
+          </repeater>
+          <node>
+            <label>Areas of Interest</label>
+          </node>
+        </children>
+      </node>
+      <node>
+        <label>Analyses</label>
+        <children>
+          <repeater>
+            <label>Change Detection</label>
+            <xpath>/Project/DoDs</xpath>
+            <node>
+              <label xpath="Name"/>
+              <children>
+                <node>
+                  <label>Thresholded</label>
+                  <entity>
+                    <type>raster</type>
+                    <xpath>ThreshDoDPath</xpath>
+                    <symbology>DoD</symbology>
+                  </entity>                  
+                </node>
+              </children>
+            </node>
+          </repeater>
+        </children>
+      </node>
+    </children>
+  </node>
+
+
+  <symbologies>
+    <symbology id="BlueToRed">
+      <ramp>
+        <startcolour>blue</startcolour>
+        <endcolour>red</endcolour>
+        <type>stretch</type>
+      </ramp>
+    </symbology>
+    <symbology id="RedToGreen">
+      <ramp>
+        <startcolour>red</startcolour>
+        <endcolour>green</endcolour>
+        <type>stretch</type>
+      </ramp>
+    </symbology>
+  </symbologies>
+
+</tree>
