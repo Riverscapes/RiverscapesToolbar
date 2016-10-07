@@ -26,7 +26,7 @@ from PyQt4.QtGui import QAction, QIcon
 import resources
 
 # Import the code for the DockWidget
-from viewer_dockwidget import ViewerDockWidget
+from toolbar_dockwidget import ToolbarDockWidget
 import os.path
 
 

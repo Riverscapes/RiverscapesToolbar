@@ -7,7 +7,7 @@
 # This file should be included when you package your plugin.# Mandatory items:
 
 [general]
-name=Analust Toolbar
+name=Analyst Toolbar
 qgisMinimumVersion=2.0
 description=View Analyst Toolbar Files
 version=0.1

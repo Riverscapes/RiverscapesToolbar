@@ -46,7 +46,7 @@ PY_FILES = \
 	__init__.py \
 	toolbar_viewer.py toolbar_dockwidget.py
 
-UI_FILES = viewer_dockwidget_base.ui
+UI_FILES = toolbar_dockwidget_base.ui
 
 EXTRAS = metadata.txt icon.png
 
