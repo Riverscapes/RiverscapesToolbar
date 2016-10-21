@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<tree xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-  xsi:schemaLocation="tree http://releases.northarrowresearch.com/GCD/schema/V1/schema.xsd"
-  xsi:noNamespaceSchemaLocation="schema.xsd">
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="project_schema.xsd">
+  <name>GCD</name>
+  <test>/Project/DEMSurvey</test>
   <node>
     <label>GCD</label>
     <children collapsed="false">
@@ -79,25 +80,25 @@
           </repeater>
         </children>
       </node>
+      <node>
+        <label>Context Layers</label>
+        <children>
+          <node>
+            <label>Google Maps</label>
+            <entity>
+              <type>tiles</type>
+              <tileservice>GMaps</tileservice>
+            </entity>
+          </node>
+          <node>
+            <label>NAIP</label>
+            <entity>
+              <type>tiles</type>
+              <tileservice>NAIP</tileservice>
+            </entity>
+          </node>
+        </children>
+      </node>
     </children>
   </node>
-
-
-  <symbologies>
-    <symbology id="BlueToRed">
-      <ramp>
-        <startcolour>blue</startcolour>
-        <endcolour>red</endcolour>
-        <type>stretch</type>
-      </ramp>
-    </symbology>
-    <symbology id="RedToGreen">
-      <ramp>
-        <startcolour>red</startcolour>
-        <endcolour>green</endcolour>
-        <type>stretch</type>
-      </ramp>
-    </symbology>
-  </symbologies>
-
-</tree>
+</project>
