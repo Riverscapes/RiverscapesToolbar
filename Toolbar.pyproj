@@ -31,7 +31,7 @@
     <Content Include="Resources\XML\schema.xsd" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="gcdxml.py" />
+    <Compile Include="projects.py" />
     <Compile Include="toolbar_viewer.py" />
     <Compile Include="toolbar_dockwidget.py" />
     <Compile Include="help\source\conf.py" />

@@ -22,6 +22,14 @@
  This script initializes the plugin, making it known to QGIS.
 """
 
+######################### REMOTE DEBUG #########################
+# To activate remote debugging set ENVIRONMENT=DEBUG as a QGIS
+# Environment variable in Preferences -> System -> Environment
+import os
+if 'ENVIRONMENT' in os.environ and os.environ['ENVIRONMENT'] == "DEBUG":
+    import pydevd
+    pydevd.settrace('localhost', port=53100, stdoutToServer=True, stderrToServer=True)
+######################### /REMOTE DEBUG #########################
 
 # noinspection PyPep8Naming
 def classFactory(iface):  # pylint: disable=invalid-name

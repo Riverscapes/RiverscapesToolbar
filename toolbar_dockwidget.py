@@ -25,11 +25,10 @@ import os
 
 from PyQt4 import QtGui, uic
 from PyQt4.QtCore import pyqtSignal
-from gcdxml import GCDXML
+from projects import ProjectXML
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'toolbar_dockwidget_base.ui'))
-
 
 class ToolbarDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
@@ -49,10 +48,9 @@ class ToolbarDockWidget(QtGui.QDockWidget, FORM_CLASS):
         #         self.treeView =
 
     def raster_file_browser(self):
-        filename = QtGui.QFileDialog.getOpenFileName(self, "Open GCD file", "", "GCD File (*.gcd);;All files (*)")
-        filename = os.path.splitext(str(filename))[0]+".gcd"
+        filename = QtGui.QFileDialog.getOpenFileName(self, "Open GCD file", "", "GCD File (*.gcd);;XML File (*.xml);;All files (*)")
         self.xmlLocation.setText(filename)
-        self.gcdxml = GCDXML(filename, self.treeView)
+        self.projectXML = ProjectXML(filename, self.treeView)
         self.recalc_state()    
 
     def closeEvent(self, event):

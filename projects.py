@@ -14,14 +14,14 @@ import xml.etree.ElementTree as ET
 
 from toc_management import *
 
-class GCDXML():
+class ProjectXML():
     
     def __init__(self, xmlPath, treeControl, parent = None):
         """ Constructor """
         if xmlPath is None or not os.path.isfile(xmlPath):
             msg = "..."
             q = QMessageBox(QMessageBox.Warning, "Could not find that file",  msg)
-            q.setStandardButtons(QMessageBox.Ok);
+            q.setStandardButtons(QMessageBox.Ok)
             i = QIcon()
             i.addPixmap(QPixmap("..."), QIcon.Normal)
             q.setWindowIcon(i)
@@ -38,24 +38,26 @@ class GCDXML():
             self.tree.customContextMenuRequested.connect(self.openMenu)
             self.tree.setDragEnabled(True)
 
-            # This is the GCD projet viewer so no harm in hardcoding this for now.
-            self.xmlTreePath = os.path.join(os.path.dirname(__file__), "Resources/XML/gcd_tree.xml")
+            self.xmlTreeDir = os.path.join(os.path.dirname(__file__), "Resources/XML/")
             self.xmlProjfile = xmlPath
             self.xmlProjDir = os.path.dirname(xmlPath)
             self.namespace = "{http://tempuri.org/ProjectDS.xsd}"
-            
-            # Load the tree file (the rules we use to build the tree)
-            self.xmlTemplateDoc = ET.parse(self.xmlTreePath)
+            self.xmlTreePath = None
+
             # Load the GCD Project (the raw data that will be used to populate the tree)
             # instead of ET.fromstring(xml)
-            with open(self.xmlProjfile, 'r') as myfile:
-                data=myfile.read().replace('\n', '')
-                it = ET.iterparse(StringIO(data))
-                for _, el in it:
-                    if '}' in el.tag:
-                        el.tag = el.tag.split('}', 1)[1]  # strip all namespaces
-                self.xmlProjectDoc = it.root
-                        
+            self.xmlProjectDoc = self.LoadXMLFile(self.xmlProjfile)
+
+            if self.FindTreeParser():
+                print "got ya"
+                # Load the tree file (the rules we use to build the tree)
+
+            else:
+                print "This is an error"
+
+
+
+
             # Set up the first domino for the recursion         
             projectName = self.xmlProjectDoc.find("Project/Name")
             if projectName is not None:
@@ -63,8 +65,33 @@ class GCDXML():
    
             self.LoadNode(None, self.xmlTemplateDoc.find("node"), self.xmlProjectDoc)
             self.tree.expandToDepth(5)
-                    
-                        
+          
+    def FindTreeParser(self):
+        # Now we need to figure out which kind of project it is.
+        for subdir, dirs, files in os.walk(self.xmlTreeDir):
+            for filename in files:
+                if filename.endswith(".xml"):
+                    filePath = os.path.join(subdir, filename)
+                    candidate = self.LoadXMLFile( filePath )
+                    testNode = candidate.find('test')
+                    if len(testNode.text) > 10 and not testNode is None:
+                        if self.xmlProjectDoc.find("./" +testNode.text):
+                            found = True
+                            self.xmlTreePath = filePath
+                            self.xmlTemplateDoc = ET.parse(self.xmlTreePath)
+                            return True
+        return False
+             
+    def LoadXMLFile(self, file):
+        with open(file, 'r') as myfile:
+            data=myfile.read().replace('\n', '')
+            it = ET.iterparse(StringIO(data))
+            # strip all namespaces
+            for _, el in it:
+                if '}' in el.tag:
+                    el.tag = el.tag.split('}', 1)[1] 
+            return it.root
+
     def LoadNode(self, tnParent, templateNode, projNode):
         """ Load a single node """
         data = {}
@@ -79,7 +106,7 @@ class GCDXML():
             newProjNode = projNode.find(entityXPath.text)        
         
         # This node might be a leaf. If so we need to get some meta dat
-        if entityType is not None:
+        if entityType is not None and entityXPath is not None:
             filepathNode = projNode.find(entityXPath.text)
             if filepathNode is not None: 
                 # normalize the slashes
