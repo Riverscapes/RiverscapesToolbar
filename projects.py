@@ -108,9 +108,9 @@ class ProjectXML():
             filepathNode = projNode.find(entityXPath.text)
             if filepathNode is not None: 
                 # normalize the slashes
-                filepath = re.sub('[\\\/]+', os.path.sep, filepathNode.text) 
+                # filepath = re.sub('[\\\/]+', os.path.sep, filepathNode.text) 
                 # make it an absolute path
-                filepath = os.path.join(self.xmlProjDir, filepath)
+                filepath = os.path.join(self.xmlProjDir, filepathNode.text)
                 data['filepath'] = filepath
             if entityXPath is not None:
                 data['xpath'] = entityXPath.text
