@@ -2,7 +2,6 @@
 
 Congratulations! You just built a plugin for QGIS!<br/><br />
 
-<div id='help' style='font-size:.9em;'>
 Your plugin **AnalystToolbar** was created in:
 
 ```
