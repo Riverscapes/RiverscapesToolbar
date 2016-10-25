@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:noNamespaceSchemaLocation="project_schema.xsd">
-  <Name>Sample</Name>
+  <name>Sample</name>
   <test>/sampleName</test>
   <node>
     <label xpath="sampleName"/>

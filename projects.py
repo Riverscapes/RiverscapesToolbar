@@ -56,10 +56,8 @@ class ProjectXML():
                 print "This is an error"
 
 
-
-
             # Set up the first domino for the recursion         
-            projectName = self.xmlProjectDoc.find("Project/Name")
+            projectName = self.xmlProjectDoc.find("Project/name")
             if projectName is not None:
                 self.treeRoot.setText(projectName.text)
    
