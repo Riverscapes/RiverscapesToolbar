@@ -75,7 +75,7 @@ class ProjectXML():
                     candidate = self.LoadXMLFile( filePath )
                     testNode = candidate.find('test')
                     if len(testNode.text) > 10 and not testNode is None:
-                        if self.xmlProjectDoc.find("./" +testNode.text):
+                        if self.xmlProjectDoc.find("./" +testNode.text) is not None:
                             found = True
                             self.xmlTreePath = filePath
                             self.xmlTemplateDoc = ET.parse(self.xmlTreePath)
