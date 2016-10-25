@@ -48,7 +48,7 @@ class ToolbarDockWidget(QtGui.QDockWidget, FORM_CLASS):
         #         self.treeView =
 
     def raster_file_browser(self):
-        filename = QtGui.QFileDialog.getOpenFileName(self, "Open GCD file", "", "GCD File (*.gcd);;XML File (*.xml);;All files (*)")
+        filename = QtGui.QFileDialog.getOpenFileName(self, "Open XML file", "", "XML File (*.xml);;GCD File (*.gcd);;All files (*)")
         self.xmlLocation.setText(filename)
         self.projectXML = ProjectXML(filename, self.treeView)
         self.recalc_state()    
