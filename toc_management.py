@@ -4,7 +4,7 @@ import os.path
 from PyQt4 import QtGui, uic
 from PyQt4.QtCore import *
 from qgis.utils import iface
-from qgis.core import QgsMapLayer, QgsRasterLayer, QgsMapLayerRegistry,QgsProject
+from qgis.core import QgsMapLayer, QgsRasterLayer, QgsVectorLayer, QgsMapLayerRegistry, QgsProject
 
 from symbology import RasterSymbolizer
 
@@ -22,6 +22,32 @@ def AddGroup(sGroupName, parentGroup):
         thisGroup = parentGroup.insertGroup(0, sGroupName)
 
     return thisGroup
+
+
+def AddVectorLayer(theVector):
+    # Loop over all the parent group layers for this raster
+    # ensuring they are in the tree in correct, nested order
+    parentGroup = None
+    if len(theVector.data()) > 0:
+        for aGroup in theVector.data()["group_layers"]:
+            parentGroup = AddGroup(aGroup, parentGroup)
+
+    assert parentGroup, "All rasters should be nested and so parentGroup should be instantiated by now"
+
+    # Only add the layer if it's not already in the registry
+    if not QgsMapLayerRegistry.instance().mapLayersByName(theVector.text()):
+        rOutput = QgsVectorLayer(theVector.data()["filepath"].replace('\\', '/'), theVector.text(), "ogr")
+        QgsMapLayerRegistry.instance().addMapLayer(rOutput, False)
+        parentGroup.addLayer(rOutput)
+
+        legend = iface.legendInterface()
+        legend.setLayerExpanded(rOutput, False)
+
+
+    # if the layer already exists trigger a refresh
+    else:
+        print "REFRESH"
+        QgsMapLayerRegistry.instance().mapLayersByName(theVector.text())[0].triggerRepaint()
 
 def AddRasterLayer(theRaster):
 

@@ -10,6 +10,7 @@ from PyQt4 import QtGui
 from PyQt4.QtGui import QStandardItem, QMenu, QStandardItemModel, QTreeView, QMessageBox, QIcon, QPixmap
 from PyQt4.QtCore import *
 from StringIO import StringIO
+from os import path
 import xml.etree.ElementTree as ET
 
 from toc_management import *
@@ -207,6 +208,9 @@ class ProjectXML():
     
     def addToMap(self, item):
         print "ADDING TO MAP::", item.data()
-        
-        AddRasterLayer(item)
+        itemExt = path.splitext(item.data()['filepath'])[1]
+        if itemExt == '.shp':
+            AddVectorLayer(item)
+        else:
+            AddRasterLayer(item)
         
