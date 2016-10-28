@@ -28,12 +28,12 @@
 	</inputs>
 	<Analyses>
 		<output>
-			<watershed>MFJD<watershed>
+			<watershed>MFJD</watershed>
 			<name>GPP_Prediction_Segment</name>
 			<filepath>output/GPP_Prediction_Segment.csv</filepath>
 		</output>
 		<output>
-			<watershed>MFJD<watershed>
+			<watershed>MFJD</watershed>
 			<name>GPP_Prediction_Segment</name>
 			<filepath>output/GPP_Prediction_Segment.shp</filepath>
 		</output>

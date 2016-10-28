@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <Type>VBET</Type>
+  <Name>Sample_VBET_Project</Name>
+  <!-- Question: Can realizations have different versions of VBET? If so we need to move the following tag -->
+  <VBETVersion>1.4.0</VBETVersion>
+  <!-- Metadata is anything pertaining to the project as a whole Metadata is designed to propagate through
+  the system and appear in any databases or outputs alongside it.-->
+  <MetaData>
+    <item name="Operator">Jordan Gilbert</item>
+    <item name="HUC8ID">17020005</item>
+    <item name="HUC8NAME">Chief Joseph</item>
+    <item name="HUC8ID">17020005</item>
+    <item name="HUC8NAME">Upper Columbia</item>
+    <item name="SomeMetaName">SomeOtherValue</item>    
+  </MetaData>
+
+  <!-- We need to track history. I'm not sold on the name "Realization" but we need this concept in every 
+  project (I think) -->
+  <Realizations>
+    <Realization DateCreated="2016-07-08T23:49:51" Guid="241cdf2a-a397-4fd7-acd2-de0869ed4662">
+      <Inputs>
+
+        <!-- Parameters now get their own tags.... or they could be generisized like MetaData. I'm on the fence
+          Also Parameters moved inside Inputs. It's just an idea. Debate. -->
+        <Parameters>
+          <HighDaThresh>250</HighDaThresh>
+          <LowDaThresh>25</LowDaThresh>
+          <LgBufSize>500</LgBufSize>
+          <MedBufSize>150</MedBufSize>
+          <SmBufSize>25</SmBufSize>
+          <MinBufSize>8</MinBufSize>
+          <LgSlopeThresh>5</LgSlopeThresh>
+          <MedSlopeThresh>7</MedSlopeThresh>
+          <SmSlopeThresh>12</SmSlopeThresh>
+          <AgDistance>150</AgDistance>
+          <MinArea>30000</MinArea>
+          <MinHole>30000</MinHole>
+        </Parameters>
+
+        <!-- Topography and DrainageNetworks have been simplified. Let's talk. -->
+        <Topography>
+          <Input type="raster" path="01_Inputs/01_Topo/DEM_001/Tucannon_DEM_10m_NED.img">
+            <Name>DEM</Name>
+          </Input>
+          <Input type="raster" path="01_Inputs/01_Topo/DEM_001/Flows/Flow1.tif">
+            <Name>Flow Accumulation</Name>
+          </Input>
+          <Input type="raster" path="01_Inputs/01_Topo/DEM_001/Slope/Slope1.tif">
+            <Name>Slope</Name>
+          </Input>
+        </Topography>
+
+        <DrainageNetworks>
+          <Input type="vector" path="01_Inputs/02_Network/Network_001/NHD24k_Tucannon.shp">
+            <Name>Drainage Network</Name>
+          </Input>
+          <Input type="vector" path="01_Inputs/02_Network/Network_001/Buffers/lg_buf1.shp">
+            <Name>Large Buffer</Name>
+          </Input>
+          <Input type="vector" path="01_Inputs/02_Network/Network_001/Buffers/med_buf1.shp">
+            <Name>Medium Buffer</Name>
+          </Input>
+          <Input type="vector" path="01_Inputs/02_Network/Network_001/Buffers/sm_buf1.shp">
+            <Name>Small Buffer</Name>
+          </Input>
+        </DrainageNetworks>
+      </Inputs>
+
+      <Analyses>
+        <Output type="vector" path="02_Analyses/Output_001/Tucannon_VBET_unedited.shp">
+          <Name>Raw Valley Bottom</Name>
+        </Output>
+        <Output type="vector" path="02_Analyses/Output_001/Tucannon_VBET_edited.shp">
+          <Name>Edited Valley Bottom</Name>
+        </Output>
+      </Analyses>
+
+    </Realization>
+  </Realizations>
+</Project>

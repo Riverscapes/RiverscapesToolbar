@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <Name>Sample_VBET_Project</Name>
+  <VBETVersion>1.4.0</VBETVersion>
+  <RunTimestamp>2016-07-08T23:49:51</RunTimestamp>
+  <Operator>Matt Nahorniak</Operator>
+  <MetaData>
+    <ValueA>SomeValue</ValueA>
+    <ValueB>SomeOtherValue</ValueB>
+  </MetaData>
+  <Parameters>
+    <HighDaThresh>250</HighDaThresh>
+    <LowDaThresh>25</LowDaThresh>
+    <LgBufSize>500</LgBufSize>
+    <MedBufSize>150</MedBufSize>
+    <SmBufSize>25</SmBufSize>
+    <MinBufSize>8</MinBufSize>
+    <LgSlopeThresh>5</LgSlopeThresh>
+    <MedSlopeThresh>7</MedSlopeThresh>
+    <SmSlopeThresh>12</SmSlopeThresh>
+    <AgDistance>150</AgDistance>
+    <MinArea>30000</MinArea>
+    <MinHole>30000</MinHole>
+  </Parameters>
+  <Inputs>
+    <Topography>
+      <Input guid="">
+        <Name>DEM</Name>
+        <Type>Raster</Type>
+        <FilePath>01_Inputs/01_Topo/DEM_001/Tucannon_DEM_10m_NED.img</FilePath>
+      </Input>
+      <Input>
+        <Name>Flow Accumulation</Name>
+        <Type>Raster</Type>
+        <FilePath>01_Inputs/01_Topo/DEM_001/Flows/Flow1.tif</FilePath>
+      </Input>
+      <Input>
+        <Name>Slope</Name>
+        <Type>Raster</Type>
+        <FilePath>01_Inputs/01_Topo/DEM_001/Slope/Slope1.tif</FilePath>
+      </Input>
+    </Topography>
+    <DrainageNetworks>
+      <Input>
+        <Name>Drainage Network</Name>
+        <Type>Vector</Type>
+        <FilePath>01_Inputs/02_Network/Network_001/NHD24k_Tucannon.shp</FilePath>
+      </Input>
+      <Input>
+        <Name>Large Buffer</Name>
+        <Type>Vector</Type>
+        <FilePath>01_Inputs/02_Network/Network_001/Buffers/lg_buf1.shp</FilePath>
+      </Input>
+      <Input>
+        <Name>Medium Buffer</Name>
+        <Type>Vector</Type>
+        <FilePath>01_Inputs/02_Network/Network_001/Buffers/med_buf1.shp</FilePath>
+      </Input>
+      <Input>
+        <Name>Small Buffer</Name>
+        <Type>Vector</Type>
+        <FilePath>01_Inputs/02_Network/Network_001/Buffers/sm_buf1.shp</FilePath>
+      </Input>
+    </DrainageNetworks>
+  </Inputs>
+  <Analyses>
+    <Output>
+      <Name>Raw Valley Bottom</Name>
+      <Type>Vector</Type>
+      <FilePath>02_Analyses/Output_001/Tucannon_VBET_unedited.shp</FilePath>
+    </Output>
+    <Output>
+      <Name>Edited Valley Bottom</Name>
+      <Type>Vector</Type>
+      <FilePath>02_Analyses/Output_001/Tucannon_VBET_edited.shp</FilePath>
+    </Output>
+  </Analyses>
+</Project>
