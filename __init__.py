@@ -23,10 +23,10 @@
 """
 
 ######################### REMOTE DEBUG #########################
-# To activate remote debugging set ENVIRONMENT=DEBUG as a QGIS
+# To activate remote debugging set DEBUG_PLUGIN=AnalystToolbar as a QGIS
 # Environment variable in Preferences -> System -> Environment
 import os
-if 'ENVIRONMENT' in os.environ and os.environ['ENVIRONMENT'] == "DEBUG":
+if 'DEBUG_PLUGIN' in os.environ and os.environ['DEBUG_PLUGIN'] == "AnalystToolbar":
     import pydevd
     pydevd.settrace('localhost', port=53100, stdoutToServer=True, stderrToServer=True)
 ######################### /REMOTE DEBUG #########################

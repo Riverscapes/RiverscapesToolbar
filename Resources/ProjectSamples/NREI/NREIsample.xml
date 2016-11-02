@@ -1,0 +1,28 @@
+<?xml version="1.0" standalone="yes"?>
+<project>
+  <sampleName>CWB_0000001</sampleName>
+  
+  <year>2012</year>
+  <visit>1029</visit>
+  <flow>Q001</flow>
+  <inputs>
+    <input>
+      <name>Depth</name>
+      <filepath>CWB_0000001/2012/1029/Q001/inputs/WaterDepth1.tif</filepath>
+    </input>
+    <input>
+      <name>Velocity</name>
+      <filepath>CWB_0000001/2012/1029/Q001/inputs/WaterVelocity1.tif</filepath>
+    </input>
+  </inputs>
+  <outputs>
+    <species>Steelhead</species>
+    <size>70mm</size>
+    <output>
+      <name>NREI</name>
+      <filepath>CWB_0000001/2012/1029/Q001/outputs/Steelhead/70mm/nrei.tif</filepath>
+    </output>
+  </outputs>
+  
+  
+</project>

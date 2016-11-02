@@ -1,81 +1,135 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project>
-  <Type>VBET</Type>
+<Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="XSD/Project.xsd">
+
   <Name>Sample_VBET_Project</Name>
-  <!-- Question: Can realizations have different versions of VBET? If so we need to move the following tag -->
-  <VBETVersion>1.4.0</VBETVersion>
-  <!-- Metadata is anything pertaining to the project as a whole Metadata is designed to propagate through
-  the system and appear in any databases or outputs alongside it.-->
+  <ProjectType>VBET</ProjectType>
+
   <MetaData>
-    <item name="Operator">Jordan Gilbert</item>
-    <item name="HUC8ID">17020005</item>
-    <item name="HUC8NAME">Chief Joseph</item>
-    <item name="HUC8ID">17020005</item>
-    <item name="HUC8NAME">Upper Columbia</item>
-    <item name="SomeMetaName">SomeOtherValue</item>    
+    <Meta Name="Operator">Jordan Gilbert</Meta>
+    <Meta Name="HUC8ID">17020005</Meta>
+    <Meta Name="HUC8NAME">Chief Joseph</Meta>
+    <Meta Name="HUC8ID">17020005</Meta>
+    <Meta Name="HUC8NAME">Upper Columbia</Meta>
+    <Meta Name="SomeMetaName">SomeOtherValue</Meta>
   </MetaData>
+
+  <Inputs>
+    <!-- Inputs must have unique Ids that can be referenced in realizations I'm keeping
+        legible here so that it's readable in the realiations the GUID is to keep things unique-->
+    <Raster id="SLOPE4235" Guid="241cdf2a-a397-4fd7-acd2-de0869ed4662">
+      <Name>Slope</Name>
+      <Path>01_Inputs/01_Topo/Slope/Slope1.img</Path>
+      <BasePath>01_Inputs/01_Topo/Slope/Slope1</BasePath>
+    </Raster>
+
+    <Raster id="FLOW4235" Guid="241cdf2a-a397-4fd7-acd2-de0869ed4662">
+      <Name>Flow</Name>
+      <Path>01_Inputs/01_Topo/DEM_001/Flows/Flow1.tif</Path>
+    </Raster>
+
+    <Vector id="DN001" Guid="241cdf2a-a397-4fd7-acd2-de0869ed4662">
+      <Name>Drainage Network</Name>
+      <Path>01_Inputs/01_Topo/DEM_001/Tucannon_DEM_10m_NED.img</Path>
+    </Vector>
+
+    <DEM id="DEM1" Guid="241cdf2a-a397-4fd7-acd2-de0869ed4662">
+      <Name>DEM</Name>
+      <Path>01_Inputs/01_Topo/Slope/Slope1.img</Path>
+      <MetaData>
+        <Meta Name="description">Jordan Gilbert</Meta>
+        <Meta Name="HUC8ID">17020005</Meta>
+      </MetaData>
+    </DEM>
+
+  </Inputs>
 
   <!-- We need to track history. I'm not sold on the name "Realization" but we need this concept in every 
   project (I think) -->
   <Realizations>
-    <Realization DateCreated="2016-07-08T23:49:51" Guid="241cdf2a-a397-4fd7-acd2-de0869ed4662">
+    <VBET DateCreated="2016-07-08T23:49:51" ProductVersion="1.4.0" Guid="241cdf2a-a397-4fd7-acd2-de0869ed4662">
+  
+      <Name>My realization Name</Name>
+
+      <MetaData>
+        <Meta Name="somecontextthing">Hello</Meta>
+        <Meta Name="description">I did a thing and then another thing...</Meta>
+      </MetaData>
+
+      <Parameters>
+        <Param Name="high_da_thresh">250</Param>
+        <Param Name="low_da_thresh">25</Param>
+        <Param Name="lg_buf_size">500</Param>
+        <Param Name="med_buf_size">150</Param>
+        <Param Name="sm_buf_size">25</Param>
+        <Param Name="min_buf_size">8</Param>
+        <Param Name="lg_slope_thresh">5</Param>
+        <Param Name="med_slope_thresh">7</Param>
+        <Param Name="sm_slope_thresh">12</Param>
+        <Param Name="ag_distance">150</Param>
+        <Param Name="min_area">30000</Param>
+        <Param Name="min_hole">30000</Param>
+      </Parameters>
       <Inputs>
-
-        <!-- Parameters now get their own tags.... or they could be generisized like MetaData. I'm on the fence
-          Also Parameters moved inside Inputs. It's just an idea. Debate. -->
-        <Parameters>
-          <HighDaThresh>250</HighDaThresh>
-          <LowDaThresh>25</LowDaThresh>
-          <LgBufSize>500</LgBufSize>
-          <MedBufSize>150</MedBufSize>
-          <SmBufSize>25</SmBufSize>
-          <MinBufSize>8</MinBufSize>
-          <LgSlopeThresh>5</LgSlopeThresh>
-          <MedSlopeThresh>7</MedSlopeThresh>
-          <SmSlopeThresh>12</SmSlopeThresh>
-          <AgDistance>150</AgDistance>
-          <MinArea>30000</MinArea>
-          <MinHole>30000</MinHole>
-        </Parameters>
-
-        <!-- Topography and DrainageNetworks have been simplified. Let's talk. -->
         <Topography>
-          <Input type="raster" path="01_Inputs/01_Topo/DEM_001/Tucannon_DEM_10m_NED.img">
+          <DEM>
             <Name>DEM</Name>
-          </Input>
-          <Input type="raster" path="01_Inputs/01_Topo/DEM_001/Flows/Flow1.tif">
+            <fileRef>DEM1</fileRef>
+          </DEM>
+          <Flow>
             <Name>Flow Accumulation</Name>
-          </Input>
-          <Input type="raster" path="01_Inputs/01_Topo/DEM_001/Slope/Slope1.tif">
+            <fileRef>FLOW4235</fileRef>
+          </Flow>
+          <Slope>
             <Name>Slope</Name>
-          </Input>
+            <fileRef>SLOPE4235</fileRef>
+          </Slope>
         </Topography>
-
         <DrainageNetworks>
-          <Input type="vector" path="01_Inputs/02_Network/Network_001/NHD24k_Tucannon.shp">
-            <Name>Drainage Network</Name>
-          </Input>
-          <Input type="vector" path="01_Inputs/02_Network/Network_001/Buffers/lg_buf1.shp">
-            <Name>Large Buffer</Name>
-          </Input>
-          <Input type="vector" path="01_Inputs/02_Network/Network_001/Buffers/med_buf1.shp">
-            <Name>Medium Buffer</Name>
-          </Input>
-          <Input type="vector" path="01_Inputs/02_Network/Network_001/Buffers/sm_buf1.shp">
-            <Name>Small Buffer</Name>
-          </Input>
+          <Network>
+            <Name>Drainage Network 01</Name>
+            <fileRef>DN001</fileRef>
+            <Buffers>
+              <Buffer>
+                <Name>Large Buffer</Name>
+                <Path>01_Inputs/02_Network/Network_001/Buffers/lg_buf1.shp</Path>
+              </Buffer>
+              <Buffer>
+                <Name>Medium Buffer</Name>
+                <Path>01_Inputs/02_Network/Network_001/Buffers/med_buf1.shp</Path>
+              </Buffer>
+              <Buffer>
+                <Name>Small Buffer</Name>
+                <Path>01_Inputs/02_Network/Network_001/Buffers/sm_buf1.shp</Path>
+              </Buffer>
+            </Buffers>
+          </Network>
         </DrainageNetworks>
       </Inputs>
+      <Analysis>
+        <Name>My First Analysis</Name>
+        <Outputs>
+          <!-- These are just the types we know and love -->
+          <Vector>
+            <Name>Raw Valley Bottom</Name>
+            <Path>02_Analyses/Output_001/Tucannon_VBET_unedited.shp</Path>
+          </Vector>
 
-      <Analyses>
-        <Output type="vector" path="02_Analyses/Output_001/Tucannon_VBET_unedited.shp">
-          <Name>Raw Valley Bottom</Name>
-        </Output>
-        <Output type="vector" path="02_Analyses/Output_001/Tucannon_VBET_edited.shp">
-          <Name>Edited Valley Bottom</Name>
-        </Output>
-      </Analyses>
+          <Vector>
+            <Name>Edited Valley Bottom</Name>
+            <Path>02_Analyses/Output_001/Tucannon_VBET_edited.shp</Path>
+          </Vector>
+        </Outputs>
+      </Analysis>
 
-    </Realization>
+    </VBET>
+
+    <VBET DateCreated="2016-07-08T23:49:51" Guid="241cdf2a-a397-4fd7-acd2-de0869ed4662">
+      <Name>My Second Realization</Name>
+
+    </VBET>
+
   </Realizations>
+
 </Project>
+

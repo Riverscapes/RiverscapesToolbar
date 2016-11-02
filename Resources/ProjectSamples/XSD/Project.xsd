@@ -1,0 +1,338 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:element name="Project" type="ProjectType"/>
+
+  <!-- =========================================================================
+
+    Common Elements:
+      - All projects must have the Following:
+
+  ============================================================================== -->
+
+
+  <!-- Top Leve item: Here's where the overall project gets Defined -->
+  <xs:complexType name="ProjectType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="Name"/>
+      <xs:element type="xs:string" name="ProjectType"/>
+      <xs:element type="MetaDataType" name="MetaData"/>
+      <xs:element type="InputsType" name="Inputs"/>
+      <xs:element type="RealizationsType" name="Realizations"/>
+      <xs:element type="AnalysesType" name="Analyses" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute type="xs:string" name="type"/>
+  </xs:complexType>
+
+  <!-- A Project can have realizations -->
+  <xs:complexType name="RealizationType" mixed="true">
+    <xs:sequence>
+      <xs:element type="xs:string" name="Name"/>
+      <xs:element type="ParametersType" name="Parameters" minOccurs="0"/>
+      <xs:element type="MetaDataType" name="MetaData" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute type="xs:string" name="DateCreated" use="optional"/>
+    <xs:attribute type="xs:string" name="ProductVersion" use="optional"/>
+    <xs:attribute type="xs:string" name="Guid" use="optional"/>
+  </xs:complexType>
+
+  <!--Realizations Must have an Analysis-->
+  <xs:complexType name="AnalysisType" mixed="true">
+    <xs:sequence>
+      <xs:element type="xs:string" name="Name"/>
+      <xs:element type="OutputsType" name="Outputs" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <!-- The things that go in the plural containers -->
+  <xs:complexType name="MetaType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute type="xs:string" name="Name" use="optional"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <!-- These are Just Plural Containers for things -->
+
+  <xs:complexType name="MetaDataType">
+    <xs:sequence>
+      <xs:element type="MetaType" name="Meta" maxOccurs="unbounded" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="AnalysesType">
+    <xs:sequence>
+      <xs:element type="AnalysisType" name="Analysis" maxOccurs="unbounded" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ParamType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute type="xs:string" name="Name" use="optional"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <xs:complexType name="ParametersType">
+    <xs:sequence>
+      <xs:element type="ParamType" name="Param" maxOccurs="unbounded" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+
+  <!-- Let's define our Input/Output Data Types-->
+  <xs:complexType name="InputsType">
+    <xs:choice maxOccurs="unbounded" minOccurs="0">
+      <xs:element type="xs:string" name="Value"/>
+      <xs:element type="RasterType" name="Raster"/>
+      <xs:element type="VectorType" name="Vector"/>
+      <xs:element type="DEMType" name="DEM"/>
+      <xs:element type="HillShadeType" name="HillShade"/>
+    </xs:choice>
+  </xs:complexType>
+
+  <!--Outputs Type-->
+  <xs:complexType name="OutputsType">
+    <xs:choice maxOccurs="unbounded" minOccurs="0">
+      <xs:element type="xs:string" name="Value"/>
+      <xs:element type="RasterType" name="Raster"/>
+      <xs:element type="VectorType" name="Vector"/>
+      <xs:element type="DEMType" name="DEM"/>
+      <xs:element type="HillShadeType" name="HillShade"/>
+    </xs:choice>
+  </xs:complexType>
+
+  <!-- Now let's define some types -->
+  <xs:complexType name="GeoSpatialType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="Name" minOccurs="0"/>
+      <xs:element type="xs:string" name="Path" minOccurs="0"/>
+      <xs:element type="xs:string" name="BasePath" minOccurs="0"/>
+      <xs:element type="xs:string" name="fileRef" minOccurs="0"/>
+      <xs:element type="MetaDataType" name="MetaData" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute type="xs:string" name="id"/>
+    <xs:attribute type="xs:string" name="Guid"/>
+  </xs:complexType>
+
+  <xs:complexType name="RasterType">
+    <xs:complexContent>
+      <xs:extension base="GeoSpatialType"/>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="VectorType">
+    <xs:complexContent>
+      <xs:extension base="GeoSpatialType"/>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="DEMType">
+    <xs:complexContent>
+      <xs:extension base="GeoSpatialType"/>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="HillShadeType">
+    <xs:complexContent>
+      <xs:extension base="GeoSpatialType"/>
+    </xs:complexContent>
+  </xs:complexType>
+
+
+
+  <xs:complexType name="RealizationsType">
+    <xs:choice>
+      <xs:element type="DoDType" name="DoD" maxOccurs="unbounded" minOccurs="0"/>
+      <xs:element type="VBETType" name="VBET" maxOccurs="unbounded" minOccurs="0"/>
+      <xs:element type="RiverStylesType" name="RiverStyles" maxOccurs="unbounded" minOccurs="0"/>
+    </xs:choice>
+  </xs:complexType>
+
+  <!-- =========================================================================
+
+    Project: VBET
+
+  ============================================================================== -->
+
+  <xs:complexType name="VBETType">
+    <xs:complexContent>
+      <xs:extension base="RealizationType"/>
+    </xs:complexContent>
+    <xs:sequence>
+      <xs:element type="GCDInputType" name="Inputs" minOccurs="0"/>
+      <xs:element type="GCDAnalysisType" name="Analysis" minOccurs="0"/>
+    </xs:sequence>
+    <xs:sequence>
+
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="VBETType">
+    <xs:sequence>
+      <xs:element type="ParametersType" name="Parameters" minOccurs="0"/>
+      <xs:element type="VBETInputType" name="Inputs" minOccurs="0"/>
+      <xs:element type="VBETAnalysisType" name="Analysis" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+
+  <xs:complexType name="VBETInputType">
+    <xs:sequence>
+      <xs:element type="VBETInputTopographyType" name="Topography"/>
+      <xs:element type="VBETInputDrainageType" name="DrainageNetworks"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="VBETInputTopographyType">
+    <xs:sequence>
+      <xs:element type="DEMType" name="DEM" maxOccurs="unbounded" minOccurs="0"/>
+      <xs:element type="DEMType" name="Flow" maxOccurs="unbounded" minOccurs="0"/>
+      <xs:element type="DEMType" name="Slope" maxOccurs="unbounded" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="VBETInputDrainageType">
+    <xs:sequence>
+      <xs:element type="VBETInputDrainageNetworkType" name="Network"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="VBETInputDrainageNetworkType">
+    <xs:complexContent>
+      <xs:extension base="VectorType"/>
+      <xs:element type="VBETBufferType" name="Buffers"/>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="VBETBufferType">
+    <xs:sequence>
+      <xs:element type="VectorType" name="Buffer"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="VBETAnalysisType">
+      <xs:element type="xs:string" name="Name"/>
+      <xs:element type="OutputsType" name="Outputs" minOccurs="0"/>
+  </xs:complexType>
+
+
+  <!-- =========================================================================
+
+    Project: NREI
+
+  ============================================================================== -->
+
+
+  <!-- =========================================================================
+
+    Project: Confinement
+
+  ============================================================================== -->
+
+
+
+
+  <!-- =========================================================================
+
+    Project: River Styles
+
+  ============================================================================== -->
+
+  <xs:complexType name="RiverStylesType">
+    <xs:complexContent>
+      <xs:extension base="RealizationType"/>
+    </xs:complexContent>
+    <xs:sequence>
+      <xs:element type="RiverStylesInputType" name="Inputs" minOccurs="0"/>
+      <xs:element type="RiverStylesAnalysisType" name="Analysis" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="RiverStylesInputType">
+    <xs:sequence>
+      <xs:element type="RiverStylesInputDrainageNetworksType" name="DrainageNetworks"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="RiverStylesInputDrainageNetworksType">
+    <xs:sequence>
+      <xs:element type="RiverStylesInputDrainageNetworkType" name="Network"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="RiverStylesInputDrainageNetworkType">
+    <xs:complexContent>
+      <xs:extension base="VectorType"/>
+      <xs:element type="VBETBufferType" name="Buffers"/>
+      <xs:element type="ValleyBottomType" name="ValleyBottom"/>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="ValleyBottomType">
+    <xs:complexContent>
+      <xs:extension base="VectorType"/>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="RiverStylesConfinementType">
+    <xs:sequece>
+      <xs:element type="VectorType" name="Confinement"/>
+    </xs:sequece>
+  </xs:complexType>
+
+  <xs:complexType name="RiverStylesReachType">
+    <xs:sequece>
+      <xs:element type="ManualCrossChecksType" name="ManualCrossChecks"/>
+    </xs:sequece>
+  </xs:complexType>
+
+  <xs:complexType name="ManualCrossChecksType">
+    <xs:sequece>
+      <xs:element type="VectorType" name="ManualCrossCheck"/>
+    </xs:sequece>
+  </xs:complexType>
+
+  <xs:complexType name="RiverStylesAnalysisType">
+    <xs:sequence>
+      <xs:element type="RiverStylesConfinementType" name="Confinements"/>
+      <xs:element type="RiverStylesReachType" name="RiverStyleReach"/>
+    </xs:sequence>
+  </xs:complexType>
+
+
+  <!-- =========================================================================
+
+    Project: GCD
+
+  ============================================================================== -->
+
+  <xs:complexType name="DoDType">
+    <xs:complexContent>
+      <xs:extension base="RealizationType"/>
+    </xs:complexContent>
+    <xs:sequence>
+      <xs:element type="GCDInputType" name="Inputs" minOccurs="0"/>
+      <xs:element type="GCDAnalysisType" name="Analysis" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+    <xs:complexType name="RasterType">
+
+  </xs:complexType>
+
+
+  <xs:complexType name="GCDInputType">
+    <xs:sequence>
+      <xs:element type="VBETInputTopographyType" name="Topography"/>
+      <xs:element type="VBETInputDrainageType" name="DrainageNetworks"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="GCDAnalysisType">
+      <xs:element type="xs:string" name="Name"/>
+      <xs:element type="OutputsType" name="Outputs"/>
+  </xs:complexType>
+
+</xs:schema>
