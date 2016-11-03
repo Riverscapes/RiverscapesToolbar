@@ -1,56 +1,52 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <project>
   <inputs>
-    <!--<drainage_networks>-->
-      <!--<network_01>-->
-        <!--<filepath>inputs\drainage_networks\network_01\NHD_upperSalmon_abv_Redfish.shp</filepath>-->
-        <!--<name>UpperSalmon_NHD</name>-->
-      <!--</network_01>-->
-    <!--</drainage_networks>-->
+    <drainage_networks>
+      <network_01>
+        <filepath>inputs\drainage_networks\network_01\NHD_upperSalmon_abv_Redfish.shp</filepath>
+        <name>UpperSalmon_NHD</name>
+      </network_01>
+    </drainage_networks>
 
-
-
-    <!--<confinements>-->
-      <!--<confinement_01>-->
-        <!--<segmented_networks>-->
-          <!--<segmented_network_01>-->
-            <!--<filepath>inputs\confinements\confinement_01\segmented_networks\segmented_network_01\USal_500m_segment.shp</filepath>-->
-            <!--<name>USal_500m</name>-->
-            <!--<segmentation_distance>500</segmentation_distance>-->
-          <!--</segmented_network_01>-->
-        <!--</segmented_networks>-->
-        <!--<valley_bottom_polygon>-->
-          <!--<valley_bottom_01>-->
-            <!--<filepath>inputs\confinements\valley_bottom_polygon\valley_bottom_polygon_01\USal_valleybottom.shp</filepath>-->
-            <!--<name>USal_valley_bottom</name>-->
-          <!--</valley_bottom_01>-->
-        <!--</valley_bottom_polygon>-->
-        <!--<stream_buffers>-->
-          <!--<stream_buffer_01>-->
-            <!--<filepath>inputs\confinements\confinement_01\stream_buffers\stream_buffer_01\USal_bankfull_buffer.shp</filepath>-->
-            <!--<name>USal_bankfull_buffer</name>-->
-          <!--</stream_buffer_01>-->
-        <!--</stream_buffers>-->
-      <!--</confinement_01>-->
-    <!--</confinements>-->
+    <confinements>
+      <confinement_01>
+        <segmented_networks>
+          <segmented_network_01>
+            <filepath>inputs\confinements\confinement_01\segmented_networks\segmented_network_01\USal_500m_segment.shp</filepath>
+            <name>USal_500m</name>
+            <segmentation_distance>500</segmentation_distance>
+          </segmented_network_01>
+        </segmented_networks>
+        <valley_bottom_polygon>
+          <valley_bottom_01>
+            <filepath>inputs\confinements\valley_bottom_polygon\valley_bottom_polygon_01\USal_valleybottom.shp</filepath>
+            <name>USal_valley_bottom</name>
+          </valley_bottom_01>
+        </valley_bottom_polygon>
+        <stream_buffers>
+          <stream_buffer_01>
+            <filepath>inputs\confinements\confinement_01\stream_buffers\stream_buffer_01\USal_bankfull_buffer.shp</filepath>
+            <name>USal_bankfull_buffer</name>
+          </stream_buffer_01>
+        </stream_buffers>
+      </confinement_01>
+    </confinements>
 
   </inputs>
 
-
-
   <analyses>
-    <!--<confinements>-->
-      <!--<confinement_01>analyses\confinements\confinement_01\USal_Confinement_500m.shp</confinement_01>-->
-      <!--<name>USal_confinement_500m</name>-->
-      <!--<segmentation_distance>500</segmentation_distance>-->
-    <!--</confinements>-->
-    <!--<river_style_reaches>-->
-      <!--<manual_crosschecks>-->
-        <!--<manual_crosscheck_01>-->
-          <!--<filepath>analyses\river_styles\manual_crosschecks\manual_crosscheck_01\USal_River_Styles.shp</filepath>-->
-        <!--</manual_crosscheck_01>-->
-      <!--</manual_crosschecks>-->
-    <!--</river_style_reaches>-->
+    <confinements>
+      <confinement_01>analyses\confinements\confinement_01\USal_Confinement_500m.shp</confinement_01>
+      <name>USal_confinement_500m</name>
+      <segmentation_distance>500</segmentation_distance>
+    </confinements>
+    <river_style_reaches>
+      <manual_crosschecks>
+        <manual_crosscheck_01>
+          <filepath>analyses\river_styles\manual_crosschecks\manual_crosscheck_01\USal_River_Styles.shp</filepath>
+        </manual_crosscheck_01>
+      </manual_crosschecks>
+    </river_style_reaches>
   </analyses>
 
   <context>
