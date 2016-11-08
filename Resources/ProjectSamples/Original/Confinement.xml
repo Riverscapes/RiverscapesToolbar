@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ConfinementProject>
+  <ConfinementName>Yankee Fork</ConfinementName>
+  <ToolVersion>0.1</ToolVersion>
+  <Inputs>
+    <ValleyBottoms>
+      <ValleyBottom>
+      <!-- type="file"-->
+        <ID>1</ID>
+        <Name>Valley Bottom 01</Name>
+        <Filepath>Inputs\ValleyBottoms\ValleyBottom01\ValleyBottom.shp</Filepath>
+      </ValleyBottom>
+      <ValleyBottom>
+        <!-- type="project"-->
+        <ID>2</ID>
+        <Name>Valley Bottom 02</Name>
+        <Filepath>Inputs\ValleyBottoms\ValleyBottom02\ValleyBottom.shp</Filepath>
+      </ValleyBottom>
+    </ValleyBottoms>
+    <ChannelPolygons>
+      <ChannelPolygon>
+        <ID>1</ID>a
+        <Name>Bankfull Buffer 50 Percent</Name>
+        <Filepath>Inputs\ChannelPolygons\ChannelPolygon01\BankfullChannelBuffer.shp</Filepath>
+      </ChannelPolygon>
+    </ChannelPolygons>
+    <StreamNetworks>
+      <StreamNetwork>
+        <ID>1</ID>
+        <Name>Stream Network</Name>
+        <Filepath>Inputs\StreamNetworks\StreamNetwork\StreamNetwork.shp</Filepath>
+      </StreamNetwork>
+    </StreamNetworks>
+  </Inputs>
+  <Outputs>
+    <Output>
+      <ID>1</ID>
+      <Name>Output 01</Name>
+      <ValleyBottom>1</ValleyBottom>
+      <ChannelPolygon>1</ChannelPolygon>
+      <StreamNetwork>1</StreamNetwork>
+      <ConfiningMargins_Filepath>Outputs\Output_01\ConfiningMargins.shp</ConfiningMargins_Filepath>
+      <RawConfinignState_Filepath>Outputs\Output_01\RawConfiningState.shp</RawConfinignState_Filepath>
+      <Analyses>
+        <MovingWindows>
+          <Analysis>
+            <ID>1</ID>
+            <Name>Moving Window 300m 500m Seed 500m</Name>
+            <SeedPoint_filepath>Outputs\Output_01\Analysis\Confinement001\ConfinementLocal.shp</SeedPoint_filepath>
+            <MovingWindow_filepath>Outputs\Output_01\Analysis\Confinement001\ConfinementWindows.shp</MovingWindow_filepath>
+          </Analysis>
+        </MovingWindows>
+        <FixedSegments>
+          <Analysis>
+            <ID>2</ID>
+            <Name>Fixed Segments 500m</Name>
+            <ConfinementSegments_filepath>Outputs\Output_01\Analysis\Confinement002\ConfinementSegments.shp</ConfinementSegments_filepath>
+          </Analysis>
+        </FixedSegments>
+      </Analyses>
+    </Output>
+  </Outputs>
+  <Context>
+    <Hillshade></Hillshade>
+    <NAIP></NAIP>
+  </Context>
+</ConfinementProject>

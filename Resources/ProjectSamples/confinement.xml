@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="XSD/v1/Project.xsd">
+
+  <Name>ConfinementProject1</Name>
+  <ProjectType>Confinement</ProjectType>
+
+  <!--MetaData for the whole Project-->
+  <MetaData>
+    <Meta Name="SomeKey">SomeVal</Meta>
+  </MetaData>
+
+  <!--Inputs are centrally defined here then referenced in realizations where needed-->
+  <Inputs>
+    <Vector id="ValleyBottom01" Guid="">
+      <Name>ValleyBottom</Name>
+      <fileRef>Inputs\ValleyBottoms\ValleyBottom01\ValleyBottom.shp</fileRef>
+    </Vector>
+    <Vector id="ValleyBottom02" Guid="">
+      <Name>ValleyBottom</Name>
+      <fileRef>Inputs\ValleyBottoms\ValleyBottom02\ValleyBottom.shp</fileRef>
+    </Vector>
+
+    <Vector id="bfBuffer01" Guid="">
+      <Name>Bankfull Buffer 50 Percent</Name>
+      <fileRef>Inputs\ChannelPolygons\ChannelPolygon01\BankfullChannelBuffer.shp</fileRef>
+    </Vector>
+
+    <Vector id="streamNetwork01" Guid="">
+      <Name>Stream Network</Name>
+      <fileRef>Inputs\StreamNetworks\StreamNetwork\StreamNetwork.shp</fileRef>
+    </Vector>
+
+    <HillShade id="hillshade01" Guid="">
+      <Name>Hillshade</Name>
+      <fileRef>some/path/to/hillshade.tif</fileRef>
+    </HillShade>
+
+    <!--Do we need a type for this?-->
+    <Raster id="nail01" Guid="">
+      <Name>NAIP</Name>
+      <fileRef>some/path/to/NAIP.tif</fileRef>
+    </Raster>
+
+  </Inputs>
+
+  <Realizations>
+    <!--Confinements is now its own realization type-->
+    <Confinement Promoted="true" ProductVersion="0.1" Guid="">
+      <Name>Yankee Fork</Name>
+
+      <!--I didn't see any params in your XML-->
+      <Parameters>
+        <Param Name="someparam">Someval</Param>
+      </Parameters>
+
+      <!--Metadata for just this realization (if applicable)-->
+      <MetaData>
+        <Meta Name="SomeMetaKey">someval</Meta>
+      </MetaData>
+
+      <Inputs>
+        <ValleyBottoms>
+          <ValleyBottom>
+            <Name>Valley Bottom 01</Name>
+            <fileRef>ValleyBottom01</fileRef>
+          </ValleyBottom>
+          <ValleyBottom>
+            <Name>Valley Bottom 02</Name>
+            <fileRef>ValleyBottom02</fileRef>
+          </ValleyBottom>
+        </ValleyBottoms>
+        <ChannelPolygons>
+          <ChannelPolygon>
+            <Name>Bankfull Buffer 50 Percent</Name>
+            <fileRef>bfBuffer01</fileRef>
+          </ChannelPolygon>
+        </ChannelPolygons>
+        <StreamNetworks>
+          <StreamNetwork>
+            <Name>Stream Network</Name>
+            <fileRef>streamNetwork01</fileRef>
+          </StreamNetwork>
+        </StreamNetworks>
+      </Inputs>
+
+      <Analysis>
+        <Name>Output 01</Name>
+        <Outputs>
+          <ConfiningMargins>
+            <Path>Outputs\Output_01\ConfiningMargins.shp</Path>
+          </ConfiningMargins>
+          <RawConfiningState>
+            <Path>Outputs\Output_01\RawConfiningState.shp</Path>
+          </RawConfiningState>
+          <MovingWindows>
+            <Window id="1">
+              <Name>Moving Window 300m 500m Seed 500m</Name>
+              <SeedPointile>
+                <Path>Outputs\Output_01\Analysis\Confinement001\ConfinementLocal.shp</Path>
+                </SeedPointile>
+              <MovingWindow>
+                <Path>Outputs\Output_01\Analysis\Confinement001\ConfinementWindows.shp</Path>
+              </MovingWindow>
+            </Window>
+          </MovingWindows>
+          <FixedSegments>
+            <Segment id="2">
+              <Name>Fixed Segments 500m</Name>
+              <ConfinementSegments>
+                <Path>Outputs\Output_01\Analysis\Confinement002\ConfinementSegments.shp</Path>
+              </ConfinementSegments>
+            </Segment>
+          </FixedSegments>
+        </Outputs>
+      </Analysis>
+    </Confinement>
+  </Realizations>
+</Project>

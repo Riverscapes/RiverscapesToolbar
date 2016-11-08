@@ -30,6 +30,7 @@
       <xs:element type="ParametersType" name="Parameters" minOccurs="0"/>
       <xs:element type="MetaDataType" name="MetaData" minOccurs="0"/>
     </xs:sequence>
+    <xs:attribute type="xs:boolean" name="Promoted" use="optional"/>
     <xs:attribute type="xs:string" name="DateCreated" use="optional"/>
     <xs:attribute type="xs:string" name="ProductVersion" use="optional"/>
     <xs:attribute type="xs:string" name="Guid" use="optional"/>
@@ -147,6 +148,7 @@
       <xs:element type="DoDType" name="DoD" maxOccurs="unbounded" minOccurs="0"/>
       <xs:element type="VBETType" name="VBET" maxOccurs="unbounded" minOccurs="0"/>
       <xs:element type="RiverStylesType" name="RiverStyles" maxOccurs="unbounded" minOccurs="0"/>
+      <xs:element type="ConfinementType" name="Confinement" maxOccurs="unbounded" minOccurs="0"/>
     </xs:choice>
   </xs:complexType>
 
@@ -213,8 +215,8 @@
   </xs:complexType>
 
   <xs:complexType name="VBETAnalysisType">
-      <xs:element type="xs:string" name="Name"/>
-      <xs:element type="OutputsType" name="Outputs" minOccurs="0"/>
+    <xs:element type="xs:string" name="Name"/>
+    <xs:element type="OutputsType" name="Outputs"/>
   </xs:complexType>
 
 
@@ -231,8 +233,82 @@
 
   ============================================================================== -->
 
+  <xs:complexType name="ConfinementType">
+    <xs:complexContent>
+      <xs:extension base="RealizationType"/>
+    </xs:complexContent>
+    <xs:sequence>
+      <xs:element type="ConfinementInputType" name="Inputs" minOccurs="0"/>
+      <xs:element type="ConfinementAnalysisType" name="Analysis" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
 
+  <xs:complexType name="ConfinementInputType">
+    <xs:sequence>
+      <xs:element type="ValleyBottomsType" name="ValleyBottoms"/>
+      <xs:element type="ChannelPolygonsType" name="ChannelPolygons"/>
+      <xs:element type="StreamNetworksType" name="StreamNetworks"/>
+    </xs:sequence>
+  </xs:complexType>
 
+  <xs:complexType name="ValleyBottomsType">
+    <xs:sequence>
+      <xs:element type="VectorType" name="ValleyBottom"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ChannelPolygonsType">
+    <xs:sequence>
+      <xs:element type="VectorType" name="ChannelPolygon"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="StreamNetworksType">
+    <xs:sequence>
+      <xs:element type="VectorType" name="StreamNetwork"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="ConfinementAnalysisType">
+    <xs:element type="xs:string" name="Name"/>
+    <xs:element type="ConfinementOutputsType" name="Outputs"/>
+  </xs:complexType>
+
+  <xs:complexType name="ConfinementOutputsType">
+    <xs:sequence>
+       <xs:element type="VectorType" name="ConfiningMargins"/>
+       <xs:element type="VectorType" name="RawConfiningState"/>
+      <xs:element type="MovingWindowsType" name="MovingWindows"/>
+      <xs:element type="FixedSegmentsType" name="FixedSegments"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="MovingWindowsType">
+    <xs:element type="xs:string" name="Name"/>
+    <xs:element type="ConfinementWindowType" name="Window"/>
+  </xs:complexType>
+
+  <xs:complexType name="ConfinementWindowType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="Name"/>
+       <xs:element type="VectorType" name="SeedPointile"/>
+       <xs:element type="VectorType" name="MovingWindow"/>
+    </xs:sequence>
+    <xs:attribute type="xs:string" name="id"/>
+  </xs:complexType>
+
+  <xs:complexType name="FixedSegmentsType">
+    <xs:element type="xs:string" name="Name"/>
+    <xs:element type="ConfinementSegmentType" name="Segment"/>
+  </xs:complexType>
+
+  <xs:complexType name="ConfinementSegmentType">
+    <xs:sequence>
+      <xs:element type="xs:string" name="Name"/>
+       <xs:element type="VectorType" name="ConfinementSegments"/>
+    </xs:sequence>
+    <xs:attribute type="xs:string" name="id"/>
+  </xs:complexType>
 
   <!-- =========================================================================
 
@@ -260,6 +336,7 @@
     <xs:sequence>
       <xs:element type="RiverStylesInputDrainageNetworkType" name="Network"/>
     </xs:sequence>
+    <xs:attribute type="xs:string" name="Guid" use="optional"/>
   </xs:complexType>
 
   <xs:complexType name="RiverStylesInputDrainageNetworkType">
@@ -318,10 +395,6 @@
     </xs:sequence>
   </xs:complexType>
 
-    <xs:complexType name="RasterType">
-
-  </xs:complexType>
-
 
   <xs:complexType name="GCDInputType">
     <xs:sequence>
@@ -331,8 +404,8 @@
   </xs:complexType>
 
   <xs:complexType name="GCDAnalysisType">
-      <xs:element type="xs:string" name="Name"/>
-      <xs:element type="OutputsType" name="Outputs"/>
+    <xs:element type="xs:string" name="Name"/>
+    <xs:element type="OutputsType" name="Outputs"/>
   </xs:complexType>
 
 </xs:schema>
