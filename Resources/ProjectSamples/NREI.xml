@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="XSD/v1/Project.xsd">
+
+  <Name>CWB_0000001</Name>
+  <ProjectType>NREI</ProjectType>
+
+  <MetaData>
+    <Meta Name="year">2012</Meta>
+    <Meta Name="visit">1029</Meta>
+    <Meta Name="flow">Q001</Meta>
+  </MetaData>
+
+  <Inputs>
+    <Raster id="depth01" Guid="">
+      <Name>Depth</Name>
+      <Path>CWB_0000001/2012/1029/Q001/inputs/WaterDepth1.tif</Path>
+    </Raster>
+    <Raster id="velocity01" Guid="">
+      <Name>Velocity</Name>
+      <Path>CWB_0000001/2012/1029/Q001/inputs/WaterVelocity1.tif</Path>
+    </Raster>
+  </Inputs>
+
+  <Realizations>
+    <NREI Promoted="true" DateCreated="2016-07-08T23:49:51" ProductVersion="1.4.0" Guid="241cdf2a-a397-4fd7-acd2-de0869ed4662">
+      <Name>2012 Visit 1029 Flow Q001</Name>
+      <Inputs>
+        <Raster>
+          <Name>Depth</Name>
+          <InputRef>depth01</InputRef>
+        </Raster>
+        <Raster>
+          <Name>Velocity</Name>
+          <InputRef>velocity01</InputRef>
+        </Raster>
+      </Inputs>
+
+      <Analysis>
+        <Raster>
+          <Name>NREI</Name>
+          <Path>CWB_0000001/2012/1029/Q001/outputs/Steelhead/70mm/nrei.tif</Path>
+        </Raster>
+      </Analysis>
+    </NREI>
+  </Realizations>
+
+</Project>

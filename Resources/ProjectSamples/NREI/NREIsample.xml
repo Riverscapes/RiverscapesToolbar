@@ -2,9 +2,6 @@
 <project>
   <sampleName>CWB_0000001</sampleName>
   
-  <year>2012</year>
-  <visit>1029</visit>
-  <flow>Q001</flow>
   <inputs>
     <input>
       <name>Depth</name>

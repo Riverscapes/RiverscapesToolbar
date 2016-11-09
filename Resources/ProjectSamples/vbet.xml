@@ -74,21 +74,21 @@
         <Topography>
           <DEM>
             <Name>DEM</Name>
-            <fileRef>DEM1</fileRef>
+            <InputRef>DEM1</InputRef>
           </DEM>
           <Flow>
             <Name>Flow Accumulation</Name>
-            <fileRef>FLOW4235</fileRef>
+            <InputRef>FLOW4235</InputRef>
           </Flow>
           <Slope>
             <Name>Slope</Name>
-            <fileRef>SLOPE4235</fileRef>
+            <InputRef>SLOPE4235</InputRef>
           </Slope>
         </Topography>
         <DrainageNetworks>
           <Network>
             <Name>Drainage Network 01</Name>
-            <fileRef>DN001</fileRef>
+            <InputRef>DN001</InputRef>
             <Buffers>
               <Buffer>
                 <Name>Large Buffer</Name>

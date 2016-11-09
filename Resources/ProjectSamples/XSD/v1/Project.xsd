@@ -110,7 +110,7 @@
       <xs:element type="xs:string" name="Name" minOccurs="0"/>
       <xs:element type="xs:string" name="Path" minOccurs="0"/>
       <xs:element type="xs:string" name="BasePath" minOccurs="0"/>
-      <xs:element type="xs:string" name="fileRef" minOccurs="0"/>
+      <xs:element type="xs:string" name="InputRef" minOccurs="0"/>
       <xs:element type="MetaDataType" name="MetaData" minOccurs="0"/>
     </xs:sequence>
     <xs:attribute type="xs:string" name="id"/>
@@ -147,6 +147,7 @@
     <xs:choice>
       <xs:element type="DoDType" name="DoD" maxOccurs="unbounded" minOccurs="0"/>
       <xs:element type="VBETType" name="VBET" maxOccurs="unbounded" minOccurs="0"/>
+      <xs:element type="NREIType" name="NREI" maxOccurs="unbounded" minOccurs="0"/>
       <xs:element type="RiverStylesType" name="RiverStyles" maxOccurs="unbounded" minOccurs="0"/>
       <xs:element type="ConfinementType" name="Confinement" maxOccurs="unbounded" minOccurs="0"/>
     </xs:choice>
@@ -226,6 +227,15 @@
 
   ============================================================================== -->
 
+  <xs:complexType name="NREIType">
+    <xs:complexContent>
+      <xs:extension base="RealizationType"/>
+    </xs:complexContent>
+    <xs:sequence>
+      <xs:element type="InputsType" name="Inputs" minOccurs="0"/>
+      <xs:element type="OutputsType" name="Analysis" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
 
   <!-- =========================================================================
 

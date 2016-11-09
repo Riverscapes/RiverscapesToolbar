@@ -14,32 +14,32 @@
   <Inputs>
     <Vector id="ValleyBottom01" Guid="">
       <Name>ValleyBottom</Name>
-      <fileRef>Inputs\ValleyBottoms\ValleyBottom01\ValleyBottom.shp</fileRef>
+      <Path>Inputs\ValleyBottoms\ValleyBottom01\ValleyBottom.shp</Path>
     </Vector>
     <Vector id="ValleyBottom02" Guid="">
       <Name>ValleyBottom</Name>
-      <fileRef>Inputs\ValleyBottoms\ValleyBottom02\ValleyBottom.shp</fileRef>
+      <Path>Inputs\ValleyBottoms\ValleyBottom02\ValleyBottom.shp</Path>
     </Vector>
 
     <Vector id="bfBuffer01" Guid="">
       <Name>Bankfull Buffer 50 Percent</Name>
-      <fileRef>Inputs\ChannelPolygons\ChannelPolygon01\BankfullChannelBuffer.shp</fileRef>
+      <Path>Inputs\ChannelPolygons\ChannelPolygon01\BankfullChannelBuffer.shp</Path>
     </Vector>
 
     <Vector id="streamNetwork01" Guid="">
       <Name>Stream Network</Name>
-      <fileRef>Inputs\StreamNetworks\StreamNetwork\StreamNetwork.shp</fileRef>
+      <Path>Inputs\StreamNetworks\StreamNetwork\StreamNetwork.shp</Path>
     </Vector>
 
     <HillShade id="hillshade01" Guid="">
       <Name>Hillshade</Name>
-      <fileRef>some/path/to/hillshade.tif</fileRef>
+      <Path>some/path/to/hillshade.tif</Path>
     </HillShade>
 
     <!--Do we need a type for this?-->
     <Raster id="nail01" Guid="">
       <Name>NAIP</Name>
-      <fileRef>some/path/to/NAIP.tif</fileRef>
+      <InputRef>some/path/to/NAIP.tif</InputRef>
     </Raster>
 
   </Inputs>
@@ -63,23 +63,23 @@
         <ValleyBottoms>
           <ValleyBottom>
             <Name>Valley Bottom 01</Name>
-            <fileRef>ValleyBottom01</fileRef>
+            <InputRef>ValleyBottom01</InputRef>
           </ValleyBottom>
           <ValleyBottom>
             <Name>Valley Bottom 02</Name>
-            <fileRef>ValleyBottom02</fileRef>
+            <InputRef>ValleyBottom02</InputRef>
           </ValleyBottom>
         </ValleyBottoms>
         <ChannelPolygons>
           <ChannelPolygon>
             <Name>Bankfull Buffer 50 Percent</Name>
-            <fileRef>bfBuffer01</fileRef>
+            <InputRef>bfBuffer01</InputRef>
           </ChannelPolygon>
         </ChannelPolygons>
         <StreamNetworks>
           <StreamNetwork>
             <Name>Stream Network</Name>
-            <fileRef>streamNetwork01</fileRef>
+            <InputRef>streamNetwork01</InputRef>
           </StreamNetwork>
         </StreamNetworks>
       </Inputs>
