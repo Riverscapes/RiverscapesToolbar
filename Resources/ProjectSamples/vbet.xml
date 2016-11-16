@@ -20,7 +20,6 @@
     <Raster id="SLOPE4235" Guid="241cdf2a-a397-4fd7-acd2-de0869ed4662">
       <Name>Slope</Name>
       <Path>01_Inputs/01_Topo/Slope/Slope1.img</Path>
-      <BasePath>01_Inputs/01_Topo/Slope/Slope1</BasePath>
     </Raster>
 
     <Raster id="FLOW4235" Guid="241cdf2a-a397-4fd7-acd2-de0869ed4662">
@@ -44,8 +43,6 @@
 
   </Inputs>
 
-  <!-- We need to track history. I'm not sold on the name "Realization" but we need this concept in every 
-  project (I think) -->
   <Realizations>
     <VBET DateCreated="2016-07-08T23:49:51" ProductVersion="1.4.0" Guid="241cdf2a-a397-4fd7-acd2-de0869ed4662">
   

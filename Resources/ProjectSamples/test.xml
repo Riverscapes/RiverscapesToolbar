@@ -1,0 +1,51 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Project Guid="970EA1CB-B628-4EEC-BCF0-96DE592331B1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="XSD/v1/Project.xsd">
+  <Name>Sample V-BET Project</Name>
+  <ProjectType>V-BET</ProjectType>
+  <MetaData>
+    <Meta Name="HUC8ID">17060107</Meta>
+    <Meta Name="HUC8NAME">Lower Snake-Tucannon</Meta>
+  </MetaData>
+  <Inputs>
+    <Raster id="DEM001">
+      <Name>DEM</Name>
+      <fileRef>01_Inputs/01_Topo/DEM_001/Goose_Raft_DEM_10m.tif</fileRef>
+    </Raster>
+    <Vector id="Network001">
+      <Name>Network</Name>
+      <Path>01_Inputs/02_Network/Network_001/NHD_Goose_Perennial.shp</Path>
+    </Vector>
+  </Inputs>
+  <Realizations>
+    <VBET DateCreated="2016-11-08T10:36:47" Guid="F9734569-A0CA-4860-9BE0-7D01624449F7" ProductVersion="0.1">
+      <Name>VBET realization 1</Name>
+      <Parameters>
+        <Param Name="lg_buf">500</Param>
+        <Param Name="med_buf">150</Param>
+        <Param Name="sm_buf">25</Param>
+      </Parameters>
+      <Inputs>
+        <Input>
+          <Name>DEM</Name>
+          <Path />
+          <fileRef>DEM001</fileRef>
+        </Input>
+        <Input>
+          <Name>Network</Name>
+          <Path />
+          <fileRef>Network001</fileRef>
+        </Input>
+      </Inputs>
+      <Analysis>
+        <Outputs>
+        <Output>
+          <Valley Bottom>
+            <Path>02_Analyses/Output_001/Tucannon_VBET_edited.shp</Path>
+          </Valley Bottom>
+        </Output>
+        </Outputs>
+      </Analysis>
+    </VBET>
+  </Realizations>
+</Project>

@@ -19,14 +19,14 @@
         <Path>inputs\confinements\valley_bottom_polygon\valley_bottom_polygon_01\USal_valleybottom.shp</Path>
       </Vector>
 
-      <!--Case 2: External project, local file not a program-->
+      <!--Case 2: External project, local file (not a program)-->
       <Vector id="valleybottom01">
         <Name>USal_valley_bottom</Name>
         <ProjectLink>Sample_VBET_Project</ProjectLink>
         <Path>inputs\confinements\valley_bottom_polygon\valley_bottom_polygon_01\USal_valleybottom.shp</Path>
       </Vector>
 
-     <!--Case 3: External program-->
+     <!--Case 3: External program -->
       <VBET id="valleybottom01">
         <RelativePath>s3://something/soemthing/something/VBET/Sample_VBET_Project/vbet3.xml</RelativePath>
         <OutputNodeXPath>//Project/Realizations/VBET[@promoted='TRUE']/Analysis/Outputs/Vector[@id='ValleyBottom']</OutputNodeXPath>
@@ -36,7 +36,7 @@
 
 
 
-      <!--Context Layers-->
+      <!-- Context Layers -->
       <Vector id="ecoregions01" Guid="">
         <Name>Eco Regions</Name>
         <Path>analyses\context\layers\UpperSalmon_eco_L4.shp</Path>
@@ -49,6 +49,9 @@
         <Name>Hillshade</Name>
         <Path>analyses\context\layers\hillshade\Upper_Salmon_Hillshade.tif</Path>
       </Vector>
+
+
+
     </Inputs>
 
 
@@ -62,16 +65,16 @@
 
         <!--Inputs refer to the files defined at the top of the file-->
         <Inputs>
-          <DrainageNetworks GUID="241cdf2a-a397-4fd7-acd2-de0869ed4662">
+          <DrainageNetworks Guid="241cdf2a-a397-4fd7-acd2-de0869ed4662">
             <Network>
-              <fileRef>drainageNetwork01</fileRef>
+              <InputRef>drainageNetwork01</InputRef>
               <Buffers>
                 <Buffer>
-                  <fileRef>USal_500m</fileRef>
+                  <InputRef>USal_500m</InputRef>
                 </Buffer>
               </Buffers>
               <ValleyBottom>
-                <fileRef>valleybottom01</fileRef>
+                <InputRef>valleybottom01</InputRef>
               </ValleyBottom>
             </Network>
           </DrainageNetworks>

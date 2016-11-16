@@ -18,7 +18,6 @@
       <xs:element type="MetaDataType" name="MetaData"/>
       <xs:element type="InputsType" name="Inputs"/>
       <xs:element type="RealizationsType" name="Realizations"/>
-      <xs:element type="AnalysesType" name="Analyses" minOccurs="0"/>
     </xs:sequence>
     <xs:attribute type="xs:string" name="type"/>
   </xs:complexType>
@@ -61,12 +60,6 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="AnalysesType">
-    <xs:sequence>
-      <xs:element type="AnalysisType" name="Analysis" maxOccurs="unbounded" minOccurs="0"/>
-    </xs:sequence>
-  </xs:complexType>
-
   <xs:complexType name="ParamType">
     <xs:simpleContent>
       <xs:extension base="xs:string">
@@ -99,6 +92,7 @@
       <xs:element type="xs:string" name="Value"/>
       <xs:element type="RasterType" name="Raster"/>
       <xs:element type="VectorType" name="Vector"/>
+      <xs:element type="FigType" name="Fig"/>
       <xs:element type="DEMType" name="DEM"/>
       <xs:element type="HillShadeType" name="HillShade"/>
     </xs:choice>
@@ -109,7 +103,17 @@
     <xs:sequence>
       <xs:element type="xs:string" name="Name" minOccurs="0"/>
       <xs:element type="xs:string" name="Path" minOccurs="0"/>
-      <xs:element type="xs:string" name="BasePath" minOccurs="0"/>
+      <xs:element type="xs:string" name="InputRef" minOccurs="0"/>
+      <xs:element type="MetaDataType" name="MetaData" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute type="xs:string" name="id"/>
+    <xs:attribute type="xs:string" name="Guid"/>
+  </xs:complexType>
+
+  <xs:complexType name="SimpleFile">
+    <xs:sequence>
+      <xs:element type="xs:string" name="Name" minOccurs="0"/>
+      <xs:element type="xs:string" name="Path" minOccurs="0"/>
       <xs:element type="xs:string" name="InputRef" minOccurs="0"/>
       <xs:element type="MetaDataType" name="MetaData" minOccurs="0"/>
     </xs:sequence>
@@ -120,6 +124,12 @@
   <xs:complexType name="RasterType">
     <xs:complexContent>
       <xs:extension base="GeoSpatialType"/>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <xs:complexType name="FigType">
+    <xs:complexContent>
+      <xs:extension base="SimpleFile"/>
     </xs:complexContent>
   </xs:complexType>
 
@@ -150,6 +160,9 @@
       <xs:element type="NREIType" name="NREI" maxOccurs="unbounded" minOccurs="0"/>
       <xs:element type="RiverStylesType" name="RiverStyles" maxOccurs="unbounded" minOccurs="0"/>
       <xs:element type="ConfinementType" name="Confinement" maxOccurs="unbounded" minOccurs="0"/>
+
+      <xs:element type="GUTType" name="GUT" maxOccurs="unbounded" minOccurs="0"/>
+      <xs:element type="FHMType" name="FHM" maxOccurs="unbounded" minOccurs="0"/>
     </xs:choice>
   </xs:complexType>
 
@@ -388,6 +401,41 @@
     </xs:sequence>
   </xs:complexType>
 
+  <!-- =========================================================================
+
+    Project: GUT
+
+  ============================================================================== -->
+  <xs:complexType name="GUTType">
+    <xs:complexContent>
+      <xs:extension base="RealizationType"/>
+    </xs:complexContent>
+    <xs:sequence>
+      <xs:element type="InputsType" name="Inputs" minOccurs="0"/>
+      <xs:element type="GUTAnalysisType" name="Analysis" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="GUTAnalysisType">
+    <xs:sequece>
+      <xs:element type="GUTOutputsContainerType" name="Outputs"/>
+    </xs:sequece>
+  </xs:complexType>
+
+  <xs:complexType name="GUTOutputsContainerType">
+    <xs:sequece>
+      <xs:element type="GUTOutputsType" name="InChannel"/>
+      <xs:element type="GUTOutputsType" name="OutChannel"/>
+    </xs:sequece>
+  </xs:complexType>
+
+  <xs:complexType name="GUTOutputsType">
+    <xs:sequece>
+      <xs:element type="VectorType" name="Tier1"/>
+      <xs:element type="VectorType" name="Tier2"/>
+      <xs:element type="VectorType" name="Tier3"/>
+    </xs:sequece>
+  </xs:complexType>
 
   <!-- =========================================================================
 
@@ -416,6 +464,45 @@
   <xs:complexType name="GCDAnalysisType">
     <xs:element type="xs:string" name="Name"/>
     <xs:element type="OutputsType" name="Outputs"/>
+  </xs:complexType>
+
+
+  <!-- =========================================================================
+
+    Project: FHM
+
+  ============================================================================== -->
+
+  <xs:complexType name="FHMType">
+    <xs:complexContent>
+      <xs:extension base="RealizationType"/>
+    </xs:complexContent>
+    <xs:sequence>
+      <xs:element type="InputsType" name="Inputs" minOccurs="0"/>
+      <xs:element type="FHMAnalysesType" name="Analyses" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="FHMAnalysesType">
+    <xs:sequece>
+      <xs:element type="FHMOutputsContainerType" name="Fuzzy"/>
+      <xs:element type="FHMOutputsContainerType" name="HSI"/>
+    </xs:sequece>
+  </xs:complexType>
+
+  <xs:complexType name="FHMOutputsContainerType">
+    <xs:sequece>
+      <xs:element type="FHMOutputsType" name="InChannel"/>
+      <xs:element type="FHMOutputsType" name="OutChannel"/>
+    </xs:sequece>
+  </xs:complexType>
+
+  <xs:complexType name="FHMOutputsType">
+    <xs:sequece>
+      <xs:element type="VectorType" name="Tier1"/>
+      <xs:element type="VectorType" name="Tier2"/>
+      <xs:element type="VectorType" name="Tier3"/>
+    </xs:sequece>
   </xs:complexType>
 
 </xs:schema>
