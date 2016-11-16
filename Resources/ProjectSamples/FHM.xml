@@ -2,8 +2,8 @@
 <Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:noNamespaceSchemaLocation="XSD/v1/Project.xsd">
 
-  <Name>My GUT NAME</Name>
-  <ProjectType>GUT</ProjectType>
+  <Name>My FHM PRoject NAME</Name>
+  <ProjectType>FHM</ProjectType>
 
   <MetaData>
     <Meta Name="year">2012</Meta>
