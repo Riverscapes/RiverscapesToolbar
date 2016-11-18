@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:noNamespaceSchemaLocation="XSD/v1/Project.xsd">
+  xsi:noNamespaceSchemaLocation="XSD/V1/Project.xsd">
 
   <Name>My GUT NAME</Name>
   <ProjectType>GUT</ProjectType>
@@ -71,34 +71,15 @@
       inputs specific to this realization they would be defined
       here instead of referencing them.-->
       <Inputs>
-        <DEM id="DEM">
-          <InputRef>DEM01</InputRef>
-        </DEM>
-        <Raster id="DETDEM">
-          <InputRef>DETDEM01</InputRef>
-        </Raster>
-        <Raster id="DEPTH">
-          <InputRef>DEPTH01</InputRef>
-        </Raster>
-
-        <Vector id="BFCL">
-          <InputRef>BFCL01</InputRef>
-        </Vector>
-        <Vector id="BFPOLY">
-          <InputRef>BFPOLY01</InputRef>
-        </Vector>
-        <Vector id="BFXS">
-          <InputRef>BFXS01</InputRef>
-        </Vector>
-        <Vector id="CHUNCLIP">
-          <InputRef>CHUNCLIP01</InputRef>
-        </Vector>
-        <Vector id="THALWEG">
-          <InputRef>THALWEG01</InputRef>
-        </Vector>
-        <Vector id="WETPOLY">
-          <InputRef>WEPOLY01</InputRef>
-        </Vector>
+        <Raster ref="DEM01"/>
+        <Raster ref="DETDEM01"/>
+        <Raster ref="DEPTH01"/>
+        <Raster ref="BFCL01"/>
+        <Raster ref="BFPOLY01"/>
+        <Raster ref="BFXS01"/>
+        <Raster ref="CHUNCLIP01"/>
+        <Raster ref="THALWEG01"/>
+        <Raster ref="WETPOLY01"/>
       </Inputs>
 
       <Analysis>

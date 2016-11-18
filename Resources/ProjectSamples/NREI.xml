@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:noNamespaceSchemaLocation="XSD/v1/Project.xsd">
+  xsi:noNamespaceSchemaLocation="XSD/V1/Project.xsd">
 
   <Name>CWB_0000001</Name>
   <ProjectType>NREI</ProjectType>
@@ -26,16 +26,9 @@
     <NREI Promoted="true" DateCreated="2016-07-08T23:49:51" ProductVersion="1.4.0" Guid="241cdf2a-a397-4fd7-acd2-de0869ed4662">
       <Name>2012 Visit 1029 Flow Q001</Name>
       <Inputs>
-        <Raster>
-          <Name>Depth</Name>
-          <InputRef>depth01</InputRef>
-        </Raster>
-        <Raster>
-          <Name>Velocity</Name>
-          <InputRef>velocity01</InputRef>
-        </Raster>
+        <Raster ref="depth01"/>
+        <Raster ref="velocity01"/>
       </Inputs>
-
       <Analysis>
         <Raster>
           <Name>NREI</Name>

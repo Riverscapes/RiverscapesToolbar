@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:noNamespaceSchemaLocation="XSD/v1/Project.xsd">
+         xsi:noNamespaceSchemaLocation="XSD/V1/Project.xsd">
 
   <Name>ConfinementProject1</Name>
   <ProjectType>Confinement</ProjectType>
@@ -37,50 +37,39 @@
     </HillShade>
 
     <!--Do we need a type for this?-->
-    <Raster id="nail01" Guid="">
+    <Raster id="NAIP01" Guid="">
       <Name>NAIP</Name>
-      <InputRef>some/path/to/NAIP.tif</InputRef>
+      <Path>link/to/naip</Path>
+      <Project>some/path/to/NAIP.tif</Project>
     </Raster>
 
   </Inputs>
 
   <Realizations>
     <!--Confinements is now its own realization type-->
-    <Confinement Promoted="true" ProductVersion="0.1" Guid="">
+    <Confinement DateCreated="" Promoted="true" ProductVersion="0.1" Guid="">
       <Name>Yankee Fork</Name>
-
-      <!--I didn't see any params in your XML-->
-      <Parameters>
-        <Param Name="someparam">Someval</Param>
-      </Parameters>
 
       <!--Metadata for just this realization (if applicable)-->
       <MetaData>
         <Meta Name="SomeMetaKey">someval</Meta>
       </MetaData>
 
+      <!--I didn't see any params in your XML-->
+      <Parameters>
+        <Param Name="someparam">Someval</Param>
+      </Parameters>
+
       <Inputs>
         <ValleyBottoms>
-          <ValleyBottom>
-            <Name>Valley Bottom 01</Name>
-            <InputRef>ValleyBottom01</InputRef>
-          </ValleyBottom>
-          <ValleyBottom>
-            <Name>Valley Bottom 02</Name>
-            <InputRef>ValleyBottom02</InputRef>
-          </ValleyBottom>
+          <ValleyBottom ref="ValleyBottom01"/>
+          <ValleyBottom ref="ValleyBottom02"/>
         </ValleyBottoms>
         <ChannelPolygons>
-          <ChannelPolygon>
-            <Name>Bankfull Buffer 50 Percent</Name>
-            <InputRef>bfBuffer01</InputRef>
-          </ChannelPolygon>
+          <ChannelPolygon ref="bfBuffer01"/>
         </ChannelPolygons>
         <StreamNetworks>
-          <StreamNetwork>
-            <Name>Stream Network</Name>
-            <InputRef>streamNetwork01</InputRef>
-          </StreamNetwork>
+          <StreamNetwork ref="streamNetwork01"/>
         </StreamNetworks>
       </Inputs>
 

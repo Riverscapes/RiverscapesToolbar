@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:noNamespaceSchemaLocation="XSD/v1/Project.xsd">
+         xsi:noNamespaceSchemaLocation="XSD/V1/Project.xsd">
 
   <Name>Sample_VBET_Project</Name>
   <ProjectType>VBET</ProjectType>
@@ -67,25 +67,15 @@
         <Param Name="min_area">30000</Param>
         <Param Name="min_hole">30000</Param>
       </Parameters>
+
       <Inputs>
         <Topography>
-          <DEM>
-            <Name>DEM</Name>
-            <InputRef>DEM1</InputRef>
-          </DEM>
-          <Flow>
-            <Name>Flow Accumulation</Name>
-            <InputRef>FLOW4235</InputRef>
-          </Flow>
-          <Slope>
-            <Name>Slope</Name>
-            <InputRef>SLOPE4235</InputRef>
-          </Slope>
+          <DEM ref="DEM1"/>
+          <Flow ref="FLOW4235"/>
+          <Slope ref="SLOPE4235"/>
         </Topography>
         <DrainageNetworks>
-          <Network>
-            <Name>Drainage Network 01</Name>
-            <InputRef>DN001</InputRef>
+          <Network ref="DN001">
             <Buffers>
               <Buffer>
                 <Name>Large Buffer</Name>
@@ -121,7 +111,7 @@
 
     </VBET>
 
-    <VBET DateCreated="2016-07-08T23:49:51" Guid="241cdf2a-a397-4fd7-acd2-de0869ed4662">
+    <VBET ProductVersion="" DateCreated="2016-07-08T23:49:51" Guid="241cdf2a-a397-4fd7-acd2-de0869ed4662">
       <Name>My Second Realization</Name>
 
     </VBET>
@@ -129,4 +119,3 @@
   </Realizations>
 
 </Project>
-

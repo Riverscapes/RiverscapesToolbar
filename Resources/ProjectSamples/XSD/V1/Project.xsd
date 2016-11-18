@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:element name="Project" type="ProjectType"/>
 
   <!-- =========================================================================
@@ -13,46 +14,42 @@
   <!-- Top Leve item: Here's where the overall project gets Defined -->
   <xs:complexType name="ProjectType">
     <xs:sequence>
-      <xs:element type="xs:string" name="Name"/>
-      <xs:element type="xs:string" name="ProjectType"/>
-      <xs:element type="MetaDataType" name="MetaData"/>
-      <xs:element type="InputsType" name="Inputs"/>
-      <xs:element type="RealizationsType" name="Realizations"/>
+      <xs:element type="xs:string" name="Name" minOccurs="1" maxOccurs="1"/>
+      <xs:element type="xs:string" name="ProjectType" minOccurs="1" maxOccurs="1"/>
+      <xs:element type="MetaDataType" name="MetaData" minOccurs="1" maxOccurs="1"/>
+      <xs:element type="DataSetContainerType" name="Inputs" minOccurs="1" maxOccurs="1"/>
+      <xs:element type="RealizationsType" name="Realizations" minOccurs="1" maxOccurs="1"/>
     </xs:sequence>
-    <xs:attribute type="xs:string" name="type"/>
   </xs:complexType>
 
   <!-- A Project can have realizations -->
   <xs:complexType name="RealizationType" mixed="true">
     <xs:sequence>
-      <xs:element type="xs:string" name="Name"/>
-      <xs:element type="ParametersType" name="Parameters" minOccurs="0"/>
-      <xs:element type="MetaDataType" name="MetaData" minOccurs="0"/>
+      <xs:element type="xs:string" name="Name" minOccurs="1" maxOccurs="1"/>
+      <xs:element type="MetaDataType" name="MetaData" minOccurs="0" maxOccurs="1"/>
+      <xs:element type="ParametersType" name="Parameters" minOccurs="0" maxOccurs="1"/>
     </xs:sequence>
     <xs:attribute type="xs:boolean" name="Promoted" use="optional"/>
-    <xs:attribute type="xs:string" name="DateCreated" use="optional"/>
-    <xs:attribute type="xs:string" name="ProductVersion" use="optional"/>
-    <xs:attribute type="xs:string" name="Guid" use="optional"/>
+    <xs:attribute type="xs:string" name="DateCreated" use="required"/>
+    <xs:attribute type="xs:string" name="ProductVersion" use="required"/>
+    <xs:attribute type="xs:string" name="Guid" use="required"/>
   </xs:complexType>
 
   <!--Realizations Must have an Analysis-->
   <xs:complexType name="AnalysisType" mixed="true">
     <xs:sequence>
       <xs:element type="xs:string" name="Name"/>
-      <xs:element type="OutputsType" name="Outputs" minOccurs="0"/>
+      <xs:element type="DataSetContainerType" name="Outputs" minOccurs="0"/>
     </xs:sequence>
   </xs:complexType>
 
-  <!-- The things that go in the plural containers -->
   <xs:complexType name="MetaType">
     <xs:simpleContent>
       <xs:extension base="xs:string">
-        <xs:attribute type="xs:string" name="Name" use="optional"/>
+        <xs:attribute type="xs:string" name="Name" use="required"/>
       </xs:extension>
     </xs:simpleContent>
   </xs:complexType>
-
-  <!-- These are Just Plural Containers for things -->
 
   <xs:complexType name="MetaDataType">
     <xs:sequence>
@@ -63,7 +60,7 @@
   <xs:complexType name="ParamType">
     <xs:simpleContent>
       <xs:extension base="xs:string">
-        <xs:attribute type="xs:string" name="Name" use="optional"/>
+        <xs:attribute type="xs:string" name="Name" use="required"/>
       </xs:extension>
     </xs:simpleContent>
   </xs:complexType>
@@ -74,62 +71,72 @@
     </xs:sequence>
   </xs:complexType>
 
+  <!-- =========================================================================
 
-  <!-- Let's define our Input/Output Data Types-->
-  <xs:complexType name="InputsType">
+    Datasets: Inputs, Outputs, files etc....
+
+  ============================================================================== -->
+
+  <!-- Let's define our Input/Output Containers and what they can contain -->
+  <xs:complexType name="DataSetContainerType">
     <xs:choice maxOccurs="unbounded" minOccurs="0">
+      <!-- A scalar value is possible as an input or an output but use <Params> if you can -->
       <xs:element type="xs:string" name="Value"/>
       <xs:element type="RasterType" name="Raster"/>
       <xs:element type="VectorType" name="Vector"/>
+      <xs:element type="TINType" name="TIN"/>
       <xs:element type="DEMType" name="DEM"/>
       <xs:element type="HillShadeType" name="HillShade"/>
     </xs:choice>
   </xs:complexType>
 
-  <!--Outputs Type-->
-  <xs:complexType name="OutputsType">
-    <xs:choice maxOccurs="unbounded" minOccurs="0">
-      <xs:element type="xs:string" name="Value"/>
-      <xs:element type="RasterType" name="Raster"/>
-      <xs:element type="VectorType" name="Vector"/>
-      <xs:element type="FigType" name="Fig"/>
-      <xs:element type="DEMType" name="DEM"/>
-      <xs:element type="HillShadeType" name="HillShade"/>
-    </xs:choice>
+  <!-- The base type  -->
+  <xs:complexType name="DataSetType" mixed="true">
+    <xs:sequence>
+      <xs:element type="xs:string" name="Name" minOccurs="0" maxOccurs="1"/>
+      <!--Path is ALWAYS relative inside a project-->
+      <xs:element type="xs:string" name="Path" minOccurs="0" maxOccurs="1"/>
+      <xs:element type="xs:string" name="Project" minOccurs="0" maxOccurs="1"/>
+      <xs:element type="MetaDataType" name="MetaData" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+    <xs:attribute type="xs:string" name="id"/>
+    <xs:attribute type="xs:string" name="Guid"/>
+    <xs:attribute type="xs:string" name="ref"/>
   </xs:complexType>
 
-  <!-- Now let's define some types -->
+  <!-- Now some Subtypes -->
   <xs:complexType name="GeoSpatialType">
-    <xs:sequence>
-      <xs:element type="xs:string" name="Name" minOccurs="0"/>
-      <xs:element type="xs:string" name="Path" minOccurs="0"/>
-      <xs:element type="xs:string" name="InputRef" minOccurs="0"/>
-      <xs:element type="MetaDataType" name="MetaData" minOccurs="0"/>
-    </xs:sequence>
-    <xs:attribute type="xs:string" name="id"/>
-    <xs:attribute type="xs:string" name="Guid"/>
+    <xs:complexContent>
+      <xs:extension base="DataSetType"/>
+    </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="SimpleFile">
-    <xs:sequence>
-      <xs:element type="xs:string" name="Name" minOccurs="0"/>
-      <xs:element type="xs:string" name="Path" minOccurs="0"/>
-      <xs:element type="xs:string" name="InputRef" minOccurs="0"/>
-      <xs:element type="MetaDataType" name="MetaData" minOccurs="0"/>
-    </xs:sequence>
-    <xs:attribute type="xs:string" name="id"/>
-    <xs:attribute type="xs:string" name="Guid"/>
+  <xs:complexType name="ContextLayerType" mixed="true">
+    <xs:complexContent>
+      <xs:extension base="DataSetType">
+        <xs:sequence>
+          <xs:element type="xs:string" name="URL" default="http://" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
+  <xs:complexType name="SimpleFileType">
+    <xs:complexContent>
+      <xs:extension base="DataSetType"/>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <!-- Here are the GeoSpatial Types-->
   <xs:complexType name="RasterType">
     <xs:complexContent>
       <xs:extension base="GeoSpatialType"/>
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="FigType">
+  <xs:complexType name="TINType">
     <xs:complexContent>
-      <xs:extension base="SimpleFile"/>
+      <xs:extension base="GeoSpatialType"/>
     </xs:complexContent>
   </xs:complexType>
 
@@ -139,19 +146,38 @@
     </xs:complexContent>
   </xs:complexType>
 
+  <!-- DEMs extend rasters -->
   <xs:complexType name="DEMType">
     <xs:complexContent>
-      <xs:extension base="GeoSpatialType"/>
+      <xs:extension base="RasterType"/>
     </xs:complexContent>
   </xs:complexType>
 
+  <!-- Here are our context layers -->
   <xs:complexType name="HillShadeType">
     <xs:complexContent>
-      <xs:extension base="GeoSpatialType"/>
+      <xs:extension base="ContextLayerType"/>
     </xs:complexContent>
   </xs:complexType>
 
+  <!-- Simple file types that we use often -->
+  <xs:complexType name="CSVType">
+    <xs:complexContent>
+      <xs:extension base="SimpleFileType"/>
+    </xs:complexContent>
+  </xs:complexType>
 
+  <xs:complexType name="ImageType">
+    <xs:complexContent>
+      <xs:extension base="SimpleFileType"/>
+    </xs:complexContent>
+  </xs:complexType>
+
+  <!-- =========================================================================
+
+    Realizations: This is where things get custom for each type of thing.
+
+  ============================================================================== -->
 
   <xs:complexType name="RealizationsType">
     <xs:choice>
@@ -160,7 +186,6 @@
       <xs:element type="NREIType" name="NREI" maxOccurs="unbounded" minOccurs="0"/>
       <xs:element type="RiverStylesType" name="RiverStyles" maxOccurs="unbounded" minOccurs="0"/>
       <xs:element type="ConfinementType" name="Confinement" maxOccurs="unbounded" minOccurs="0"/>
-
       <xs:element type="GUTType" name="GUT" maxOccurs="unbounded" minOccurs="0"/>
       <xs:element type="FHMType" name="FHM" maxOccurs="unbounded" minOccurs="0"/>
     </xs:choice>
@@ -172,27 +197,16 @@
 
   ============================================================================== -->
 
-  <xs:complexType name="VBETType">
+  <xs:complexType name="VBETType" mixed="true">
     <xs:complexContent>
-      <xs:extension base="RealizationType"/>
+      <xs:extension base="RealizationType">
+        <xs:sequence>
+          <xs:element type="VBETInputType" name="Inputs" minOccurs="0"/>
+          <xs:element type="VBETAnalysisType" name="Analysis" minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
     </xs:complexContent>
-    <xs:sequence>
-      <xs:element type="GCDInputType" name="Inputs" minOccurs="0"/>
-      <xs:element type="GCDAnalysisType" name="Analysis" minOccurs="0"/>
-    </xs:sequence>
-    <xs:sequence>
-
-    </xs:sequence>
   </xs:complexType>
-
-  <xs:complexType name="VBETType">
-    <xs:sequence>
-      <xs:element type="ParametersType" name="Parameters" minOccurs="0"/>
-      <xs:element type="VBETInputType" name="Inputs" minOccurs="0"/>
-      <xs:element type="VBETAnalysisType" name="Analysis" minOccurs="0"/>
-    </xs:sequence>
-  </xs:complexType>
-
 
   <xs:complexType name="VBETInputType">
     <xs:sequence>
@@ -215,22 +229,27 @@
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="VBETInputDrainageNetworkType">
+  <xs:complexType name="VBETInputDrainageNetworkType" mixed="true">
     <xs:complexContent>
-      <xs:extension base="VectorType"/>
-      <xs:element type="VBETBufferType" name="Buffers"/>
+      <xs:extension base="VectorType">
+        <xs:sequence>
+          <xs:element type="VBETBufferType" name="Buffers"/>
+        </xs:sequence>
+      </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="VBETBufferType">
     <xs:sequence>
-      <xs:element type="VectorType" name="Buffer"/>
+      <xs:element type="VectorType" name="Buffer" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="VBETAnalysisType">
-    <xs:element type="xs:string" name="Name"/>
-    <xs:element type="OutputsType" name="Outputs"/>
+    <xs:sequence>
+      <xs:element type="xs:string" name="Name"/>
+      <xs:element type="DataSetContainerType" name="Outputs"/>
+    </xs:sequence>
   </xs:complexType>
 
 
@@ -240,14 +259,15 @@
 
   ============================================================================== -->
 
-  <xs:complexType name="NREIType">
+  <xs:complexType name="NREIType" mixed="true">
     <xs:complexContent>
-      <xs:extension base="RealizationType"/>
+      <xs:extension base="RealizationType">
+        <xs:sequence>
+          <xs:element type="DataSetContainerType" name="Inputs" minOccurs="0"/>
+          <xs:element type="DataSetContainerType" name="Analysis" minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
     </xs:complexContent>
-    <xs:sequence>
-      <xs:element type="InputsType" name="Inputs" minOccurs="0"/>
-      <xs:element type="OutputsType" name="Analysis" minOccurs="0"/>
-    </xs:sequence>
   </xs:complexType>
 
   <!-- =========================================================================
@@ -256,14 +276,15 @@
 
   ============================================================================== -->
 
-  <xs:complexType name="ConfinementType">
+  <xs:complexType name="ConfinementType" mixed="true">
     <xs:complexContent>
-      <xs:extension base="RealizationType"/>
+      <xs:extension base="RealizationType">
+        <xs:sequence>
+          <xs:element type="ConfinementInputType" name="Inputs" minOccurs="0"/>
+          <xs:element type="ConfinementAnalysisType" name="Analysis" minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
     </xs:complexContent>
-    <xs:sequence>
-      <xs:element type="ConfinementInputType" name="Inputs" minOccurs="0"/>
-      <xs:element type="ConfinementAnalysisType" name="Analysis" minOccurs="0"/>
-    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="ConfinementInputType">
@@ -276,7 +297,7 @@
 
   <xs:complexType name="ValleyBottomsType">
     <xs:sequence>
-      <xs:element type="VectorType" name="ValleyBottom"/>
+      <xs:element type="VectorType" name="ValleyBottom" minOccurs="1" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 
@@ -293,42 +314,46 @@
   </xs:complexType>
 
   <xs:complexType name="ConfinementAnalysisType">
-    <xs:element type="xs:string" name="Name"/>
-    <xs:element type="ConfinementOutputsType" name="Outputs"/>
+    <xs:sequence>
+      <xs:element type="xs:string" name="Name"/>
+      <xs:element type="ConfinementOutputsType" name="Outputs"/>
+    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="ConfinementOutputsType">
     <xs:sequence>
-       <xs:element type="VectorType" name="ConfiningMargins"/>
-       <xs:element type="VectorType" name="RawConfiningState"/>
+      <xs:element type="VectorType" name="ConfiningMargins"/>
+      <xs:element type="VectorType" name="RawConfiningState"/>
       <xs:element type="MovingWindowsType" name="MovingWindows"/>
       <xs:element type="FixedSegmentsType" name="FixedSegments"/>
     </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="MovingWindowsType">
-    <xs:element type="xs:string" name="Name"/>
-    <xs:element type="ConfinementWindowType" name="Window"/>
+    <xs:sequence>
+      <xs:element type="ConfinementWindowType" name="Window"/>
+    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="ConfinementWindowType">
     <xs:sequence>
       <xs:element type="xs:string" name="Name"/>
-       <xs:element type="VectorType" name="SeedPointile"/>
-       <xs:element type="VectorType" name="MovingWindow"/>
+      <xs:element type="VectorType" name="SeedPointile"/>
+      <xs:element type="VectorType" name="MovingWindow"/>
     </xs:sequence>
     <xs:attribute type="xs:string" name="id"/>
   </xs:complexType>
 
   <xs:complexType name="FixedSegmentsType">
-    <xs:element type="xs:string" name="Name"/>
-    <xs:element type="ConfinementSegmentType" name="Segment"/>
+    <xs:sequence>
+      <xs:element type="ConfinementSegmentType" name="Segment"/>
+    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="ConfinementSegmentType">
     <xs:sequence>
       <xs:element type="xs:string" name="Name"/>
-       <xs:element type="VectorType" name="ConfinementSegments"/>
+      <xs:element type="VectorType" name="ConfinementSegments"/>
     </xs:sequence>
     <xs:attribute type="xs:string" name="id"/>
   </xs:complexType>
@@ -339,14 +364,15 @@
 
   ============================================================================== -->
 
-  <xs:complexType name="RiverStylesType">
+  <xs:complexType name="RiverStylesType" mixed="true">
     <xs:complexContent>
-      <xs:extension base="RealizationType"/>
+      <xs:extension base="RealizationType">
+        <xs:sequence>
+          <xs:element type="RiverStylesInputType" name="Inputs" minOccurs="0"/>
+          <xs:element type="RiverStylesAnalysisType" name="Analysis" minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
     </xs:complexContent>
-    <xs:sequence>
-      <xs:element type="RiverStylesInputType" name="Inputs" minOccurs="0"/>
-      <xs:element type="RiverStylesAnalysisType" name="Analysis" minOccurs="0"/>
-    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="RiverStylesInputType">
@@ -362,11 +388,14 @@
     <xs:attribute type="xs:string" name="Guid" use="optional"/>
   </xs:complexType>
 
-  <xs:complexType name="RiverStylesInputDrainageNetworkType">
+  <xs:complexType name="RiverStylesInputDrainageNetworkType" mixed="true">
     <xs:complexContent>
-      <xs:extension base="VectorType"/>
-      <xs:element type="VBETBufferType" name="Buffers"/>
-      <xs:element type="ValleyBottomType" name="ValleyBottom"/>
+      <xs:extension base="VectorType">
+        <xs:sequence>
+          <xs:element type="VBETBufferType" name="Buffers"/>
+          <xs:element type="ValleyBottomType" name="ValleyBottom"/>
+        </xs:sequence>
+      </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
@@ -377,21 +406,21 @@
   </xs:complexType>
 
   <xs:complexType name="RiverStylesConfinementType">
-    <xs:sequece>
+    <xs:sequence>
       <xs:element type="VectorType" name="Confinement"/>
-    </xs:sequece>
+    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="RiverStylesReachType">
-    <xs:sequece>
+    <xs:sequence>
       <xs:element type="ManualCrossChecksType" name="ManualCrossChecks"/>
-    </xs:sequece>
+    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="ManualCrossChecksType">
-    <xs:sequece>
+    <xs:sequence>
       <xs:element type="VectorType" name="ManualCrossCheck"/>
-    </xs:sequece>
+    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="RiverStylesAnalysisType">
@@ -406,35 +435,34 @@
     Project: GUT
 
   ============================================================================== -->
-  <xs:complexType name="GUTType">
+  <xs:complexType name="GUTType" mixed="true">
     <xs:complexContent>
-      <xs:extension base="RealizationType"/>
-    </xs:complexContent>
-    <xs:sequence>
-      <xs:element type="InputsType" name="Inputs" minOccurs="0"/>
+      <xs:extension base="RealizationType">    <xs:sequence>
+      <xs:element type="DataSetContainerType" name="Inputs" minOccurs="0"/>
       <xs:element type="GUTAnalysisType" name="Analysis" minOccurs="0"/>
-    </xs:sequence>
+    </xs:sequence></xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="GUTAnalysisType">
-    <xs:sequece>
+    <xs:sequence>
       <xs:element type="GUTOutputsContainerType" name="Outputs"/>
-    </xs:sequece>
+    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="GUTOutputsContainerType">
-    <xs:sequece>
+    <xs:sequence>
       <xs:element type="GUTOutputsType" name="InChannel"/>
       <xs:element type="GUTOutputsType" name="OutChannel"/>
-    </xs:sequece>
+    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="GUTOutputsType">
-    <xs:sequece>
+    <xs:sequence>
       <xs:element type="VectorType" name="Tier1"/>
       <xs:element type="VectorType" name="Tier2"/>
       <xs:element type="VectorType" name="Tier3"/>
-    </xs:sequece>
+    </xs:sequence>
   </xs:complexType>
 
   <!-- =========================================================================
@@ -443,14 +471,13 @@
 
   ============================================================================== -->
 
-  <xs:complexType name="DoDType">
+  <xs:complexType name="DoDType" mixed="true">
     <xs:complexContent>
-      <xs:extension base="RealizationType"/>
-    </xs:complexContent>
-    <xs:sequence>
+      <xs:extension base="RealizationType">    <xs:sequence>
       <xs:element type="GCDInputType" name="Inputs" minOccurs="0"/>
       <xs:element type="GCDAnalysisType" name="Analysis" minOccurs="0"/>
-    </xs:sequence>
+    </xs:sequence></xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
 
@@ -462,8 +489,10 @@
   </xs:complexType>
 
   <xs:complexType name="GCDAnalysisType">
-    <xs:element type="xs:string" name="Name"/>
-    <xs:element type="OutputsType" name="Outputs"/>
+    <xs:sequence>
+      <xs:element type="xs:string" name="Name"/>
+      <xs:element type="DataSetContainerType" name="Outputs"/>
+    </xs:sequence>
   </xs:complexType>
 
 
@@ -473,36 +502,38 @@
 
   ============================================================================== -->
 
-  <xs:complexType name="FHMType">
+  <xs:complexType name="FHMType" mixed="true">
     <xs:complexContent>
-      <xs:extension base="RealizationType"/>
-    </xs:complexContent>
-    <xs:sequence>
-      <xs:element type="InputsType" name="Inputs" minOccurs="0"/>
+      <xs:extension base="RealizationType">
+        <xs:sequence>    <xs:sequence>
+      <xs:element type="DataSetContainerType" name="Inputs" minOccurs="0"/>
       <xs:element type="FHMAnalysesType" name="Analyses" minOccurs="0"/>
-    </xs:sequence>
+    </xs:sequence></xs:sequence>
+
+      </xs:extension>
+    </xs:complexContent>
   </xs:complexType>
 
   <xs:complexType name="FHMAnalysesType">
-    <xs:sequece>
+    <xs:sequence>
       <xs:element type="FHMOutputsContainerType" name="Fuzzy"/>
       <xs:element type="FHMOutputsContainerType" name="HSI"/>
-    </xs:sequece>
+    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="FHMOutputsContainerType">
-    <xs:sequece>
+    <xs:sequence>
       <xs:element type="FHMOutputsType" name="InChannel"/>
       <xs:element type="FHMOutputsType" name="OutChannel"/>
-    </xs:sequece>
+    </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="FHMOutputsType">
-    <xs:sequece>
+    <xs:sequence>
       <xs:element type="VectorType" name="Tier1"/>
       <xs:element type="VectorType" name="Tier2"/>
       <xs:element type="VectorType" name="Tier3"/>
-    </xs:sequece>
+    </xs:sequence>
   </xs:complexType>
 
 </xs:schema>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:noNamespaceSchemaLocation="XSD/Project.xsd">
+  xsi:noNamespaceSchemaLocation="XSD/V1/Project.xsd">
 
   <Name>ENT00001Mad23</Name>
   <ProjectType>GCD</ProjectType>
@@ -29,7 +29,7 @@ t1 - t0: 01_01_2013 - 01_01_2011</Meta>
   </MetaData>
 
   <Inputs>
-    <DEMSurvey>
+    <DEM>
       <DEMSurveyID>1</DEMSurveyID>
       <Name>2014 (VisitID 2529)</Name>
       <Source>inputs\2014VisitID2529\2014VisitID2529.tif</Source>
@@ -139,7 +139,7 @@ t1 - t0: 01_01_2013 - 01_01_2011</Meta>
           <FIS />
         </FISInputs>
       </ErrorSurface>
-    </DEMSurvey>
+    </DEM>
   </Inputs>
 
   <Realizations>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:noNamespaceSchemaLocation="XSD/v1/Project.xsd">
+  xsi:noNamespaceSchemaLocation="XSD/V1/Project.xsd">
 
   <Name>My FHM PRoject NAME</Name>
   <ProjectType>FHM</ProjectType>
@@ -37,24 +37,35 @@
       </Parameters>
 
       <Inputs>
-        <Raster id="Depth">
-          <InputRef>DEPTH01</InputRef>
-        </Raster>
-        <Raster id="Velocity">
-          <InputRef>VELOCITY01</InputRef>
-        </Raster>
-        <Raster id="GrainSize">
-          <InputRef>GRAINSIZE01</InputRef>
-        </Raster>
+        <Raster ref="DEPTH01"/>
+        <Raster ref="VELOCITY01"/>
+        <Raster ref="GRAINSIZE01"/>
       </Inputs>
 
       <Analyses>
         <Fuzzy>
-
-
+          <InChannel>
+            <Tier1></Tier1>
+            <Tier2></Tier2>
+            <Tier3></Tier3>
+          </InChannel>
+          <OutChannel>
+            <Tier1></Tier1>
+            <Tier2></Tier2>
+            <Tier3></Tier3>
+          </OutChannel>
         </Fuzzy>
         <HSI>
-
+          <InChannel>
+            <Tier1></Tier1>
+            <Tier2></Tier2>
+            <Tier3></Tier3>
+          </InChannel>
+          <OutChannel>
+            <Tier1></Tier1>
+            <Tier2></Tier2>
+            <Tier3></Tier3>
+          </OutChannel>
         </HSI>
       </Analyses>
     </FHM>
