@@ -71,6 +71,20 @@
     </xs:sequence>
   </xs:complexType>
 
+  <xs:complexType name="MetricType">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute type="xs:string" name="Name" use="required"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+
+  <xs:complexType name="MetricsType">
+    <xs:sequence>
+      <xs:element type="MetricType" name="Metric" maxOccurs="unbounded" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+
   <!-- =========================================================================
 
     Datasets: Inputs, Outputs, files etc....
@@ -507,32 +521,24 @@
       <xs:extension base="RealizationType">
         <xs:sequence>    <xs:sequence>
       <xs:element type="DataSetContainerType" name="Inputs" minOccurs="0"/>
-      <xs:element type="FHMAnalysesType" name="Analyses" minOccurs="0"/>
+      <xs:element type="FHMAnalysisType" name="Analysis" minOccurs="0"/>
     </xs:sequence></xs:sequence>
 
       </xs:extension>
     </xs:complexContent>
   </xs:complexType>
 
-  <xs:complexType name="FHMAnalysesType">
+  <xs:complexType name="FHMAnalysisType">
     <xs:sequence>
-      <xs:element type="FHMOutputsContainerType" name="Fuzzy"/>
-      <xs:element type="FHMOutputsContainerType" name="HSI"/>
-    </xs:sequence>
-  </xs:complexType>
-
-  <xs:complexType name="FHMOutputsContainerType">
-    <xs:sequence>
-      <xs:element type="FHMOutputsType" name="InChannel"/>
-      <xs:element type="FHMOutputsType" name="OutChannel"/>
+      <xs:element type="MetricsType" name="Metrics"/>
+      <xs:element type="FHMOutputsType" name="Outputs"/>
     </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="FHMOutputsType">
     <xs:sequence>
-      <xs:element type="VectorType" name="Tier1"/>
-      <xs:element type="VectorType" name="Tier2"/>
-      <xs:element type="VectorType" name="Tier3"/>
+      <xs:element type="ImageType" name="Image"/>
+      <xs:element type="RasterType" name="Raster"/>
     </xs:sequence>
   </xs:complexType>
 
