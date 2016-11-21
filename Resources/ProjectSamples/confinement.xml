@@ -2,116 +2,123 @@
 <Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="XSD/V1/Project.xsd">
 
-    <Name>ConfinementTestProject</Name>
-    <ProjectType>Confinement</ProjectType>
+  <Name>ConfinementTestProject</Name>
+  <ProjectType>Confinement</ProjectType>
 
-    <MetaData>
-        <Meta Name="Watershed">Yankee Fork</Meta>
-        <Meta Name="Operator">KMW</Meta>
-    </MetaData>
+  <MetaData>
+    <Meta Name="Watershed">Yankee Fork</Meta>
+    <Meta Name="Operator">KMW</Meta>
+  </MetaData>
 
-    <Inputs>
-        <Vector id="ValleyBottom01" Guid="257ecfc4-06ef-4270-884d-319d44f741cb" >
-            <Name>Valley Bottom 01</Name>
-            <Path>Inputs\ValleyBottoms\ValleyBottom01\ValleyBottom.shp</Path>
-        </Vector>
-        <Vector id="ValleyBottom02" Guid="6090e743-c54c-4a92-b165-ece0a073f650">
-            <Name>Valley Bottom 02</Name>
-            <Path>Inputs\ValleyBottoms\ValleyBottom02\ValleyBottom.shp</Path>
-        </Vector>
-        <Vector id="BankfullBuffer50Percent" Guid="6c148311-acf9-4cbe-b720-17b973793cb7">
-            <Name>Bankfull Buffer 50 Percent</Name>
-            <Path>Inputs\ChannelPolygons\ChannelPolygon01\BankfullChannelBuffer.shp</Path>
-        </Vector>
-        <Vector id="StreamNetworkYF001" Guid="004a9ccf-fef6-4911-a6a3-c44b14c611f5">
-            <Name>Stream Network</Name>
-            <Path>Inputs\StreamNetworks\StreamNetwork\StreamNetwork.shp</Path>
-        </Vector>
-    </Inputs>
+  <Inputs>
+    <Vector id="ValleyBottom01" Guid="257ecfc4-06ef-4270-884d-319d44f741cb">
+      <Name>Valley Bottom 01</Name>
+      <Path>Inputs\ValleyBottoms\ValleyBottom01\ValleyBottom.shp</Path>
+    </Vector>
+    <Vector id="ValleyBottom02" Guid="6090e743-c54c-4a92-b165-ece0a073f650">
+      <Name>Valley Bottom 02</Name>
+      <Path>Inputs\ValleyBottoms\ValleyBottom02\ValleyBottom.shp</Path>
+    </Vector>
+    <Vector id="BankfullBuffer50Percent" Guid="6c148311-acf9-4cbe-b720-17b973793cb7">
+      <Name>Bankfull Buffer 50 Percent</Name>
+      <Path>Inputs\ChannelPolygons\ChannelPolygon01\BankfullChannelBuffer.shp</Path>
+    </Vector>
+    <Vector id="StreamNetworkYF001" Guid="004a9ccf-fef6-4911-a6a3-c44b14c611f5">
+      <Name>Stream Network</Name>
+      <Path>Inputs\StreamNetworks\StreamNetwork\StreamNetwork.shp</Path>
+    </Vector>
+  </Inputs>
 
-    <Realizations>
-        <Confinement Promoted="false"
-                     DateCreated=""
-                     ProductVersion="0.1"
-                     Guid="241cdf2a-a397-4fd7-acd2-de0869ed4663">
-            <Name>Confinement Run 01</Name>
+  <Realizations>
+    <Confinement Promoted="false"
+                 DateCreated=""
+                 ProductVersion="0.1"
+                 Guid="241cdf2a-a397-4fd7-acd2-de0869ed4663">
+      <Name>Confinement Run 01</Name>
 
-            <Inputs> <!--there is only ever one instance of each input for any one realization-->
-                <ValleyBottom ref="ValleyBottom01">
-                <ChannelPolygon ref="BankfullBuffer50Percent">
-                <StreamNetwork ref="StreamNetworkYF001">
-            </Inputs>
+      <Inputs> <!--there is only ever one instance of each input for any one realization-->
+        <ValleyBottom ref="ValleyBottom01"/>
+        <ChannelPolygon ref="BankfullBuffer50Percent"/>
+        <StreamNetwork ref="StreamNetworkYF001"/>
+        <SegmentedNetwork>
+          <Name>Segmented Network Smart</Name>
+          <Path>Inputs\SegmentedNetworks\JoesAwesomeSegments.shp</Path>
+        </SegmentedNetwork>
+      </Inputs>
 
-            <Outputs> <!-- every realization should have one and only one of each of these outputs. -->
-                <ConfiningMargins>
-                    <Name>ConfiningMargins</Name>
-                    <Path>Outputs\Output_01\ConfiningMargins.shp</Path>
-                </ConfiningMargins>
-                <RawConfiningState>
-                    <Name>RawConfiningState</Name>
-                    <Path>Outputs\Output_01\RawConfiningState.shp</Path>
-                </RawConfiningState>
-            </Outputs>
+      <Outputs> <!-- every realization should have one and only one of each of these outputs. -->
+        <ConfiningMargins>
+          <Name>ConfiningMargins</Name>
+          <Path>Outputs\Output_01\ConfiningMargins.shp</Path>
+        </ConfiningMargins>
+        <RawConfiningState>
+          <Name>RawConfiningState</Name>
+          <Path>Outputs\Output_01\RawConfiningState.shp</Path>
+        </RawConfiningState>
+      </Outputs>
 
-            <Analysis> <!-- a realization can have one or many of any type of the following analyses-->
-                <Name>Moving Window Analysis 500m 1K 2K</Name>
-                <ConfinementType>MovingWindow</ConfinementType>
+      <Analyses>
+        <Analysis> <!-- a realization can have one or many of any type of the following analyses-->
+          <Name>Moving Window Analysis 500m 1K 2K</Name>
+          <ConfinementType>MovingWindow</ConfinementType>
 
-                <Parameters>
-                    <Param Name="SeedPointDistance">500</Param>
-                    <Param Name="WindowSizes">500,1000,2000</Param><!--How best to represent a list of sizes? -->
-                </Parameters>
+          <Parameters>
+            <Param Name="SeedPointDistance">500</Param>
+            <Param Name="WindowSizes">500,1000,2000</Param><!--How best to represent a list of sizes? -->
+          </Parameters>
 
-                <Outputs>
-                    <Vector> <!--Do outputs Need ID or GUID? -->
-                        <Name>Seed Points 01</Name>
-                        <Path>Outputs\Output_01\Analysis\Confinement001\ConfinementLocal.shp</Path>
-                        <Meta Name="Type">SeedPointFile</Meta> <!--Should these (all output types) have its own DataSource type and tag-->
-                    </Vector>
-                    <Vector>
-                        <Name>Moving Window 01></Name>
-                        <Path>Outputs\Output_01\Analysis\Confinement001\ConfinementWindows.shp</Path>
-                        <Meta Name="Type">MovingWindowFile</Meta>
-                    </Vector>
-                </Outputs>
-            </Analysis>
+          <Outputs>
+            <Vector> <!--Do outputs Need ID or GUID? -->
+              <Name>Seed Points 01</Name>
+              <Path>Outputs\Output_01\Analysis\Confinement001\ConfinementLocal.shp</Path>
+              <MetaData>
+                <Meta Name="Type">SeedPointFile</Meta>
+              </MetaData>
+            </Vector>
+            <Vector>
+              <Name>Moving Window 01></Name>
+              <Path>Outputs\Output_01\Analysis\Confinement001\ConfinementWindows.shp</Path>
+              <MetaData>
+                <Meta Name="Type">MovingWindowFile</Meta>
+              </MetaData>
+            </Vector>
+          </Outputs>
+        </Analysis>
+        <Analysis>
+          <Name>Fixed Segments 500m</Name>
+          <ConfinementType>FixedSegments</ConfinementType>
 
-            <Analysis>
-                <Name>Fixed Segments 500m</Name>
-                <ConfinementType>FixedSegments</ConfinementType>
+          <Parameters>
+            <Param Name="SegmentSize">500</Param>
+          </Parameters>
 
-                <Parameters>
-                    <Param Name="SegmentSize">500</Param>
-                </Parameters>
+          <Outputs>
+            <Vector>
+              <Name>Fixed Segments 500m</Name>
+              <Path>Outputs\Output_01\Analysis\Confinement002\ConfinementSegments.shp</Path>
+              <MetaData>
+                <Meta Name="Type">FixedSegmentFile</Meta>
+              </MetaData>
+            </Vector>
+          </Outputs>
+        </Analysis>
 
-                <Outputs>
-                    <Vector>
-                        <Name>Fixed Segments 500m </Name>
-                        <Path>Outputs\Output_01\Analysis\Confinement002\ConfinementSegments.shp</Path>
-                        <Meta Name="Type">FixedSegmentFile</Meta>
-                    </Vector>
-                </Outputs>
-            </Analysis>
+        <Analysis> <!-- No examples exist for this type yet, this is just demo -->
+          <Name>Joe's segmented Network!</Name>
+          <ConfinementType>CustomSegments</ConfinementType>
 
-            <Analysis> <!-- No examples exist for this type yet, this is just demo -->
-                <Name>Joe's segmented Network!</Name>
-                 <ConfinementType>CustomSegments</ConfinementType>
+          <Outputs>
+            <Vector>
+              <Name>Segments 01</Name>
+              <Path>Outputs\Output_01\Analysis\Confinement003\ConfinementSegments.shp</Path>
+              <MetaData>
+                <Meta Name="Type">CustomSegmentFile</Meta>
+              </MetaData>
+            </Vector>
+          </Outputs>
+        </Analysis>
+      </Analyses>
 
-                <Inputs>
-                    <SegmentedNetwork> <!-- or use a ref? -->
-                        <Name>Segmented Network Smart</Name>
-                        <Path>Inputs\SegmentedNetworks\JoesAwesomeSegments.shp</Path>
-                    </SegmentedNetwork>
-                </Inputs>
-
-                <Outputs>
-                    <Vector>
-                        <Name>Segments 01 </Name>
-                        <Path>Outputs\Output_01\Analysis\Confinement003\ConfinementSegments.shp</Path>
-                        <Meta Name="Type">CustomSegmentFile</Meta>
-                    </Vector>
-                </Outputs>
-            </Analysis>
-        </Confinement>
-    </Realizations>
+    </Confinement>
+  </Realizations>
 </Project>

@@ -295,7 +295,8 @@
       <xs:extension base="RealizationType">
         <xs:sequence>
           <xs:element type="ConfinementInputType" name="Inputs" minOccurs="0"/>
-          <xs:element type="ConfinementAnalysisType" name="Analysis" minOccurs="0"/>
+          <xs:element type="ConfinementOutputsType" name="Outputs" minOccurs="0"/>
+          <xs:element type="ConfinementAnalysesType" name="Analyses" minOccurs="0"/>
         </xs:sequence>
       </xs:extension>
     </xs:complexContent>
@@ -303,59 +304,40 @@
 
   <xs:complexType name="ConfinementInputType">
     <xs:sequence>
-      <xs:element type="ValleyBottomsType" name="ValleyBottoms"/>
-      <xs:element type="ChannelPolygonsType" name="ChannelPolygons"/>
-      <xs:element type="StreamNetworksType" name="StreamNetworks"/>
-    </xs:sequence>
-  </xs:complexType>
-
-  <xs:complexType name="ValleyBottomsType">
-    <xs:sequence>
-      <xs:element type="VectorType" name="ValleyBottom" minOccurs="1" maxOccurs="unbounded"/>
-    </xs:sequence>
-  </xs:complexType>
-
-  <xs:complexType name="ChannelPolygonsType">
-    <xs:sequence>
+      <xs:element type="VectorType" name="ValleyBottom"/>
       <xs:element type="VectorType" name="ChannelPolygon"/>
+      <xs:element type="VectorType" name="StreamNetwork"/>
+      <xs:element type="VectorType" name="SegmentedNetwork"/>
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="StreamNetworksType">
+  <xs:complexType name="ConfinementAnalysesType">
     <xs:sequence>
-      <xs:element type="VectorType" name="StreamNetwork"/>
+      <xs:element type="ConfinementAnalysisType" name="Analysis" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="ConfinementAnalysisType">
     <xs:sequence>
       <xs:element type="xs:string" name="Name"/>
-      <xs:element type="ConfinementOutputsType" name="Outputs"/>
+      <xs:element type="xs:string" name="ConfinementType" minOccurs="1" maxOccurs="1"/>
+      <xs:element type="ParametersType" name="Parameters" minOccurs="0"/>
+      <xs:element type="ConfinementAnalysisOutputsType" name="Outputs"/>
     </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="ConfinementOutputsType">
     <xs:sequence>
-      <xs:element type="VectorType" name="ConfiningMargins"/>
-      <xs:element type="VectorType" name="RawConfiningState"/>
-      <xs:element type="MovingWindowsType" name="MovingWindows"/>
-      <xs:element type="FixedSegmentsType" name="FixedSegments"/>
+      <xs:element type="VectorType" name="ConfiningMargins" minOccurs="0"/>
+      <xs:element type="VectorType" name="RawConfiningState" minOccurs="0"/>
+      <xs:element type="FixedSegmentsType" name="FixedSegments" minOccurs="0"/>
     </xs:sequence>
   </xs:complexType>
 
-  <xs:complexType name="MovingWindowsType">
+  <xs:complexType name="ConfinementAnalysisOutputsType">
     <xs:sequence>
-      <xs:element type="ConfinementWindowType" name="Window"/>
+      <xs:element type="VectorType" name="Vector" minOccurs="0" maxOccurs="unbounded"/>
     </xs:sequence>
-  </xs:complexType>
-
-  <xs:complexType name="ConfinementWindowType">
-    <xs:sequence>
-      <xs:element type="xs:string" name="Name"/>
-      <xs:element type="VectorType" name="SeedPointile"/>
-      <xs:element type="VectorType" name="MovingWindow"/>
-    </xs:sequence>
-    <xs:attribute type="xs:string" name="id"/>
   </xs:complexType>
 
   <xs:complexType name="FixedSegmentsType">
