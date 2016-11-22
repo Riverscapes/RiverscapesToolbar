@@ -40,7 +40,7 @@
         <ValleyBottom ref="ValleyBottom01"/>
         <ChannelPolygon ref="BankfullBuffer50Percent"/>
         <StreamNetwork ref="StreamNetworkYF001"/>
-        <SegmentedNetwork>
+        <SegmentedNetwork id="SegmentedNetwork01">
           <Name>Segmented Network Smart</Name>
           <Path>Inputs\SegmentedNetworks\JoesAwesomeSegments.shp</Path>
         </SegmentedNetwork>
@@ -106,6 +106,10 @@
         <Analysis> <!-- No examples exist for this type yet, this is just demo -->
           <Name>Joe's segmented Network!</Name>
           <ConfinementType>CustomSegments</ConfinementType>
+
+          <Parameters>
+            <Param Name="SegmentedNetwork">SegmentedNetwork01</Param>
+          </Parameters>
 
           <Outputs>
             <Vector>
