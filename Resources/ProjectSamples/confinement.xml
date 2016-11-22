@@ -58,17 +58,16 @@
       </Outputs>
 
       <Analyses>
-        <Analysis> <!-- a realization can have one or many of any type of the following analyses-->
+        <MovingWindow>
           <Name>Moving Window Analysis 500m 1K 2K</Name>
-          <ConfinementType>MovingWindow</ConfinementType>
 
           <Parameters>
-            <Param Name="SeedPointDistance">500</Param>
-            <Param Name="WindowSizes">500,1000,2000</Param><!--How best to represent a list of sizes? -->
+            <Param Name="SeedPointDistance">500</Param><!--How best to represent a list of sizes? -->
+            <Param Name="WindowSizes">500,1000,2000</Param>
           </Parameters>
 
           <Outputs>
-            <Vector> <!--Do outputs Need ID or GUID? -->
+            <Vector>
               <Name>Seed Points 01</Name>
               <Path>Outputs\Output_01\Analysis\Confinement001\ConfinementLocal.shp</Path>
               <MetaData>
@@ -83,15 +82,12 @@
               </MetaData>
             </Vector>
           </Outputs>
-        </Analysis>
-        <Analysis>
+        </MovingWindow>
+        <FixedSegments>
           <Name>Fixed Segments 500m</Name>
-          <ConfinementType>FixedSegments</ConfinementType>
-
           <Parameters>
             <Param Name="SegmentSize">500</Param>
           </Parameters>
-
           <Outputs>
             <Vector>
               <Name>Fixed Segments 500m</Name>
@@ -101,26 +97,19 @@
               </MetaData>
             </Vector>
           </Outputs>
-        </Analysis>
-
-        <Analysis> <!-- No examples exist for this type yet, this is just demo -->
+        </FixedSegments>
+        <CustomSegments> <!-- No examples exist for this type yet, this is just demo -->
           <Name>Joe's segmented Network!</Name>
-          <ConfinementType>CustomSegments</ConfinementType>
-
           <Parameters>
             <Param Name="SegmentedNetwork">SegmentedNetwork01</Param>
           </Parameters>
-
           <Outputs>
             <Vector>
               <Name>Segments 01</Name>
               <Path>Outputs\Output_01\Analysis\Confinement003\ConfinementSegments.shp</Path>
-              <MetaData>
-                <Meta Name="Type">CustomSegmentFile</Meta>
-              </MetaData>
             </Vector>
           </Outputs>
-        </Analysis>
+        </CustomSegments>
       </Analyses>
 
     </Confinement>

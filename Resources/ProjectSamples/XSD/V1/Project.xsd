@@ -313,14 +313,15 @@
 
   <xs:complexType name="ConfinementAnalysesType">
     <xs:sequence>
-      <xs:element type="ConfinementAnalysisType" name="Analysis" maxOccurs="unbounded"/>
+      <xs:element type="ConfinementAnalysisType" name="MovingWindow" maxOccurs="unbounded"/>
+      <xs:element type="ConfinementAnalysisType" name="FixedSegments" maxOccurs="unbounded"/>
+      <xs:element type="ConfinementAnalysisType" name="CustomSegments" maxOccurs="unbounded"/>
     </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="ConfinementAnalysisType">
     <xs:sequence>
       <xs:element type="xs:string" name="Name"/>
-      <xs:element type="xs:string" name="ConfinementType" minOccurs="1" maxOccurs="1"/>
       <xs:element type="ParametersType" name="Parameters" minOccurs="0"/>
       <xs:element type="ConfinementAnalysisOutputsType" name="Outputs"/>
     </xs:sequence>
