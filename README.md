@@ -34,3 +34,7 @@ Your QGIS plugin directory is located at:
 
 
 
+### Developer setup
+
+1. Clone this repo somewhere on your computer (not the `.qgis/python/plugins` folder. I'll explain)
+2. run `pb_tool deploy` to copy this to your `.qgis2/python/plugins` folder

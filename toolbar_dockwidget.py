@@ -25,7 +25,7 @@ import os
 
 from PyQt4 import QtGui, uic
 from PyQt4.QtCore import pyqtSignal
-from projects import ProjectXML
+from lib.projects import ProjectXML
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'toolbar_dockwidget_base.ui'))
