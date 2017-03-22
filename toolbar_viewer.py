@@ -24,7 +24,7 @@ from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, Qt
 from PyQt4.QtGui import QAction, QIcon
 # Initialize Qt resources from file resources.py
 import resources
-
+from settings_dialog import *
 # Import the code for the DockWidget
 from toolbar_dockwidget import RiverscapesToolbarDockWidget
 import os.path
@@ -46,6 +46,8 @@ class RiverscapesToolbarViewer:
 
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
+
+        getSetting("thing/thing")
 
         # initialize locale
         locale = QSettings().value('locale/userLocale')[0:2]
