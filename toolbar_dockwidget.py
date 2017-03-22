@@ -3,7 +3,7 @@
 /***************************************************************************
  RiverscapesToolbarDockWidget
                                  A QGIS plugin
- View GCD Files
+ View RiverscapesToolbarDockWidget Files
                              -------------------
         begin                : 2016-07-12
         git sha              : $Format:%H$
