@@ -34,7 +34,7 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <item>
-           <widget class="QToolButton" name="toolButton_2">
+           <widget class="QToolButton" name="btnOpen">
             <property name="text">
              <string>Open</string>
             </property>
@@ -44,7 +44,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QToolButton" name="toolButton">
+           <widget class="QToolButton" name="btnDownload">
             <property name="text">
              <string>Download</string>
             </property>
@@ -67,7 +67,7 @@
            </spacer>
           </item>
           <item>
-           <widget class="QToolButton" name="toolButton_3">
+           <widget class="QToolButton" name="btnSettings">
             <property name="text">
              <string>Settings</string>
             </property>

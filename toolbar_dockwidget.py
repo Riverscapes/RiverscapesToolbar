@@ -26,6 +26,7 @@ import os
 from PyQt4 import QtGui, uic
 from PyQt4.QtCore import pyqtSignal
 from lib.projects import ProjectXML
+from settings_dialog import SettingsDialog
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'toolbar_dockwidget_base.ui'))
@@ -44,8 +45,12 @@ class RiverscapesToolbarDockWidget(QtGui.QDockWidget, FORM_CLASS):
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
         self.btnLoad.clicked.connect(self.raster_file_browser)
-        #         self.xmlLocation
-        #         self.treeView =
+        self.btnSettings.clicked.connect(self.settingsLoad)
+
+
+    def settingsLoad(self):
+        dialog = SettingsDialog()
+        dialog.exec_()
 
     def raster_file_browser(self):
         filename = QtGui.QFileDialog.getOpenFileName(self, "Open XML file", "", "XML File (*.xml);;GCD File (*.gcd);;All files (*)")
