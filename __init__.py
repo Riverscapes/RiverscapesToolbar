@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
- Analyst Toolbar
+ Riverscapes Toolbar
                                  A QGIS plugin
- View Analyst Toolbar Files
+ View Riverscapes Toolbar Files
                              -------------------
         begin                : 2016-07-12
         copyright            : (C) 2016 by NorthArrowResearch
@@ -26,9 +26,15 @@
 # To activate remote debugging set DEBUG_PLUGIN=AnalystToolbar as a QGIS
 # Environment variable in Preferences -> System -> Environment
 import os
-if 'DEBUG_PLUGIN' in os.environ and os.environ['DEBUG_PLUGIN'] == "AnalystToolbar":
+import logging
+DEBUG = False
+if 'DEBUG_PLUGIN' in os.environ and os.environ['DEBUG_PLUGIN'] == "NetworkProfiler":
     import pydevd
-    pydevd.settrace('localhost', port=53100, stdoutToServer=True, stderrToServer=True)
+    pydevd.settrace('localhost', port=53100, stdoutToServer=True, stderrToServer=True, suspend=False)
+    DEBUG = True
+    logging.basicConfig(level=logging.DEBUG)
+else:
+    logging.basicConfig(level=logging.INFO)
 ######################### /REMOTE DEBUG #########################
 
 # noinspection PyPep8Naming
@@ -39,5 +45,5 @@ def classFactory(iface):  # pylint: disable=invalid-name
     :type iface: QgsInterface
     """
     #
-    from .toolbar_viewer import ToolbarViewer
-    return ToolbarViewer(iface)
+    from .toolbar_viewer import RiverscapesToolbarViewer
+    return RiverscapesToolbarViewer(iface)

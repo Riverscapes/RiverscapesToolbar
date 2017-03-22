@@ -40,7 +40,7 @@ SOURCES = \
 	__init__.py \
 	toolbar_viewer.py toolbar_dockwidget.py
 
-PLUGINNAME = AnalystToolbar
+PLUGINNAME = RiverscapesToolbar
 
 PY_FILES = \
 	__init__.py \

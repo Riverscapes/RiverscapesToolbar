@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 /***************************************************************************
- GCDViewerDockWidget
+ RiverscapesToolbarDockWidget
                                  A QGIS plugin
  View GCD Files
                              -------------------
@@ -30,13 +30,13 @@ from projects import ProjectXML
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'toolbar_dockwidget_base.ui'))
 
-class ToolbarDockWidget(QtGui.QDockWidget, FORM_CLASS):
+class RiverscapesToolbarDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
     closingPlugin = pyqtSignal()
 
     def __init__(self, parent=None):
         """Constructor."""
-        super(ToolbarDockWidget, self).__init__(parent)
+        super(RiverscapesToolbarDockWidget, self).__init__(parent)
         # Set up the user interface from Designer.
         # After setupUI you can access any designer object by doing
         # self.<objectname>, and you can use autoconnect slots - see

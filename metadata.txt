@@ -7,17 +7,17 @@
 # This file should be included when you package your plugin.# Mandatory items:
 
 [general]
-name=Analyst Toolbar
+name=Riverscapes Toolbar
 qgisMinimumVersion=2.0
-description=View Analyst Toolbar Files
+description=View Riverscapes Toolbar Files
 version=0.1
 author=NorthArrowResearch
 email=info@northarrowresearch.com
 
 about=This plugin will load relevant .xml files
 
-tracker=https://github.com/Riverscapes/analyst-toolbar-qgis-plugin/issues
-repository=https://github.com/Riverscapes/analyst-toolbar-qgis-plugin
+tracker=https://github.com/Riverscapes/RiverscapesToolbar/issues
+repository=https://github.com/Riverscapes/RiverscapesToolbar
 # End of mandatory metadata
 
 # Recommended items:
@@ -26,7 +26,7 @@ repository=https://github.com/Riverscapes/analyst-toolbar-qgis-plugin
 # changelog=
 
 # Tags are comma separated with spaces allowed
-tags=
+tags=repository,viewer,toolbar
 
 homepage=http://northarrowresearch.com
 category=Plugins

@@ -26,11 +26,11 @@ from PyQt4.QtGui import QAction, QIcon
 import resources
 
 # Import the code for the DockWidget
-from toolbar_dockwidget import ToolbarDockWidget
+from toolbar_dockwidget import RiverscapesToolbarDockWidget
 import os.path
 
 
-class ToolbarViewer:
+class RiverscapesToolbarViewer:
     """QGIS Plugin Implementation."""
 
     def __init__(self, iface):
@@ -51,7 +51,6 @@ class ToolbarViewer:
         locale = QSettings().value('locale/userLocale')[0:2]
         locale_path = os.path.join(
             self.plugin_dir,
-            'i18n',
             'ToolbarViewer_{}.qm'.format(locale))
 
         if os.path.exists(locale_path):
@@ -221,7 +220,7 @@ class ToolbarViewer:
             #    removed on close (see self.onClosePlugin method)
             if self.dockwidget == None:
                 # Create the dockwidget (after translation) and keep reference
-                self.dockwidget = ToolbarDockWidget()
+                self.dockwidget = RiverscapesToolbarDockWidget()
 
             # connect to provide cleanup on closing of dockwidget
             self.dockwidget.closingPlugin.connect(self.onClosePlugin)
