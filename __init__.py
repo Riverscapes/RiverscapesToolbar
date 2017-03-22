@@ -23,7 +23,7 @@
 """
 
 ######################### REMOTE DEBUG #########################
-# To activate remote debugging set DEBUG_PLUGIN=AnalystToolbar as a QGIS
+# To activate remote debugging set DEBUG_PLUGIN=RiverscapesToolbar as a QGIS
 # Environment variable in Preferences -> System -> Environment
 import os
 import logging

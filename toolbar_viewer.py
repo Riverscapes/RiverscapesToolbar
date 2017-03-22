@@ -64,8 +64,8 @@ class RiverscapesToolbarViewer:
         self.actions = []
         self.menu = self.tr(u'&Analyst Toolbar')
         # TODO: We are going to let the user set this up in a future iteration
-        self.toolbar = self.iface.addToolBar(u'AnalystToolbar')
-        self.toolbar.setObjectName(u'AnalystToolbar')
+        self.toolbar = self.iface.addToolBar(u'RiverscapesToolbar')
+        self.toolbar.setObjectName(u'RiverscapesToolbar')
 
         #print "** INITIALIZING Analyst Toolbar"
 
@@ -86,7 +86,7 @@ class RiverscapesToolbarViewer:
         :rtype: QString
         """
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
-        return QCoreApplication.translate('AnalystToolbar', message)
+        return QCoreApplication.translate('RiverscapesToolbar', message)
 
 
     def add_action(
@@ -166,7 +166,7 @@ class RiverscapesToolbarViewer:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        icon_path = ':/plugins/AnalystToolbar/icon.png'
+        icon_path = ':/plugins/RiverscapesToolbar/icon.png'
         self.add_action(
             icon_path,
             text=self.tr(u'Analyst Toolbar'),

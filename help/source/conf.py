@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# AnalystToolbar documentation build configuration file, created by
+# RiverscapesToolbar documentation build configuration file, created by
 # sphinx-quickstart on Sun Feb 12 17:11:03 2012.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -40,7 +40,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'AnalystToolbar'
+project = u'RiverscapesToolbar'
 copyright = u'2013, NorthArrowResearch'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -178,7 +178,7 @@ htmlhelp_basename = 'TemplateClassdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'AnalystToolbar.tex', u'Analyst Toolbar Documentation',
+  ('index', 'RiverscapesToolbar.tex', u'Analyst Toolbar Documentation',
    u'NorthArrowResearch', 'manual'),
 ]
 

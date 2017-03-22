@@ -16,3 +16,5 @@
 .idea/uiDesigner.xml
 
 help/build
+
+*.autosave

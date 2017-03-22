@@ -1,5 +1,5 @@
 <RCC>
-    <qresource prefix="/plugins/AnalystToolbar" >
+    <qresource prefix="/plugins/AnalystToolbar/images" >
         <file>icon.png</file>
     </qresource>
 </RCC>
