@@ -53,10 +53,10 @@ class RiverscapesToolbarDockWidget(QtGui.QDockWidget, FORM_CLASS):
         dialog.exec_()
 
     def raster_file_browser(self):
-        filename = QtGui.QFileDialog.getOpenFileName(self, "Open XML file", "", "XML File (*.xml);;GCD File (*.gcd);;All files (*)")
+        filename = QtGui.QFileDialog.getExistingDirectory(self, "Open XML file", "", "XML File (*.xml);;GCD File (*.gcd);;All files (*)")
         self.xmlLocation.setText(filename)
         self.projectXML = ProjectXML(filename, self.treeView)
-        self.recalc_state()    
+        self.recalc_state()
 
     def closeEvent(self, event):
         self.closingPlugin.emit()

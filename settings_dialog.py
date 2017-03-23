@@ -9,9 +9,9 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'settings_dialog_base.ui'))
 
 # DEFAULT SETTINGS: We may need to externalize this somehow
-SETTINGS = {
+_SETTINGS = {
     "DataDir": {
-        "default": "C:\\"
+        "default": os.path.expanduser("~")
     },
     "ProgramXMLUrl": {
         "default": "https://raw.githubusercontent.com/Riverscapes/Program/master/Program/Riverscapes.xml"
@@ -36,11 +36,11 @@ class SettingsDialog(QtGui.QDialog, FORM_CLASS):
         self.settings = ToolbarSettings()
 
         # Keep things on top
-        self.window().setWindowFlags(self.window().windowFlags() | Qt.WindowStaysOnTopHint)
+        # self.window().setWindowFlags(self.window().windowFlags() | Qt.WindowStaysOnTopHint)
         self.setWindowTitle("Riverscapes Toolbar Settings")
 
         _SETTINGS['DataDir']['control'] = self.txtDataRoot
-        _SETTINGS['DataDir']['control'] = self.txtProgramXMLUrl
+        _SETTINGS['ProgramXMLUrl']['control'] = self.txtProgramXMLUrl
 
         self.btnDataRootBrowse.clicked.connect(self.browseFolder)
 
@@ -65,8 +65,8 @@ class SettingsDialog(QtGui.QDialog, FORM_CLASS):
         Save all settings and close
         """
         if self.validate():
-            saveSetting("DataDir", self.txtDataRoot.text)
-            saveSetting("DataDir", self.txtDataRoot.text)
+            self.saveSetting("DataDir", self.txtProgramXMLUrl.text)
+            self.saveSetting("ProgramXMLUrl", self.txtDataRoot.text)
             self.btnBox.button(QtGui.QDialogButtonBox.Ok).setEnabled(True)
             self.btnBox.button(QtGui.QDialogButtonBox.Apply).setEnabled(True)
         else:
@@ -83,8 +83,8 @@ class SettingsDialog(QtGui.QDialog, FORM_CLASS):
 
 
     def browseFolder(self):
-        filename = QtGui.QFileDialog.getOpenFileName(self, "Open XML file", "", "XML File (*.xml);;GCD File (*.gcd);;All files (*)")
-        self.xmlLocation.setText(filename)
+        dataDir = QtGui.QFileDialog.getExistingDirectory(self, "Open a folder", os.path.expanduser("~"), QtGui.QFileDialog.ShowDirsOnly)
+        self.txtDataRoot.setText(dataDir)
         self.validate()
 
 
@@ -100,7 +100,7 @@ class ToolbarSettings():
         :return:
         """
         s = QSettings()
-        for key, val in SETTINGS.iteritems():
+        for key, val in _SETTINGS.iteritems():
             s.beginGroup(BASE)
             if key not in s.childKeys():
                 value = s.setValue(key, val['default'])
