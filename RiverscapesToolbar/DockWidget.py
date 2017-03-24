@@ -27,11 +27,11 @@ from PyQt4 import QtGui
 import PyQt4.uic as uic
 from PyQt4.QtCore import pyqtSignal
 from lib.projects import ProjectXML
-import DockWidgetTabs
 from SettingsDialog import SettingsDialog
+import DockWidgetTabRepository
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'dockwidget.ui'))
+    os.path.dirname(__file__), '../DockWidget.ui'))
 
 class RiverscapesToolbarDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
@@ -48,6 +48,8 @@ class RiverscapesToolbarDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.setupUi(self)
         self.btnLoad.clicked.connect(self.raster_file_browser)
         self.btnSettings.clicked.connect(self.settingsLoad)
+
+        self.btnRefresh.clicked.connect(lambda: DockWidgetTabRepository.dlg_refresh(self))
 
         # Set the ability to have a context menu
         # treeView->setContextMenuPolicy(Qt::CustomContextMenu);

@@ -1,3 +1,18 @@
+from lib.program import Program
+from lib.s3.walkers import s3ProductWalker
+
+def dlg_refresh(dlg, settings):
+    """
+    Refresh the main dialog
+    :return:
+    """
+    print "clicked"
+    program = Program(settings.getSetting("ProgramXMLUrl"))
+
+    print 'Walking through and finding projects:'
+    s3ProductWalker(program.Bucket)
+
+    print "done"
 # def _contextMenu(self, point):
 #     """
 #     Context Menu (right click on the treeWidget)

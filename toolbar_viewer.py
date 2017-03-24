@@ -25,10 +25,10 @@ from PyQt4.QtGui import QAction, QIcon
 # Initialize Qt resources from file resources.py
 import resources
 
-from SettingsDialog.Dialog import ToolbarSettings
+from RiverscapesToolbar.settings import Settings
 
 # Import the code for the DockWidget
-from DockWidget  import RiverscapesToolbarDockWidget
+from RiverscapesToolbar.DockWidget import RiverscapesToolbarDockWidget
 import os.path
 
 
@@ -49,8 +49,9 @@ class RiverscapesToolbarViewer:
         # initialize plugin directory
         self.plugin_dir = os.path.dirname(__file__)
 
-        # Initialize the settings and make sure we have something in there
-        ToolbarSettings().initVals()
+
+        # Call our singleton the first time to set/reset settings if necessary
+        Settings()
 
         # initialize locale
         locale = QSettings().value('locale/userLocale')[0:2]
@@ -72,8 +73,6 @@ class RiverscapesToolbarViewer:
         # TODO: We are going to let the user set this up in a future iteration
         self.toolbar = self.iface.addToolBar(u'RiverscapesToolbar')
         self.toolbar.setObjectName(u'RiverscapesToolbar')
-
-        #print "** INITIALIZING Analyst Toolbar"
 
         self.pluginIsActive = False
         self.dockwidget = None

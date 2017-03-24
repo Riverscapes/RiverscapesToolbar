@@ -37,7 +37,7 @@ else:
     logging.basicConfig(level=logging.INFO)
 ######################### /REMOTE DEBUG #########################
 
-from settings import Settings
+
 
 # noinspection PyPep8Naming
 def classFactory(iface):  # pylint: disable=invalid-name
@@ -48,5 +48,4 @@ def classFactory(iface):  # pylint: disable=invalid-name
     """
     #
     from .toolbar_viewer import RiverscapesToolbarViewer
-    Settings()
     return RiverscapesToolbarViewer(iface)

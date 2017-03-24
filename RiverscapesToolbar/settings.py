@@ -6,7 +6,7 @@ BASE="QGISRiverscapesToolbar"
 # DEFAULT SETTINGS: We may need to externalize this somehow
 _SETTINGS = {
     "DataDir": {
-        "default": path.expanduser("~")
+        "default": path.join(path.expanduser("~"), "RiverscapesData")
     },
     "ProgramXMLUrl": {
         "default": "https://raw.githubusercontent.com/Riverscapes/Program/master/Program/Riverscapes.xml"
@@ -26,11 +26,11 @@ class Settings():
     def resetDefault(self):
         self.instance.resetDefault()
 
-    def get(self, key):
-        self.instance.getSetting(key)
+    def getSetting(self, key):
+        return self.instance.getSetting(key)
 
-    def save(self, key, val):
-        self.instance.saveSetting(key, val)
+    def saveSetting(self, key, val):
+        return self.instance.saveSetting(key, val)
 
 
 class _SettingsSingleton():
@@ -81,6 +81,7 @@ class _SettingsSingleton():
             s.beginGroup(BASE)
             if key in _SETTINGS and "default" in _SETTINGS[key]:
                 s.setValue(key, _SETTINGS[key]['default'])
+                _SETTINGS[key]['value'] = _SETTINGS[key]['default']
             s.endGroup()
 
         def getSetting(self, key):
@@ -90,12 +91,13 @@ class _SettingsSingleton():
             """
             value = None
             if key in _SETTINGS and 'value' in _SETTINGS[key]:
-                value = _SETTINGS[key]
+                value = _SETTINGS[key]['value']
             else:
                 s = QSettings()
                 s.beginGroup(BASE)
                 if key in s.childKeys():
                     value = s.value(key)
+                    _SETTINGS[key]['value'] = value
                 s.endGroup()
             return value
 
@@ -108,7 +110,9 @@ class _SettingsSingleton():
             """
             s = QSettings()
             s.beginGroup(BASE)
+            # Set it in the file
             s.setValue(key, value)
+            # Don't forget to save it back to memory
             _SETTINGS[key]['value'] = value
             s.endGroup()
 
