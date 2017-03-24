@@ -25,10 +25,10 @@ from PyQt4.QtGui import QAction, QIcon
 # Initialize Qt resources from file resources.py
 import resources
 
-from settings_dialog import ToolbarSettings
+from SettingsDialog.settings import ToolbarSettings
 
 # Import the code for the DockWidget
-from toolbar_dockwidget import RiverscapesToolbarDockWidget
+from DockWidget.dockwidget  import RiverscapesToolbarDockWidget
 import os.path
 
 
@@ -67,7 +67,8 @@ class RiverscapesToolbarViewer:
 
         # Declare instance attributes
         self.actions = []
-        self.menu = self.tr(u'&Analyst Toolbar')
+        self.menu = self.tr(u'&Riverscapes Toolbar')
+
         # TODO: We are going to let the user set this up in a future iteration
         self.toolbar = self.iface.addToolBar(u'RiverscapesToolbar')
         self.toolbar.setObjectName(u'RiverscapesToolbar')
@@ -181,18 +182,18 @@ class RiverscapesToolbarViewer:
     #--------------------------------------------------------------------------
 
     def onClosePlugin(self):
-        """Cleanup necessary items here when plugin dockwidget is closed"""
+        """Cleanup necessary items here when plugin DockWidget is closed"""
 
         #print "** CLOSING Analyst Toolbar"
 
         # disconnects
         self.dockwidget.closingPlugin.disconnect(self.onClosePlugin)
 
-        # remove this statement if dockwidget is to remain
+        # remove this statement if DockWidget is to remain
         # for reuse if plugin is reopened
         # Commented next statement since it causes QGIS crashe
         # when closing the docked window:
-        # self.dockwidget = None
+        # self.DockWidget = None
 
         self.pluginIsActive = False
 
@@ -220,17 +221,17 @@ class RiverscapesToolbarViewer:
 
             #print "** STARTING Analyst Toolbar"
 
-            # dockwidget may not exist if:
+            # DockWidget may not exist if:
             #    first run of plugin
             #    removed on close (see self.onClosePlugin method)
             if self.dockwidget == None:
-                # Create the dockwidget (after translation) and keep reference
+                # Create the DockWidget (after translation) and keep reference
                 self.dockwidget = RiverscapesToolbarDockWidget()
 
-            # connect to provide cleanup on closing of dockwidget
+            # connect to provide cleanup on closing of DockWidget
             self.dockwidget.closingPlugin.connect(self.onClosePlugin)
 
-            # show the dockwidget
+            # show the DockWidget
             # TODO: fix to allow choice of dock location
             self.iface.addDockWidget(Qt.LeftDockWidgetArea, self.dockwidget)
             self.dockwidget.show()

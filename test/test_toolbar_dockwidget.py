@@ -24,7 +24,7 @@ QGIS_APP = get_qgis_app()
 
 
 class ToolbarDockWidgetTest(unittest.TestCase):
-    """Test dockwidget works."""
+    """Test DockWidget works."""
 
     def setUp(self):
         """Runs before each test."""

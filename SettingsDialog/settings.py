@@ -1,12 +1,13 @@
 import os
 
-from PyQt4 import QtGui, uic
-from PyQt4.QtCore import pyqtSignal, QSettings, Qt
+from PyQt4 import QtGui
+from PyQt4.QtCore import pyqtSignal, QSettings
+import PyQt4.uic as uic
 
 BASE="RiverscapesToolbar"
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
-    os.path.dirname(__file__), 'settings_dialog_base.ui'))
+    os.path.dirname(__file__), 'dialog.ui'))
 
 # DEFAULT SETTINGS: We may need to externalize this somehow
 _SETTINGS = {
