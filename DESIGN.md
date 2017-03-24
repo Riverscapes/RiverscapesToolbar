@@ -34,3 +34,11 @@
 * Queue state: `[empty/complete]` `running/paused/complete`
 * ProjectState: ``
 
+
+
+
+
+
+### Notes:
+
+* We should store the queue in the system state. At least the project queue. File queue can be done on the fly

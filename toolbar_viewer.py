@@ -25,7 +25,7 @@ from PyQt4.QtGui import QAction, QIcon
 # Initialize Qt resources from file resources.py
 import resources
 
-from SettingsDialog.settings import ToolbarSettings
+from SettingsDialog.Dialog import ToolbarSettings
 
 # Import the code for the DockWidget
 from DockWidget  import RiverscapesToolbarDockWidget

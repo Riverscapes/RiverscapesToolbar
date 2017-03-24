@@ -1,1 +1,2 @@
-from settings import *
+from Dialog import *
+
