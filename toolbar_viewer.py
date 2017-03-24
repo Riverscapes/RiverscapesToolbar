@@ -28,7 +28,7 @@ import resources
 from SettingsDialog.settings import ToolbarSettings
 
 # Import the code for the DockWidget
-from DockWidget.dockwidget  import RiverscapesToolbarDockWidget
+from DockWidget  import RiverscapesToolbarDockWidget
 import os.path
 
 
