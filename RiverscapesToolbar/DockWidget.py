@@ -26,9 +26,11 @@ import os
 from PyQt4 import QtGui
 import PyQt4.uic as uic
 from PyQt4.QtCore import pyqtSignal
-from lib.projects import ProjectXML
 from SettingsDialog import SettingsDialog
+
 import DockWidgetTabRepository
+import DockWidgetTabDownload
+import DockWidgetTabProject
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), '../DockWidget.ui'))
@@ -46,25 +48,19 @@ class RiverscapesToolbarDockWidget(QtGui.QDockWidget, FORM_CLASS):
         # http://qt-project.org/doc/qt-4.8/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
+
+        # Connect up our top-level components that aren't in tabs
         self.btnLoad.clicked.connect(self.raster_file_browser)
         self.btnSettings.clicked.connect(self.settingsLoad)
 
-        self.btnRefresh.clicked.connect(lambda: DockWidgetTabRepository.dlg_refresh(self))
-
-        # Set the ability to have a context menu
-        # treeView->setContextMenuPolicy(Qt::CustomContextMenu);
-        # self.tree_widget.customContextMenuRequested.connect(DockWidgetTabs.Download.ContextMenu)
-
+        # The code that runs our tabs lives in a different class
+        self.RepoTab = DockWidgetTabRepository(self)
+        self.RepoTab = DockWidgetTabDownload(self)
+        self.RepoTab = DockWidgetTabProject(self)
 
     def settingsLoad(self):
         dialog = SettingsDialog()
         dialog.exec_()
-
-    def raster_file_browser(self):
-        filename = QtGui.QFileDialog.getExistingDirectory(self, "Open XML file", "", "XML File (*.xml);;GCD File (*.gcd);;All files (*)")
-        self.xmlLocation.setText(filename)
-        self.projectXML = ProjectXML(filename, self.treeView)
-        self.recalc_state()
 
     def closeEvent(self, event):
         self.closingPlugin.emit()

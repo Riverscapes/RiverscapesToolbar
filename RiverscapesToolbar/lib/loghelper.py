@@ -1,5 +1,6 @@
-import os, datetime
-import logging, logging.handlers
+import os
+import datetime
+import logging
 from pprint import pformat
 
 class _LoggerSingleton:
@@ -83,10 +84,10 @@ class _LoggerSingleton:
             if severity == 'debug':
                 self.logger.debug(txtmsg)
 
-
     def __init__(self, **kwargs):
         if not _LoggerSingleton.instance:
             _LoggerSingleton.instance = _LoggerSingleton.__Logger(**kwargs)
+
     def __getattr__(self, name):
         return getattr(self.instance, name)
 

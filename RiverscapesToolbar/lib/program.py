@@ -1,15 +1,13 @@
 import urllib2
 import re
-import xml.etree.ElementTree as ET
-from riverscapestools.s3.walkers import s3GetFolderList
-from riverscapestools.userinput import *
 from riverscapestools import Logger
+import xml.etree.ElementTree as ET
 
-class Program():
+class ProgramXML():
+    def __init__(self, xmpProgUrl):
 
-    def __init__(self, programpath):
         self.DOM = None
-        self.getProgram(programpath)
+        self.getProgram(xmpProgUrl)
         self.Collections = {}
         self.Groups = {}
         self.Products = {}
@@ -103,6 +101,7 @@ class Program():
                         continue
                 except Exception as e:
                     self.log.error("Something went wrong with the allow RegEx in the Program XML file", e)
+                    raise e
             else:
                 if allow['name'] == desiredName:
                     bGood = True

@@ -1,5 +1,5 @@
 import os
-from riverscapestools import Logger
+from RiverscapesToolbar.lib.loghelper import Logger
 from comparison import s3issame
 from transfers import Transfer
 

@@ -1,6 +1,6 @@
 import os
-# from riverscapestools import Logger
-# from riverscapestools.userinput import querychoices, query_yes_no
+from RiverscapesToolbar.lib.loghelper import Logger
+from riverscapestools.userinput import querychoices
 
 from transfers import Transfer
 from operations import S3Operation

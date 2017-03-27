@@ -1,8 +1,6 @@
 import os
 import os.path
 
-from PyQt4 import QtGui, uic
-from PyQt4.QtCore import *
 from qgis.utils import iface
 from qgis.core import QgsMapLayer, QgsRasterLayer, QgsVectorLayer, QgsMapLayerRegistry, QgsProject
 

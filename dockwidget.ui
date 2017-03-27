@@ -22,13 +22,6 @@
   <widget class="QWidget" name="dockWidgetContents">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QToolButton" name="btnSettings">
-      <property name="text">
-       <string>Settings</string>
-      </property>
-     </widget>
-    </item>
-    <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
        <number>0</number>
@@ -75,9 +68,9 @@
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="label">
+         <widget class="QLabel" name="lblRepoTabStatus">
           <property name="text">
-           <string>TextLabel</string>
+           <string/>
           </property>
          </widget>
         </item>
@@ -91,12 +84,22 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
-           <widget class="QLineEdit" name="xmlLocation"/>
+           <spacer name="horizontalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
           </item>
           <item>
-           <widget class="QPushButton" name="btnLoad">
+           <widget class="QToolButton" name="btnLoadProject">
             <property name="text">
-             <string>Browse...</string>
+             <string>Open Project</string>
             </property>
            </widget>
           </item>
@@ -125,28 +128,28 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_2">
           <item>
-           <widget class="QToolButton" name="toolButton">
+           <widget class="QToolButton" name="btnDownloadStart">
             <property name="text">
              <string>Start</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QToolButton" name="toolButton_2">
+           <widget class="QToolButton" name="btnDownloadPause">
             <property name="text">
              <string>Pause</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QToolButton" name="toolButton_3">
+           <widget class="QToolButton" name="btnDownloadEmpty">
             <property name="text">
              <string>Empty</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QToolButton" name="toolButton_4">
+           <widget class="QToolButton" name="btnDownloadClearCompleted">
             <property name="text">
              <string>Clear Completed</string>
             </property>
@@ -261,12 +264,16 @@
       </widget>
      </widget>
     </item>
+    <item>
+     <widget class="QToolButton" name="btnSettings">
+      <property name="text">
+       <string>Settings</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
  </widget>
  <resources/>
  <connections/>
- <buttongroups>
-  <buttongroup name="buttonGroup"/>
- </buttongroups>
 </ui>
