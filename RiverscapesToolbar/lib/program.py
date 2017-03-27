@@ -1,6 +1,6 @@
 import urllib2
 import re
-from riverscapestools import Logger
+import logging
 import xml.etree.ElementTree as ET
 
 class ProgramXML():
@@ -13,7 +13,7 @@ class ProgramXML():
         self.Products = {}
         self.Hierarchy = {}
         self.Bucket = None
-        self.log = Logger('Program')
+        self.log = logging.getLogger()
 
         # Populate everything
         self.getBucket()

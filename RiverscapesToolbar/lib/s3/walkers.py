@@ -1,5 +1,5 @@
 import os
-from RiverscapesToolbar.lib.loghelper import Logger
+import logging
 from riverscapestools.userinput import querychoices
 
 from transfers import Transfer
@@ -16,10 +16,10 @@ def s3BuildOps(conf):
     """
     s3 = Transfer(conf['bucket'])
     opstore = {}
-    log = Logger("s3BuildOps")
+    log = logging.getLogger()
     prefix = "{0}/".format(conf['keyprefix']).replace("//", "/")
 
-    log.title('The following locations were found:')
+    log.info('The following locations were found:')
     if conf['direction'] == S3Operation.Direction.UP:
         tostr = 's3://{0}/{1}'.format(conf['bucket'], conf['keyprefix'])
         fromstr = conf['localroot']
@@ -30,7 +30,7 @@ def s3BuildOps(conf):
     log.info('TO  : {0}'.format(tostr))
 
 
-    log.title('The following operations are queued:')
+    log.info('The following operations are queued:')
 
     response = s3.list(prefix)
 
@@ -68,7 +68,7 @@ def localProductWalker(projroot, filedict, currentdir=""):
     :param first:
     :return:
     """
-    log = Logger('localProdWalk')
+    log = logging.getLogger()
     for pathseg in os.listdir(os.path.join(projroot, currentdir)):
         spaces = len(currentdir) * ' ' + '/'
         # Remember to sanitize for slash unity. We write unix separators
@@ -92,7 +92,7 @@ def s3GetFolderList(bucket, prefix):
     :param currlevel:
     :return:
     """
-    log = Logger('CollectionList')
+    log = logging.getLogger()
     s3 = Transfer(bucket)
     results = []
     # list everything at this collection
@@ -111,7 +111,7 @@ def s3ProductWalker(bucket, patharr, currpath=[], currlevel=0):
     :param currlevel:
     :return:
     """
-    log = Logger('ProductWalk')
+    log = logging.getLogger()
     s3 = Transfer(bucket)
     if currlevel >= len(patharr):
         return
@@ -151,7 +151,7 @@ def menuwalk(program, nodes=None, currpath=[]):
     :param path:
     :return:
     """
-    log = Logger('menuwalk')
+    log = logging.getLogger()
     if nodes is None:
         nodes = [program.Hierarchy]
 

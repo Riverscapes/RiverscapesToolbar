@@ -28,7 +28,7 @@
 import os
 import logging
 DEBUG = False
-if 'DEBUG_PLUGIN' in os.environ and os.environ['DEBUG_PLUGIN'] == "RiverscapesToolbar":
+if 'DEBUG_PLUGIN' in os.environ and os.environ['DEBUG_PLUGIN'] == "RiverscapesToolbars":
     import pydevd
     pydevd.settrace('localhost', port=53100, stdoutToServer=True, stderrToServer=True, suspend=False)
     DEBUG = True
@@ -36,7 +36,6 @@ if 'DEBUG_PLUGIN' in os.environ and os.environ['DEBUG_PLUGIN'] == "RiverscapesTo
 else:
     logging.basicConfig(level=logging.INFO)
 ######################### /REMOTE DEBUG #########################
-
 
 
 # noinspection PyPep8Naming

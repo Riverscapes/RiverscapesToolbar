@@ -51,17 +51,6 @@ class DockWidgetTabRepository():
             self.namespace = "{http://tempuri.org/ProjectDS.xsd}"
             self.xmlTreePath = None
 
-            # Load the GCD Project (the raw data that will be used to populate the tree)
-            # instead of ET.fromstring(xml)
-            self.xmlProjectDoc = self.LoadXMLFile(self.xmlProjfile)
-
-            if self.FindTreeParser():
-                print "got ya"
-                # Load the tree file (the rules we use to build the tree)
-
-            else:
-                print "This is an error"
-
             # Set up the first domino for the recursion
             projectName = self.xmlProjectDoc.find("Project/name")
             if projectName is not None:
@@ -69,33 +58,6 @@ class DockWidgetTabRepository():
 
             self.LoadNode(None, self.xmlTemplateDoc.find("node"), self.xmlProjectDoc)
             self.tree.expandToDepth(5)
-
-
-    def FindTreeParser(self):
-        # Now we need to figure out which kind of project it is.
-        for subdir, dirs, files in os.walk(self.xmlTreeDir):
-            for filename in files:
-                if filename.endswith(".xml"):
-                    filePath = os.path.join(subdir, filename)
-                    candidate = self.LoadXMLFile(filePath)
-                    testNode = candidate.find('test')
-                    if len(testNode.text) > 10 and not testNode is None:
-                        if self.xmlProjectDoc.find("./" + testNode.text) is not None:
-                            found = True
-                            self.xmlTreePath = filePath
-                            self.xmlTemplateDoc = ET.parse(self.xmlTreePath)
-                            return True
-        return False
-
-    def LoadXMLFile(self, file):
-        with open(file, 'r') as myfile:
-            data = myfile.read().replace('\n', '')
-            it = ET.iterparse(StringIO(data))
-            # strip all namespaces
-            for _, el in it:
-                if '}' in el.tag:
-                    el.tag = el.tag.split('}', 1)[1]
-            return it.root
 
     def LoadNode(self, tnParent, templateNode, projNode):
         """ Load a single node """
@@ -216,88 +178,3 @@ class DockWidgetTabRepository():
             AddVectorLayer(item)
         else:
             AddRasterLayer(item)
-
-
-
-# def _contextMenu(self, point):
-#     """
-#     Context Menu (right click on the treeWidget)
-#     """
-#
-#     item = self.tree_widget.itemAt(point)
-#     name_clicked = self._get_tag_from_item(item)
-#
-#     def add_tag():
-#         dialog = QtGui.QInputDialog()
-#         dialog.setTextValue(name_clicked)
-#         if name_clicked != "":
-#             proposition = name_clicked + '/'
-#         else:
-#             proposition = name_clicked
-#         (tag, confirm) = dialog.getText(QtGui.QWidget(), \
-#                                         "new tag", \
-#                                         "enter tag name", \
-#                                         0, \
-#                                         proposition)
-#         tag = str(tag)
-#         if tag.endswith("/"):
-#             raise ValueError("""tag should not end with /""")
-#         if confirm and tag != "":
-#             try:
-#                 Tag.objects.get(name=tag)
-#             except Tag.DoesNotExist:
-#                 Tag.objects.create(name=tag)
-#                 self.add_item(tag)
-#                 self.select(tag)
-#                 model_monitor.tag_added.emit()
-#             else:
-#                 box = QtGui.QMessageBox()
-#                 box.setText("tag " + tag + " allready exists")
-#                 box.exec_()
-#
-#     def remove_tag(dummy, name=name_clicked):
-#         dial = QtGui.QMessageBox()
-#         dial.setText("Delete tag '" + name + "': are you sure ?")
-#         dial.setInformativeText("Tag will be removed from all referenced curves...")
-#         dial.setStandardButtons(QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Ok)
-#         dial.setDefaultButton(QtGui.QMessageBox.Ok);
-#         if dial.exec_():
-#             tag = Tag.objects.get(name=name)
-#             tag.delete()
-#             model_monitor.tag_deletted.emit()
-#             self.refresh()
-#
-#     def rename(dummy, name=name_clicked):
-#         dialog = QtGui.QInputDialog()
-#         dialog.setTextValue(name_clicked)
-#         proposition = name_clicked
-#         (tag, confirm) = dialog.getText(QtGui.QWidget(), \
-#                                         "rename tag", \
-#                                         "enter tag name", \
-#                                         0, \
-#                                         proposition)
-#         if confirm:
-#             new_name = str(tag)
-#             tag = Tag.objects.get(name=name)
-#             tag.name = new_name
-#             tag.save()
-#             self.refresh()
-#
-#     menu = QtGui.QMenu(self)
-#     action_add_tag = QtGui.QAction("add tag...", self)
-#     action_add_tag.triggered.connect(add_tag)
-#     menu.addAction(action_add_tag)
-#
-#     action_rename_tag = QtGui.QAction("rename tag", self)
-#     action_rename_tag.triggered.connect(rename)
-#     menu.addAction(action_rename_tag)
-#
-#     action_remove_tag = QtGui.QAction("remove tag", self)
-#     action_remove_tag.triggered.connect(remove_tag)
-#     menu.addAction(action_remove_tag)
-#
-#     action_refresh_list = QtGui.QAction("refresh list", self)
-#     action_refresh_list.triggered.connect(self.refresh)
-#     menu.addAction(action_refresh_list)
-#
-#     self._exec_menu_at_right_place(menu, point)

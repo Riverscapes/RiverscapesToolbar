@@ -1,5 +1,5 @@
 import os
-from RiverscapesToolbar.lib.loghelper import Logger
+import logging
 from comparison import s3issame
 from transfers import Transfer
 
@@ -33,7 +33,7 @@ class S3Operation:
         :param fileobj: the file object with 'src' and 'dst'
         :param conf: the configuration dictionary
         """
-        self.log = Logger('S3Ops')
+        self.log = logging.getLogger()
         self.s3 = Transfer(conf['bucket'])
         self.key = key
 
