@@ -28,9 +28,9 @@ import PyQt4.uic as uic
 from PyQt4.QtCore import pyqtSignal
 from SettingsDialog import SettingsDialog
 
-import DockWidgetTabRepository
-import DockWidgetTabDownload
-import DockWidgetTabProject
+from DockWidgetTabRepository import DockWidgetTabRepository
+from DockWidgetTabDownload import DockWidgetTabDownload
+from DockWidgetTabProject import DockWidgetTabProject
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), '../DockWidget.ui'))
@@ -50,13 +50,13 @@ class RiverscapesToolbarDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.setupUi(self)
 
         # Connect up our top-level components that aren't in tabs
-        self.btnLoad.clicked.connect(self.raster_file_browser)
+        # self.btnLoad.clicked.connect(self.raster_file_browser)
         self.btnSettings.clicked.connect(self.settingsLoad)
 
         # The code that runs our tabs lives in a different class
-        self.RepoTab = DockWidgetTabRepository(self)
-        self.RepoTab = DockWidgetTabDownload(self)
-        self.RepoTab = DockWidgetTabProject(self)
+        self.TabRepo = DockWidgetTabRepository(self)
+        self.TabDownload = DockWidgetTabDownload(self)
+        self.TabProject = DockWidgetTabProject(self)
 
     def settingsLoad(self):
         dialog = SettingsDialog()
@@ -68,4 +68,3 @@ class RiverscapesToolbarDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
     def recalc_state(self):
         print "recalc state"
-

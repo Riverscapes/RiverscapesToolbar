@@ -2,7 +2,7 @@ import xml.etree.ElementTree as ET
 from PyQt4 import QtGui
 from PyQt4.QtGui import QStandardItem, QMenu, QStandardItemModel, QTreeView, QMessageBox, QIcon, QPixmap
 from StringIO import StringIO
-from RiverscapesToolbar.lib.toc_management import *
+from lib.toc_management import *
 import os
 
 
@@ -10,7 +10,7 @@ class DockWidgetTabProject():
 
     def __init__(self, dockWidget):
         print "init"
-        dockWidget.btnLoadProject.cliced.connect(self.projectBrowserDlg)
+        dockWidget.btnLoadProject.clicked.connect(self.projectBrowserDlg)
 
     def loadProject(dlg):
         print "project loaded"

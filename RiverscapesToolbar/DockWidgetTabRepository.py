@@ -1,10 +1,11 @@
 from lib.program import ProgramXML
 from lib.s3.walkers import s3ProductWalker
-from RiverscapesToolbar.settings import Settings
-from PyQt4.QtGui import QStandardItem, QMenu, QStandardItemModel, QTreeView, QMessageBox, QIcon, QPixmap
+from settings import Settings
+from PyQt4.QtGui import QStandardItem, QMenu, QStandardItemModel, QMessageBox
 from StringIO import StringIO
 from os import path
 from lib.toc_management import *
+from PopupDialog import okDlg
 
 class DockWidgetTabRepository():
 
@@ -13,7 +14,7 @@ class DockWidgetTabRepository():
         # def __init__(self, xmlPath, treeControl, parent=None):
         # Connect up our buttons to functions
         dockWidget.btnRefresh.clicked.connect(self.btn_refresh)
-        self.tree = self.treeRepository
+        self.tree = dockWidget.treeRepository
 
     def btn_refresh(self):
         """
@@ -24,23 +25,16 @@ class DockWidgetTabRepository():
         settings = Settings()
         program = ProgramXML(settings.getSetting('ProgramXMLUrl'))
 
-        print 'Walking through and finding projects:'
-        s3ProductWalker(program.Bucket)
+        # print 'Walking through and finding projects:'
+        # s3ProductWalker(program.Bucket)
 
         """ Constructor """
-        if program is None:
-            msg = "..."
-            q = QMessageBox(QMessageBox.Warning, "Could not find that file", msg)
-            q.setStandardButtons(QMessageBox.Ok)
-            i = QIcon()
-            i.addPixmap(QPixmap("..."), QIcon.Normal)
-            q.setWindowIcon(i)
-            q.exec_()
+        if program.DOM is None:
+            okDlg("ERROR:", infoText="Error downloading the program XML file", detailsTxt= "Error downloading the program XML file", icon=QMessageBox.Critical)
         else:
             self.model = QStandardItemModel()
             # Set up an invisible root item for the tree.
-            # self.treeRoot = self.model.invisibleRootItem()
-            self.treeRoot = QStandardItem("Root Item")
+            self.treeRoot = self.model.invisibleRootItem()
             self.model.appendRow(self.treeRoot)
             self.tree.setModel(self.model)
             self.tree.doubleClicked.connect(self.item_doubleClicked)
