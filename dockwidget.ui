@@ -24,7 +24,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tabRepository">
        <attribute name="title">
@@ -56,7 +56,14 @@
          </layout>
         </item>
         <item>
-         <widget class="QTreeView" name="treeRepository"/>
+         <widget class="QTreeView" name="treeRepository">
+          <property name="editTriggers">
+           <set>QAbstractItemView::NoEditTriggers</set>
+          </property>
+          <property name="headerHidden">
+           <bool>true</bool>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QLabel" name="lblRepoTabStatus">
@@ -113,7 +120,7 @@
       </widget>
       <widget class="QWidget" name="tab">
        <attribute name="title">
-        <string>Page</string>
+        <string>Download</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>

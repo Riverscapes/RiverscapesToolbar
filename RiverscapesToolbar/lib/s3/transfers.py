@@ -41,6 +41,8 @@ class Transfer:
     def list(self, prefix, **kwargs):
         return self.s3.list_objects(Bucket=self.bucket, Prefix=prefix, **kwargs)
 
+    def head(self, key, **kwargs):
+        return self.s3.head_object(Bucket=self.bucket, Key=key, **kwargs)
 
 class Progress(object):
     """
