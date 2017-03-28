@@ -163,7 +163,7 @@ class ProgramXML():
                 obj['type'] = 'collection'
                 obj['node'] = self.Collections[etNode.attrib['ref']]
 
-            for child in etNode.getchildren():
+            for child in list(etNode):
                 obj['children'].append(self.parseTree(child, obj['children']) )
 
         if treeNode is None:

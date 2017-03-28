@@ -182,6 +182,46 @@ def menuwalk(program, nodes=None, currpath=[]):
         #     chil
         return menuwalk(program, children, currpath[:])
 
+def programWalk(program, nodes=None, currpath=[]):
+    """
+    Walks through the program letting users choose if it's a level
+    or specify if it's a container It returns a set of program paths
+    that we then need to go and lookup to make our download queue
+    :param currlevelObj:
+    :param path:
+    :return:
+    """
+    log = logging.getLogger()
+    if nodes is None:
+        nodes = [program.Hierarchy]
+
+    name = nodes[0]['node']['name'] if len(nodes) == 1 else ""
+
+    # Get the list at the current path
+    pathstr = '/'.join(currpath) + '/' if len(currpath) > 0 else ""
+    levellist = s3GetFolderList(program.Bucket, pathstr)
+    querystr = "Collection Choice: {0}{1}".format(pathstr, name)
+    choicename = querychoices(querystr, levellist, "Select:")
+    currpath.append(choicename)
+
+    if len(nodes) > 1:
+        node = getnodekeyval(nodes, 'folder', choicename)
+    else:
+        node = nodes[0]
+
+    if node['type'] == 'product':
+        pathstr = '/'.join(currpath) + '/' if len(currpath) > 0 else ""
+        log.info("\nProduct Found: {0}".format(pathstr))
+        return currpath
+
+    # No we've made out choice. We need to move on.
+    elif 'children' in node and len(node['children']) > 0:
+        # child1 = node['children'][0]
+        children = node['children']
+        # if child1['type'] == 'collection':
+        #     chil
+        return menuwalk(program, children, currpath[:])
+
 
 def getnodekeyval(thelist, key, val):
     return next(x for x in thelist if x['node'][key] == val)
