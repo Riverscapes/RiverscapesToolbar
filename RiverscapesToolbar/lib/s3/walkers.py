@@ -9,10 +9,16 @@ def s3BuildOps(conf):
     """
     Compare a source folder with what's already in S3 and given
     the direction you specify it should figure out what to do.
-    :param src_files:
-    :param keyprefix:
-    :param bucket:
-    :return:
+
+    conf = {
+        "delete": args.delete,
+        "force": args.force,
+        "direction": direction,
+        "localroot": path.join(datadir, keyprefix),
+        "keyprefix": keyprefix,
+        "bucket": program.Bucket
+    }
+    :return: opstore
     """
     s3 = Transfer(conf['bucket'])
     opstore = {}

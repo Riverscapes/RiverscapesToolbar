@@ -1,86 +1,81 @@
-# We need a way to run asynchronous code so the UI stays responsive when we're doing things:
-import sys
-from PyQt4 import QtCore
-from PyQt4 import QtGui
+from Queue import Queue
+from PyQt4.QtCore import QThread, pyqtSignal
+import traceback
+from borg import Borg
 
 
-class RunObjectContainer(QtCore.QObject):
-    #temporarily holds references so objects don't get garbage collected
+class ToolbarQueues(Borg):
+
     def __init__(self):
-        self._container = set()
+        Borg.__init__(self)
 
-    def add(self, obj):
-        self._container.add(obj)
+        # These are the Queues we need to maintain
+        self.project_q = Queue()
+        self.project_complete_q = Queue()
+        self.transfer_q = Queue()
+        self.transfer_complete_q = Queue()
 
-    @QtCore.pyqtSlot(object)
-    def discard(self, obj):
-        self._container.discard(obj)
+        # These are the thread processes that run the downloading processes
+        self.worker_thread = TransferWorkerThread()
+        self.worker_thread.start()
 
-container = RunObjectContainer()
+        # These are the ways we communicate back to the UI
+        self.signalStatus = pyqtSignal(object)
+        self.killRequested = False
 
-class RunObject(QtCore.QObject):
-    run_complete = QtCore.pyqtSignal(object)
-    def __init__(self, parent=None,f=None):
-        super(RunObject, self).__init__(parent)
-        self._f = f
+    def popProject(self):
+        opstore = self.project_q.get()
+        # opstore is a dict with { s3key: S3Operation }
+        for key, val in opstore.iteritems():
+            self.transfer_q.put((key, val))
+        return opstore
 
-    @QtCore.pyqtSlot()
+    def listProjectQueue(self):
+        return [opstore.S3Operation.conf['keyprefix'] for opstore in list(self.project_q.queue)]
+
+    def listTransferQueue(self):
+        return [transfer[0] for transfer in list(self.transfer_q.queue)]
+
+    def stopThread(self):
+        self.killRequested = True
+
+    def startWorker(self):
+        self.killRequested = False
+        self.start()
+
+
+class TransferWorkerThread(QThread):
+    """
+    The worker class that will process our jobs
+    """
     def run(self):
-        self._f()
-        self.run_complete.emit(self)
+        try:
+            count = 0
+            Qs = ToolbarQueues()
+            currentProject = None
 
+            while not Qs.killRequested:
 
-main_thread = None
-worker_thread = QtCore.QThread()
+                if Qs.transefer_q.qsize() > 0:
+                    # If there's a file to download then download it.
+                    transferitem = Qs.transfer_q.get()
+                    Qs.signalStatus.emit({'status': 'Processing', 'item': transferitem})
+                    transferitem.execute()
+                    Qs.project_complete_q
+                    transferitem.task_done()
 
-
-def run_on_thread(thread_to_use, f):
-    run_obj = RunObject(f=f)
-    container.add(run_obj)
-    run_obj.run_complete.connect(container.discard)
-    if QtCore.QThread.currentThread() != thread_to_use:
-        run_obj.moveToThread(thread_to_use)
-    QtCore.QMetaObject.invokeMethod(run_obj, 'run', QtCore.Qt.QueuedConnection)
-
-def print_run_on(msg):
-    if QtCore.QThread.currentThread() == main_thread:
-        print(msg + " -- run on main thread")
-    elif QtCore.QThread.currentThread() == worker_thread:
-        print(msg + " -- run on worker thread")
-    else:
-        print("error " + msg + " -- run on unkown thread")
-        raise Exception(msg + " -- run on unkown thread")
-
-
-class Example(QtGui.QWidget):
-    def __init__(self):
-        super(Example, self).__init__()
-        self.initUI()
-    def initUI(self):
-        self.button = QtGui.QPushButton('Test', self)
-        self.button.clicked.connect(self.handleButton)
-        self.show()
-
-    def handleButton(self):
-        run_on_thread(main_thread, lambda: print_run_on("main_thread"))
-        run_on_thread(worker_thread, lambda: print_run_on("worker_thread"))
-
-        def n():
-            a = "yoyoyo"
-            print_run_on("running function n on thread ")
-            run_on_thread(main_thread, lambda: print_run_on("calling nested from n "))
-            run_on_thread(worker_thread, lambda: print_run_on("a is " + a))
-        run_on_thread(worker_thread, n)
-
-        print("end of handleButton")
-
-def gui_main():
-    app = QtGui.QApplication(sys.argv)
-    ex = Example()
-    worker_thread.start()
-    global main_thread
-    main_thread = app.thread()
-    sys.exit(app.exec_())
-
-if __name__ == '__main__':
-    gui_main()
+                else:
+                    # Transfer queue is empty. Find something else to do:
+                    if currentProject:
+                        currentProject.task_done()
+                        currentProject = None
+                    # Anything in the project Queue?
+                    if Qs.project_q.qsize() > 0:
+                        if Qs.project_q.qsize() == 0:
+                            # Pop a project (if possible) into the download Queue
+                            currentProject = Qs.popProject()
+                    else:
+                        Qs.signalStatus.emit({'status': 'Idle'})
+        except Exception, e:
+            print "TransferWorkerThread Exception: {}".format(str(e))
+            traceback.print_exc()
