@@ -5,9 +5,8 @@ import datetime
 from settings import Settings
 from PyQt4.QtGui import QStandardItem, QMenu, QMessageBox, QStandardItemModel, QBrush, QColor, QDesktopServices
 from PyQt4.QtCore import Qt, QUrl
-from StringIO import StringIO
 from os import path
-from lib.toc_management import *
+from lib.treehelper import *
 from PopupDialog import okDlg
 
 class DockWidgetTabRepository():
@@ -126,7 +125,7 @@ class RepoTreeItem():
 
         # Set the data backwards so we can find this object later
         self.qStdItem.setData(self, Qt.UserRole)
-
+        self.name = ""
         self.nItem = nItem
         self.type = nItem['node']['type']
         self.rtParent = rtParent
@@ -164,8 +163,9 @@ class RepoTreeItem():
         """
         depth = 1
         currParent = self.rtParent
-        while type(currParent) == RepoTreeItem:
-            depth +=1
+        # The first parent is not a RepoTreeItem so we can count them easily to get depth
+        while isinstance(currParent, RepoTreeItem):
+            depth += 1
             currParent = currParent.rtParent
         return depth
 
@@ -175,23 +175,20 @@ class RepoTreeItem():
         :param loadlevels:
         :return:
         """
-        # For Groups
+
         if self.type == 'product':
-            self.qStdItem.setText(self.nItem['node']['name'])
-            self.qStdItem.setForeground(QBrush(QColor("#660000")))
-
+            self.name = self.nItem['node']['name']
         elif self.type == "group":
-            self.qStdItem.setText(self.nItem['node']['folder'])
-            self.qStdItem.setForeground(QBrush(QColor("#000066")))
-
+            self.name = self.nItem['node']['name']
         elif self.type == 'collection':
+            self.name = self.path[-1]
             try:
                 # try and find a better name than just the folder name (not always possible)
                 folderItem = next(
-                    (d for d in self.nItem['node']['allows'] if d["folder"] == self.path[-1] and d['type'] == 'fixed'),
+                    (d for d in self.nItem['node']['allows'] if d["folder"] == self.name and d['type'] == 'fixed'),
                     None)
                 if folderItem is not None:
-                    self.qStdItem.setText(folderItem['name'])
+                    self.name = folderItem['name']
             except:
                 pass
 
@@ -208,15 +205,20 @@ class RepoTreeItem():
         if self.type == "product":
             head = s3HeadData(RepoTreeItem.program.Bucket, s3path)
             self.local = path.isfile(localpath)
+            setFontColor(self.qStdItem, "#AA3333")
         elif self.type == 'group':
             self.remote = s3Exists(RepoTreeItem.program.Bucket, s3path)
             self.local = path.isdir(localpath)
+            setFontColor(self.qStdItem, "#999999")
         elif self.type == 'collection':
             # With collections we've already done our checking with a directory list
             # So we assume the remote
             self.remote = True
             self.local = path.isdir(localpath)
+            setFontBold(self.qStdItem)
+            setFontColor(self.qStdItem, "#666666")
 
+        self.qStdItem.setText("{0} -- ({1}/{2})".format(self.name, str(self.local), str(self.remote)))
         self.loadtime = datetime.datetime.now()
         self.loaded = True
 

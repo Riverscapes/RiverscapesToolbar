@@ -1,24 +1,23 @@
-from PyQt4.QtGui import QFont, QColor
+from PyQt4.QtGui import QFont, QColor, QBrush
 
-def setFontColor(qtreeitem, colorstr):
-    font = QFont()
-    qtreeitem.set
+def setFontColor(qtreeitem, colorhex):
+    qtreeitem.setForeground(QBrush(QColor(colorhex)))
 
 def setFontBold(qtreeitem):
     font = QFont()
     font.setWeight(QFont.Bold)
-    qtreeitem.setFont(0, font)
+    qtreeitem.setFont(font)
 
 def setFontRegular(qtreeitem):
     font = QFont()
     font.setItalic(False)
     font.setWeight(QFont.Normal)
-    qtreeitem.setFont(0, font)
+    qtreeitem.setFont(font)
 
 def setFontItalic(qtreeitem):
     font = QFont()
     font.setItalic(True)
-    qtreeitem.setFont(0, font)
+    qtreeitem.setFont(font)
 
 
 def setItemIcon(qtreeitem, icon):
