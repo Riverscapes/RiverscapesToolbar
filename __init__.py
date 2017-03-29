@@ -28,9 +28,10 @@
 import os
 import logging
 DEBUG = False
+
+from RiverscapesToolbar.lib import debug
 if 'DEBUG_PLUGIN' in os.environ and os.environ['DEBUG_PLUGIN'] == "RiverscapesToolbar":
-    import pydevd
-    pydevd.settrace('localhost', port=53100, stdoutToServer=True, stderrToServer=True, suspend=False)
+    debug.InitDebug()
     DEBUG = True
     logging.basicConfig(level=logging.DEBUG)
 else:

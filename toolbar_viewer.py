@@ -26,6 +26,7 @@ from PyQt4.QtGui import QAction, QIcon
 import resources
 
 from RiverscapesToolbar.settings import Settings
+from RiverscapesToolbar.lib.async import ToolbarQueues
 
 # Import the code for the DockWidget
 from RiverscapesToolbar.DockWidget import RiverscapesToolbarDockWidget
@@ -50,8 +51,9 @@ class RiverscapesToolbarViewer:
         self.plugin_dir = os.path.dirname(__file__)
 
 
-        # Call our singleton the first time to set/reset settings if necessary
+        # Call our singletons the first time to set/reset settings if necessary
         Settings()
+        ToolbarQueues()
 
         # initialize locale
         locale = QSettings().value('locale/userLocale')[0:2]
