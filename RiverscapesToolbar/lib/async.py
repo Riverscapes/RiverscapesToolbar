@@ -24,8 +24,10 @@ class ToolbarQueues(ToolbarQueuesBorg):
             # These are the thread processes that run the downloading processes
             self.worker = TransferWorker()
             self.worker_thread = QThread()
-            self.worker.moveToThread(self.worker_thread)
             self.worker_thread.start()
+
+            self.worker.moveToThread(self.worker_thread)
+            self.worker.start.connect(self.worker.run)
 
             self.killrequested = False
             # Must be the last thing we do in init
@@ -38,28 +40,46 @@ class ToolbarQueues(ToolbarQueuesBorg):
             self.transfer_q.put((key, val))
         return opstore
 
+    def startWorker(self):
+        print "Attempting Queue Start:"
+        self.worker.killrequested = False
+        self.worker.start.emit("hello")
+
+    def stopWorker(self):
+        print "Attempting Queue Stop:"
+        self.worker.killrequested = True
+
+    def resetQueue(self):
+        if self.worker_thread.isRunning():
+            self.worker_thread.terminate()
+            self.worker_thread.wait()
+            self.worker_thread.start()
+
     def listProjectQueue(self):
         return [opstore.S3Operation.conf['keyprefix'] for opstore in list(self.project_q.queue)]
 
     def listTransferQueue(self):
         return [transfer[0] for transfer in list(self.transfer_q.queue)]
 
-    def stopWorker(self):
-        self.worker.killRequested = True
-
+# http://stackoverflow.com/questions/16879971/example-of-the-right-way-to-use-qthread-in-pyqt
 class TransferWorker(QObject):
     """
     The worker class that will process our jobs
     """
-    signalStatus = pyqtSignal(object)
     killrequested = False
 
-    def __init__(self, parent=None):
-        super(self.__class__, self).__init__(parent)
+    def __init__(self):
+        super(TransferWorker, self).__init__()
         self.currentProject = None
 
-    def startProcessing(self):
+    start = pyqtSignal(str)
+    status = pyqtSignal(object)
+
+    @pyqtSlot()
+    def run(self):
         # Gives us breakpoints in a thread but only if we are in debug mode
+        # Note that we're not subclassing QThread as per:
+        # http://stackoverflow.com/questions/20324804/how-to-use-qthread-correctly-in-pyqt-with-movetothread
         InitDebug()
         Qs = ToolbarQueues()
         try:
@@ -68,7 +88,7 @@ class TransferWorker(QObject):
                 if Qs.transfer_q.qsize() > 0:
                     # If there's a file to download then download it.
                     transferitem = Qs.transfer_q.get()
-                    self.signalStatus.emit({'status': 'Processing', 'item': transferitem})
+                    self.status.emit({'status': 'Processing', 'item': transferitem})
                     transferitem.execute()
                     # Put it into the complete queue
                     Qs.transfer_complete_q.put(transferitem)
@@ -86,7 +106,7 @@ class TransferWorker(QObject):
                             # Pop a project (if possible) into the download Queue
                             self.currentProject = Qs.popProject()
                     else:
-                        self.signalStatus.emit({'status': 'Idle'})
+                        self.status.emit({'status': 'Idle'})
             print "QUEUE STOPPED"
         except Exception, e:
             print "TransferWorkerThread Exception: {}".format(str(e))
