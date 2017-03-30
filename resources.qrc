@@ -10,5 +10,9 @@
         <file alias="monitor_red.png">images/icons/iconic_1-1-1_monitor_12_0_c0392b_none.png</file>
         <file alias="monitor_grey.png">images/icons/iconic_1-1-1_monitor_12_0_cccccc_none.png</file>
         <file alias="error_red.png">images/icons/material-icons_3-0-1_error_12_0_e74c3c_none.png</file>
+
+        <file alias="project.png">images/icons/font-awesome_4-7-0_file-powerpoint-o_12_0_666666_none.png</file>
+        <file alias="folder.png">images/icons/font-awesome_4-7-0_folder_12_0_666666_none.png</file>
+        <file alias="folder.png">images/icons/feather_1-1-0_loader_12_0_666666_none.png</file>
     </qresource>
 </RCC>
