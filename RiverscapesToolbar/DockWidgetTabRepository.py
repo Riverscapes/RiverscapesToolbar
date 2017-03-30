@@ -3,7 +3,7 @@ from lib.program import ProgramXML
 from lib.s3.walkers import s3GetFolderList, s3Exists, s3HeadData
 import datetime
 from settings import Settings
-from PyQt4.QtGui import QStandardItem, QMenu, QMessageBox, QStandardItemModel, QItemDelegate, QDesktopServices
+from PyQt4.QtGui import QStandardItem, QMenu, QMessageBox, QStandardItemModel, QItemDelegate, QDesktopServices, QIcon
 from PyQt4.QtCore import Qt, QUrl, QRectF
 from os import path
 from lib.treehelper import *
@@ -21,9 +21,6 @@ class DockWidgetTabRepository():
         RepoTreeItem.tree = dockWidget.treeRepository
         RepoTreeItem.tree.setAlternatingRowColors(True)
         RepoTreeItem.tree.setContextMenuPolicy(Qt.CustomContextMenu)
-        RepoTreeItem.treemodel = QStandardItemModel()
-        RepoTreeItem.treemodel.setColumnCount(3)
-        RepoTreeItem.tree.setModel(RepoTreeItem.treemodel)
 
         # RepoTreeItem.tree.setItemDelegate(TreeItemDelegate())
         RepoTreeItem.tree.customContextMenuRequested.connect(self.openMenu)
@@ -40,6 +37,10 @@ class DockWidgetTabRepository():
 
         # Set up the first domino for the recursion
         print "HERE1"
+        RepoTreeItem.treemodel = QStandardItemModel()
+        RepoTreeItem.treemodel.setColumnCount(3)
+        RepoTreeItem.tree.setModel(RepoTreeItem.treemodel)
+
         rootItem = RepoTreeItem(loadlevels = 1)
         RepoTreeItem.tree.expandToDepth(1)
 
@@ -114,14 +115,13 @@ class RepoTreeItem():
     program = None
     localdir = None
     tree = None
-    treeModel = None
+    treemodel = None
 
     def __init__(self, nItem=None, rtParent=None, path=[], loadlevels=1):
 
         self.qStdItem = QStandardItem(self.LOADING)
-        self.qStdItemLocalState = QStandardItem("L")
-        self.qStdItemRemoteState = QStandardItem("R")
-        self.qStdItemLocalState.setIcon()
+        self.qStdItemLocalState = QStandardItem()
+        self.qStdItemRemoteState = QStandardItem()
 
         if not RepoTreeItem.program or not RepoTreeItem.localdir:
             self.fetchProgramContext()
@@ -235,8 +235,18 @@ class RepoTreeItem():
             setFontColor(self.qStdItem, "#666666")
 
         self.qStdItem.setText(self.name)
-        self.qStdItemLocalState.setText(str(self.local))
-        self.qStdItemRemoteState.setText(str(self.remote))
+
+        if self.local:
+            self.qStdItemLocalState.setIcon(QIcon(qTreeIconStates.LOCAL_PRESENT))
+        else:
+            self.qStdItemLocalState.setIcon(QIcon(qTreeIconStates.LOCAL_MISSING))
+        if self.remote:
+            self.qStdItemRemoteState.setIcon(QIcon(qTreeIconStates.REMOTE_PRESENT))
+        else:
+            self.qStdItemRemoteState.setIcon(QIcon(qTreeIconStates.REMOTE_MISSING))
+
+        self.qStdItemLocalState.setIcon(QIcon(":/plugins/RiverscapesToolbar/icon.png"))
+        self.qStdItemRemoteState.setIcon(QIcon(":/plugins/RiverscapesToolbar/caret_down_green.png.png"))
 
         self.loadtime = datetime.datetime.now()
         self.loaded = True
@@ -274,6 +284,16 @@ class RepoTreeItem():
                     newTreeItem = RepoTreeItem(child, self, newpath, loadlevels=loadlevels)
                     self.qStdItem.appendRow([newTreeItem.qStdItem, newTreeItem.qStdItemLocalState, newTreeItem.qStdItemRemoteState])
 
+
+class qTreeIconStates:
+    # Think of this like an enumeration for icons
+    LOCAL_MISSING = ":/plugins/RiverscapesToolbar/monitor_grey.png"
+    LOCAL_OLDER = ":/plugins/RiverscapesToolbar/monitor_red.png"
+    LOCAL_PRESENT = ":/plugins/RiverscapesToolbar/monitor_black.png"
+
+    REMOTE_MISSING = ":/plugins/RiverscapesToolbar/cloud_grey.png"
+    REMOTE_OLDER = ":/plugins/RiverscapesToolbar/cloud_red.png"
+    REMOTE_PRESENT = ":/plugins/RiverscapesToolbar/cloud_black.png"
 
 # class TreeItemDelegate(QItemDelegate):
 #
