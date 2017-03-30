@@ -3,7 +3,7 @@ from lib.program import ProgramXML
 from lib.s3.walkers import s3GetFolderList, s3Exists, s3HeadData
 import datetime
 from settings import Settings
-from PyQt4.QtGui import QStandardItem, QMenu, QMessageBox, QStandardItemModel, QItemDelegate, QDesktopServices, QIcon
+from PyQt4.QtGui import QStandardItem, QMenu, QMessageBox, QStandardItemModel, QHeaderView, QDesktopServices, QIcon
 from PyQt4.QtCore import Qt, QUrl, QRectF
 from os import path
 from lib.treehelper import *
@@ -39,10 +39,18 @@ class DockWidgetTabRepository():
         print "HERE1"
         RepoTreeItem.treemodel = QStandardItemModel()
         RepoTreeItem.treemodel.setColumnCount(3)
+
         RepoTreeItem.tree.setModel(RepoTreeItem.treemodel)
 
-        rootItem = RepoTreeItem(loadlevels = 1)
-        RepoTreeItem.tree.expandToDepth(1)
+        RepoTreeItem.tree.setColumnWidth(0, 300)
+        RepoTreeItem.tree.setColumnWidth(1, 20)
+        RepoTreeItem.tree.setColumnWidth(2, 20)
+        RepoTreeItem.tree.header().setResizeMode(0, QHeaderView.Stretch)
+        RepoTreeItem.tree.header().setResizeMode(0, QHeaderView.Fixed)
+        RepoTreeItem.tree.header().setResizeMode(0, QHeaderView.Fixed)
+
+        rootItem = RepoTreeItem(loadlevels = 4)
+        RepoTreeItem.tree.expandToDepth(3)
 
         self.dockwidget.btnRefresh.setEnabled(True)
         self.dockwidget.btnRefresh.setText("Refresh")
@@ -120,8 +128,6 @@ class RepoTreeItem():
     def __init__(self, nItem=None, rtParent=None, path=[], loadlevels=1):
 
         self.qStdItem = QStandardItem(self.LOADING)
-        self.qStdItemLocalState = QStandardItem()
-        self.qStdItemRemoteState = QStandardItem()
 
         if not RepoTreeItem.program or not RepoTreeItem.localdir:
             self.fetchProgramContext()
@@ -130,7 +136,7 @@ class RepoTreeItem():
             nItem = RepoTreeItem.program.Hierarchy
         if not rtParent:
             rtParent = RepoTreeItem.treemodel
-            rtParent.appendRow([self.qStdItem, self.qStdItemLocalState, self.qStdItemRemoteState])
+            rtParent.appendRow([self.qStdItem, QStandardItem(), QStandardItem()])
 
         # Set the data backwards so we can find this object later
         self.qStdItem.setData(self, Qt.UserRole)
@@ -163,6 +169,7 @@ class RepoTreeItem():
 
     def reset(self):
         self.loaded = False
+        self.childrenloaded = False
 
         self.loadtime = None
 
@@ -209,6 +216,7 @@ class RepoTreeItem():
                 pass
 
         self.recalcState()
+        self.loaded = True
         self.loadChildren((loadlevels - 1))
 
     def recalcState(self):
@@ -218,14 +226,17 @@ class RepoTreeItem():
         """
         s3path = '/'.join(self.path)
         localpath = path.join(RepoTreeItem.localdir, path.sep.join(self.path))
+
         if self.type == "product":
             head = s3HeadData(RepoTreeItem.program.Bucket, s3path)
             self.local = path.isfile(localpath)
             setFontColor(self.qStdItem, "#AA3333")
+
         elif self.type == 'group':
             self.remote = s3Exists(RepoTreeItem.program.Bucket, s3path)
             self.local = path.isdir(localpath)
             setFontColor(self.qStdItem, "#999999")
+
         elif self.type == 'collection':
             # With collections we've already done our checking with a directory list
             # So we assume the remote
@@ -236,23 +247,34 @@ class RepoTreeItem():
 
         self.qStdItem.setText(self.name)
 
-        if self.local:
-            self.qStdItemLocalState.setIcon(QIcon(qTreeIconStates.LOCAL_PRESENT))
-        else:
-            self.qStdItemLocalState.setIcon(QIcon(qTreeIconStates.LOCAL_MISSING))
-        if self.remote:
-            self.qStdItemRemoteState.setIcon(QIcon(qTreeIconStates.REMOTE_PRESENT))
-        else:
-            self.qStdItemRemoteState.setIcon(QIcon(qTreeIconStates.REMOTE_MISSING))
+        if self.type == "product":
+            if not self.local and not self.remote:
+                setFontColor(self.qStdItem, "#6e7015")
+                self.qStdItem.setEnabled(False)
 
-        self.qStdItemLocalState.setIcon(QIcon(":/plugins/RiverscapesToolbar/icon.png"))
-        self.qStdItemRemoteState.setIcon(QIcon(":/plugins/RiverscapesToolbar/caret_down_green.png.png"))
+            if self.local:
+                self.qStdItemLocalState.setIcon(QIcon(qTreeIconStates.LOCAL_PRESENT))
+            else:
+                self.qStdItemLocalState.setIcon(QIcon(qTreeIconStates.LOCAL_MISSING))
+            if self.remote:
+                self.qStdItemRemoteState.setIcon(QIcon(qTreeIconStates.REMOTE_PRESENT))
+            else:
+                self.qStdItemRemoteState.setIcon(QIcon(qTreeIconStates.REMOTE_MISSING))
+
+        else:
+            # Not a product.
+            self.createDummyChild()
 
         self.loadtime = datetime.datetime.now()
-        self.loaded = True
+
+    def createDummyChild(self):
+        self.qStdItem.removeRows(0, self.qStdItem.rowCount())
+
+    def setVisible(self):
+        print "help"
 
     def loadChildren(self, loadlevels):
-        # TODO: If there are children we might need to delete them first
+        self.qStdItem.removeRows(0, self.qStdItem.rowCount())
 
         if loadlevels < 1 or self.type == 'product':
             return
@@ -268,13 +290,13 @@ class RepoTreeItem():
                 newpath.append(child['node']['folder'])
                 newpath.append(RepoTreeItem.program.ProjectFile)
                 newTreeItem = RepoTreeItem(child, self, newpath, loadlevels=loadlevels)
-                self.qStdItem.appendRow(newTreeItem.qStdItem)
+                self.qStdItem.appendRow([newTreeItem.qStdItem, QStandardItem(), QStandardItem()])
 
             elif type == 'group':
                 newpath = self.path[:]
                 newpath.append(child['node']['folder'])
                 newTreeItem = RepoTreeItem(child, self, newpath, loadlevels=loadlevels)
-                self.qStdItem.appendRow([newTreeItem.qStdItem, newTreeItem.qStdItemLocalState, newTreeItem.qStdItemRemoteState])
+                self.qStdItem.appendRow([newTreeItem.qStdItem, QStandardItem(), QStandardItem()])
 
             elif type == 'collection':
                 # Unfortunately the only way to list collections is to go get them physically.
@@ -282,7 +304,9 @@ class RepoTreeItem():
                     newpath = self.path[:]
                     newpath.append(levelname)
                     newTreeItem = RepoTreeItem(child, self, newpath, loadlevels=loadlevels)
-                    self.qStdItem.appendRow([newTreeItem.qStdItem, newTreeItem.qStdItemLocalState, newTreeItem.qStdItemRemoteState])
+                    self.qStdItem.appendRow([newTreeItem.qStdItem, QStandardItem(), QStandardItem()])
+
+        self.childrenloaded = True
 
 
 class qTreeIconStates:
