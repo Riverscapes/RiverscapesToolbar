@@ -1,5 +1,43 @@
 <RCC>
-    <qresource prefix="/plugins/RiverscapesToolbar">
+
+    <qresource prefix="/plugins/RiverscapesToolbar/images/icons">
         <file>icon.png</file>
     </qresource>
+
+    <qresource prefix="/plugins/RiverscapesToolbar/images/icons">
+        <file>font-awesome_4-7-0_caret-down_12_0_27ae60_none.png</file>
+    </qresource>
+
+    <qresource prefix="/plugins/RiverscapesToolbar/images/icons">
+        <file>font-awesome_4-7-0_caret-up_12_0_2980b9_none.png</file>
+    </qresource>
+
+    <qresource prefix="/plugins/RiverscapesToolbar/images/icons">
+        <file>font-awesome_4-7-0_cloud_12_0_000000_none.png</file>
+    </qresource>
+
+    <qresource prefix="/plugins/RiverscapesToolbar/images/icons">
+        <file>font-awesome_4-7-0_cloud_12_0_c0392b_none.png</file>
+    </qresource>
+
+    <qresource prefix="/plugins/RiverscapesToolbar/images/icons">
+        <file>font-awesome_4-7-0_cloud_12_0_cccccc_none.png</file>
+    </qresource>
+
+    <qresource prefix="/plugins/RiverscapesToolbar/images/icons">
+        <file>iconic_1-1-1_monitor_12_0_000000_none.png</file>
+    </qresource>
+
+    <qresource prefix="/plugins/RiverscapesToolbar/images/icons">
+        <file>iconic_1-1-1_monitor_12_0_c0392b_none.png</file>
+    </qresource>
+
+    <qresource prefix="/plugins/RiverscapesToolbar/images/icons">
+        <file>iconic_1-1-1_monitor_12_0_cccccc_none.png</file>
+    </qresource>
+
+    <qresource prefix="/plugins/RiverscapesToolbar/images/icons">
+        <file>material-icons_3-0-1_error_12_0_e74c3c_none.png</file>
+    </qresource>
+
 </RCC>

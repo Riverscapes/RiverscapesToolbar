@@ -3,8 +3,8 @@ from lib.program import ProgramXML
 from lib.s3.walkers import s3GetFolderList, s3Exists, s3HeadData
 import datetime
 from settings import Settings
-from PyQt4.QtGui import QStandardItem, QMenu, QMessageBox, QStandardItemModel, QBrush, QColor, QDesktopServices
-from PyQt4.QtCore import Qt, QUrl
+from PyQt4.QtGui import QStandardItem, QMenu, QMessageBox, QStandardItemModel, QItemDelegate, QDesktopServices
+from PyQt4.QtCore import Qt, QUrl, QRectF
 from os import path
 from lib.treehelper import *
 from PopupDialog import okDlg
@@ -15,39 +15,34 @@ class DockWidgetTabRepository():
         # used to be:
         # def __init__(self, xmlPath, treeControl, parent=None):
         # Connect up our buttons to functions
-        self.tree = dockWidget.treeRepository
-        self.tree.alternatingRowColors()
         self.dockwidget = dockWidget
-        dockWidget.btnRefresh.clicked.connect(self.btn_refresh)
 
-        self.tree.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.tree.customContextMenuRequested.connect(self.openMenu)
+        # Set as static so we can find it.
+        RepoTreeItem.tree = dockWidget.treeRepository
+        RepoTreeItem.tree.setAlternatingRowColors(True)
+        RepoTreeItem.tree.setContextMenuPolicy(Qt.CustomContextMenu)
+        RepoTreeItem.treemodel = QStandardItemModel()
+        RepoTreeItem.treemodel.setColumnCount(3)
+        RepoTreeItem.tree.setModel(RepoTreeItem.treemodel)
 
-    def btn_refresh(self):
+        # RepoTreeItem.tree.setItemDelegate(TreeItemDelegate())
+        RepoTreeItem.tree.customContextMenuRequested.connect(self.openMenu)
+
+        dockWidget.btnRefresh.clicked.connect(self.refreshRoot)
+
+    def refreshRoot(self):
         """
         Refresh the main dialog
         :return:
         """
-        print "clicked"
         self.dockwidget.btnRefresh.setText("Loading...")
         self.dockwidget.btnRefresh.setEnabled(False)
-        settings = Settings()
 
-        # Set a static variable for this class
-        RepoTreeItem.program = ProgramXML(settings.getSetting('ProgramXMLUrl'))
-        RepoTreeItem.localdir = settings.getSetting('DataDir')
+        # Set up the first domino for the recursion
+        print "HERE1"
+        rootItem = RepoTreeItem(loadlevels = 1)
+        RepoTreeItem.tree.expandToDepth(1)
 
-        if RepoTreeItem.program.DOM is None:
-            okDlg("ERROR:", infoText="Error downloading the program XML file", detailsTxt= "Error downloading the program XML file", icon=QMessageBox.Critical)
-        else:
-            model = QStandardItemModel()
-            self.tree.setModel(model)
-
-            # Set up the first domino for the recursion
-            rootItem = RepoTreeItem(RepoTreeItem.program.Hierarchy, model, loadlevels=4)
-            model.appendRow(rootItem.qStdItem)
-
-            self.tree.expandToDepth(2)
         self.dockwidget.btnRefresh.setEnabled(True)
         self.dockwidget.btnRefresh.setText("Refresh")
 
@@ -56,13 +51,13 @@ class DockWidgetTabRepository():
     # Convenience Functions
     # ------------------------------------------------
     def item_doubleClicked(self, index):
-        item = self.tree.selectedIndexes()[0]
+        item = RepoTreeItem.tree.selectedIndexes()[0]
         # self.openProject(item.model().itemFromIndex(index))
         # menu.exec_(self.tree.viewport().mapToGlobal(position))
 
     def openMenu(self, pt):
         """ Handle the contextual menu """
-        item = self.tree.selectedIndexes()[0]
+        item = RepoTreeItem.tree.selectedIndexes()[0]
         theData = item.data(Qt.UserRole)
 
         if (theData.type=="product"):
@@ -78,7 +73,7 @@ class DockWidgetTabRepository():
             uploAction = menu.addAction("Upload Project", uploadReciever)
             menu.addSeparator()
             findAction = menu.addAction("Find Folder", findFolderReciever)
-            menu.exec_(self.tree.mapToGlobal(pt))
+            menu.exec_(RepoTreeItem.tree.mapToGlobal(pt))
 
     def addProjectToDownloadQueue(self, rtItem):
         print "Adding to download Queue: " + '/'.join(rtItem.path)
@@ -118,10 +113,24 @@ class RepoTreeItem():
     LOADING = 'Loading...'
     program = None
     localdir = None
+    tree = None
+    treeModel = None
 
-    def __init__(self, nItem, rtParent, path=[], loadlevels=1):
+    def __init__(self, nItem=None, rtParent=None, path=[], loadlevels=1):
 
         self.qStdItem = QStandardItem(self.LOADING)
+        self.qStdItemLocalState = QStandardItem("L")
+        self.qStdItemRemoteState = QStandardItem("R")
+        self.qStdItemLocalState.setIcon()
+
+        if not RepoTreeItem.program or not RepoTreeItem.localdir:
+            self.fetchProgramContext()
+
+        if not nItem:
+            nItem = RepoTreeItem.program.Hierarchy
+        if not rtParent:
+            rtParent = RepoTreeItem.treemodel
+            rtParent.appendRow([self.qStdItem, self.qStdItemLocalState, self.qStdItemRemoteState])
 
         # Set the data backwards so we can find this object later
         self.qStdItem.setData(self, Qt.UserRole)
@@ -144,6 +153,13 @@ class RepoTreeItem():
             self.path = ["CRB"]
 
         self.load(loadlevels)
+
+
+    @staticmethod
+    def fetchProgramContext():
+        settings = Settings()
+        RepoTreeItem.program = ProgramXML(settings.getSetting('ProgramXMLUrl'))
+        RepoTreeItem.localdir = settings.getSetting('DataDir')
 
     def reset(self):
         self.loaded = False
@@ -218,12 +234,16 @@ class RepoTreeItem():
             setFontBold(self.qStdItem)
             setFontColor(self.qStdItem, "#666666")
 
-        self.qStdItem.setText("{0} -- ({1}/{2})".format(self.name, str(self.local), str(self.remote)))
+        self.qStdItem.setText(self.name)
+        self.qStdItemLocalState.setText(str(self.local))
+        self.qStdItemRemoteState.setText(str(self.remote))
+
         self.loadtime = datetime.datetime.now()
         self.loaded = True
 
-
     def loadChildren(self, loadlevels):
+        # TODO: If there are children we might need to delete them first
+
         if loadlevels < 1 or self.type == 'product':
             return
 
@@ -244,7 +264,7 @@ class RepoTreeItem():
                 newpath = self.path[:]
                 newpath.append(child['node']['folder'])
                 newTreeItem = RepoTreeItem(child, self, newpath, loadlevels=loadlevels)
-                self.qStdItem.appendRow(newTreeItem.qStdItem)
+                self.qStdItem.appendRow([newTreeItem.qStdItem, newTreeItem.qStdItemLocalState, newTreeItem.qStdItemRemoteState])
 
             elif type == 'collection':
                 # Unfortunately the only way to list collections is to go get them physically.
@@ -252,4 +272,39 @@ class RepoTreeItem():
                     newpath = self.path[:]
                     newpath.append(levelname)
                     newTreeItem = RepoTreeItem(child, self, newpath, loadlevels=loadlevels)
-                    self.qStdItem.appendRow(newTreeItem.qStdItem)
+                    self.qStdItem.appendRow([newTreeItem.qStdItem, newTreeItem.qStdItemLocalState, newTreeItem.qStdItemRemoteState])
+
+
+# class TreeItemDelegate(QItemDelegate):
+#
+#     def __init__(self, parent=None):
+#         super(TreeItemDelegate, self).__init__(parent)
+#
+#     def paint(self, painter, option, index):
+#         """custom painter for progress state """
+#         if index.column() == 0:
+#             # For the first column just print as usual
+#             QItemDelegate.paint(painter, option, index)
+#         elif index.column() == 1:
+#             super(TreeItemDelegate, self).paint(painter, option, index)
+#         elif index.column() == 2:
+#             super(TreeItemDelegate, self).paint(painter, option, index)
+
+
+        #     # calculate where to put the painted rect
+        #     fullRect = option.rect
+        #     center = fullRect.center()
+        #     newRect = QRectF()
+        #     newRect.setTop(center.y() - 5)
+        #     newRect.setBottom(center.y() + 5)
+        #     newRect.setLeft(center.x() - 10)
+        #     newRect.setRight(center.x() + 10)
+        #
+        #     color = self._getColorForProgress(progress)
+        #     # paint
+        #     painter.save()
+        #     painter.fillRect(newRect, color)
+        #     painter.translate(option.rect.x(), option.rect.y() + 5)
+        #     painter.restore()
+        # else:
+        #     QItemDelegate.paint(self, painter, option, index)
