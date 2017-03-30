@@ -103,8 +103,8 @@ def s3Exists(bucket, prefix):
     try:
         response = s3.list(prefix, Delimiter='/')
         if 'Contents' in response or 'CommonPrefixes' in response:
-            print "Found:: " + prefix
             result = True
+            print "FoundPrefix:: " + prefix
     except:
         pass
     return result
@@ -123,10 +123,8 @@ def s3HeadData(bucket, key):
     head = None
     # list everything at this collection
     try:
-        response = s3.head(key, Delimiter='/')
-        if 'Contents' in response or 'CommonPrefixes' in response:
-            print "Found:: " + key
-            result = True
+        head = s3.head(key)
+        print "FoundKey:: " + key
     except:
         pass
     return head

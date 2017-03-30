@@ -24,7 +24,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>2</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tabRepository">
        <attribute name="title">
@@ -56,13 +56,12 @@
          </layout>
         </item>
         <item>
-         <widget class="QTreeView" name="treeRepository">
-          <property name="editTriggers">
-           <set>QAbstractItemView::NoEditTriggers</set>
-          </property>
-          <property name="headerHidden">
-           <bool>true</bool>
-          </property>
+         <widget class="QTreeWidget" name="treeRepository">
+          <column>
+           <property name="text">
+            <string notr="true">1</string>
+           </property>
+          </column>
          </widget>
         </item>
         <item>
