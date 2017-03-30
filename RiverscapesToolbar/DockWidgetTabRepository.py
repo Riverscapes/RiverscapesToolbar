@@ -31,7 +31,6 @@ class DockWidgetTabRepository():
         RepoTreeItem.tree.header().setResizeMode(2, QHeaderView.Fixed)
         RepoTreeItem.tree.setHeaderLabels(["", "Local", "Remote"])
 
-        # RepoTreeItem.tree.setItemDelegate(TreeItemDelegate())
         RepoTreeItem.tree.customContextMenuRequested.connect(self.openMenu)
 
         dockWidget.btnRefresh.clicked.connect(self.refreshRoot)
@@ -98,7 +97,8 @@ class DockWidgetTabRepository():
         print "Adding to Upload Queue: " + '/'.join(rtItem.path)
 
     def findFolder(self, rtItem):
-        QDesktopServices.openUrl(QUrl('/'.join(rtItem.path)))
+        qurl = QUrl.fromLocalFile(path.join(RepoTreeItem.localdir, path.sep.join(rtItem.path[:-1])))
+        QDesktopServices.openUrl(qurl)
 
     def getLabel(self, templateNode, projNode):
         """ Either use the liral text inside <label> or look it
@@ -340,37 +340,3 @@ class qTreeIconStates:
     REMOTE_MISSING = ":/plugins/RiverscapesToolbar/cloud_grey.png"
     REMOTE_OLDER = ":/plugins/RiverscapesToolbar/cloud_red.png"
     REMOTE_PRESENT = ":/plugins/RiverscapesToolbar/cloud_black.png"
-
-# class TreeItemDelegate(QItemDelegate):
-#
-#     def __init__(self, parent=None):
-#         super(TreeItemDelegate, self).__init__(parent)
-#
-#     def paint(self, painter, option, index):
-#         """custom painter for progress state """
-#         if index.column() == 0:
-#             # For the first column just print as usual
-#             QItemDelegate.paint(painter, option, index)
-#         elif index.column() == 1:
-#             super(TreeItemDelegate, self).paint(painter, option, index)
-#         elif index.column() == 2:
-#             super(TreeItemDelegate, self).paint(painter, option, index)
-
-
-        #     # calculate where to put the painted rect
-        #     fullRect = option.rect
-        #     center = fullRect.center()
-        #     newRect = QRectF()
-        #     newRect.setTop(center.y() - 5)
-        #     newRect.setBottom(center.y() + 5)
-        #     newRect.setLeft(center.x() - 10)
-        #     newRect.setRight(center.x() + 10)
-        #
-        #     color = self._getColorForProgress(progress)
-        #     # paint
-        #     painter.save()
-        #     painter.fillRect(newRect, color)
-        #     painter.translate(option.rect.x(), option.rect.y() + 5)
-        #     painter.restore()
-        # else:
-        #     QItemDelegate.paint(self, painter, option, index)
