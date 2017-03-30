@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="project_schema.xsd">
+  <name>GCD</name>
+  <test>/SystemInfo</test>
+  <node>
+    <label>Habitat</label>
+    <children collapsed="false">
+      <repeater>
+        <label>Prepared Inputs</label>
+        <xpath>SimulationHSCInputs</xpath>
+        <node>
+          <label xpath="HSPreparedPath"/>
+          <entity>
+            <type>raster</type>
+            <xpath>HSPreparedPath</xpath>
+            <symbology>DEM</symbology>
+          </entity>
+        </node>
+      </repeater>
+      <repeater>
+        <label>Simulations</label>
+        <xpath>Simulations</xpath>
+        <node>
+          <label xpath="Title"/>
+          <children>
+            <node>
+              <label>Output Raster</label>
+              <entity>
+                <type>raster</type>
+                <xpath>OutputRaster</xpath>
+                <symbology>DEM</symbology>
+              </entity>
+            </node>
+          </children>
+        </node>
+      </repeater>
+      <node>
+        <label>Context Layers</label>
+        <children>
+          <node>
+            <label>Google Maps</label>
+            <entity>
+              <type>tiles</type>
+              <tileservice>GMaps</tileservice>
+            </entity>
+          </node>
+          <node>
+            <label>NAIP</label>
+            <entity>
+              <type>tiles</type>
+              <tileservice>NAIP</tileservice>
+            </entity>
+          </node>
+        </children>
+      </node>
+    </children>
+  </node>
+</project>

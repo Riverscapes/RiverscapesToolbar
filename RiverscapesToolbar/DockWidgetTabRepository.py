@@ -22,14 +22,15 @@ class DockWidgetTabRepository():
         RepoTreeItem.tree.setAlternatingRowColors(True)
         RepoTreeItem.tree.setContextMenuPolicy(Qt.CustomContextMenu)
 
-        RepoTreeItem.tree.setColumnCount(3)
-        RepoTreeItem.tree.setColumnWidth(0, 300)
-        RepoTreeItem.tree.setColumnWidth(1, 20)
-        RepoTreeItem.tree.setColumnWidth(2, 20)
-        RepoTreeItem.tree.header().setResizeMode(0, QHeaderView.Stretch)
-        RepoTreeItem.tree.header().setResizeMode(1, QHeaderView.Fixed)
-        RepoTreeItem.tree.header().setResizeMode(2, QHeaderView.Fixed)
-        RepoTreeItem.tree.setHeaderLabels(["", "Local", "Remote"])
+        RepoTreeItem.tree.setColumnCount(1)
+        RepoTreeItem.tree.setHeaderHidden(True)
+        # RepoTreeItem.tree.setColumnWidth(0, 400)
+        # RepoTreeItem.tree.setColumnWidth(1, 20)
+        # RepoTreeItem.tree.setColumnWidth(2, 20)
+        # RepoTreeItem.tree.header().setResizeMode(0, QHeaderView.Stretch)
+        # RepoTreeItem.tree.header().setResizeMode(1, QHeaderView.Fixed)
+        # RepoTreeItem.tree.header().setResizeMode(2, QHeaderView.Fixed)
+        # RepoTreeItem.tree.setHeaderLabels(["", "Local", "Remote"])
 
         RepoTreeItem.tree.customContextMenuRequested.connect(self.openMenu)
 
@@ -64,6 +65,8 @@ class DockWidgetTabRepository():
         theData = item.data(Qt.UserRole)
 
         menu = QMenu()
+        refreshReceiver = lambda item=theData: item.refreshAction()
+
         if (theData.type=="product"):
             openReceiver = lambda item=theData: self.openProject(item)
             downloadReceiver = lambda item=theData: self.addProjectToDownloadQueue(item)
@@ -75,6 +78,7 @@ class DockWidgetTabRepository():
             downAction = menu.addAction("Download Project", downloadReceiver)
             uploAction = menu.addAction("Upload Project", uploadReceiver)
             menu.addSeparator()
+            refreshAction = menu.addAction("Refresh", refreshReceiver)
             findAction = menu.addAction("Find Folder", findFolderReceiver)
 
             # The actions are available if the projects are available locally or otherwise
@@ -86,6 +90,9 @@ class DockWidgetTabRepository():
         else:
             dwnQueueReceiver = lambda item=theData: self.openProject(item)
             queueContainerAction = menu.addAction("Add projects to Download Queue", dwnQueueReceiver)
+            refreshAction = menu.addAction("Refresh", refreshReceiver)
+
+
             queueContainerAction.setEnabled(True)
 
         menu.exec_(RepoTreeItem.tree.mapToGlobal(pt))
@@ -230,6 +237,11 @@ class RepoTreeItem():
         self.loaded = True
         self.loadChildren((loadlevels - 1))
 
+    def refreshAction(self):
+        print "refreshing"
+        self.recalcState()
+        self.loadChildren(loadlevels=1)
+
     def recalcState(self):
         """
         All important state function. This tells us a lot about what's new, what's old and what exists
@@ -242,13 +254,18 @@ class RepoTreeItem():
             head = s3HeadData(RepoTreeItem.program.Bucket, s3path)
             self.local = path.isfile(localpath)
             self.remote = head is not None
-            setFontBold(self.qTreeWItem, column=0)
-            setFontColor(self.qTreeWItem, "#000000", column=0)
+
+            if self.local:
+                setFontBold(self.qTreeWItem, column=0)
+                setFontColor(self.qTreeWItem, "#444444", column=0)
+            else:
+                setFontColor(self.qTreeWItem, "#cccccc", column=0)
 
         elif self.type == 'group':
             self.remote = s3Exists(RepoTreeItem.program.Bucket, s3path)
             self.local = path.isdir(localpath)
             setFontColor(self.qTreeWItem, "#999999", column=0)
+
 
         elif self.type == 'collection':
             # With collections we've already done our checking with a directory list
@@ -263,15 +280,16 @@ class RepoTreeItem():
         # Walk back up the tree and hide things that have no value
         self.calcVisible()
 
-        if self.type == "product":
-            if self.local:
-                self.qTreeWItem.setIcon(1, QIcon(qTreeIconStates.LOCAL_PRESENT))
-            else:
-                self.qTreeWItem.setIcon(1, QIcon(qTreeIconStates.LOCAL_MISSING))
-            if self.remote:
-                self.qTreeWItem.setIcon(2, QIcon(qTreeIconStates.REMOTE_PRESENT))
-            else:
-                self.qTreeWItem.setIcon(2, QIcon(qTreeIconStates.REMOTE_MISSING))
+        # if self.type == "product":
+        #     if self.local:
+        #         self.qTreeWItem.setIcon(1, QIcon(qTreeIconStates.LOCAL_PRESENT))
+        #     else:
+        #         self.qTreeWItem.setIcon(1, QIcon(qTreeIconStates.LOCAL_MISSING))
+            # TODO: Commenting this out since this column is implied by the other
+            # if self.remote:
+            #     self.qTreeWItem.setIcon(2, QIcon(qTreeIconStates.REMOTE_PRESENT))
+            # else:
+            #     self.qTreeWItem.setIcon(2, QIcon(qTreeIconStates.REMOTE_MISSING))
 
         self.loadtime = datetime.datetime.now()
 
