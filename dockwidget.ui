@@ -24,7 +24,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tabRepository">
        <attribute name="title">
@@ -107,6 +107,13 @@
              </size>
             </property>
            </spacer>
+          </item>
+          <item>
+           <widget class="QToolButton" name="btnDEBUG">
+            <property name="text">
+             <string>DEBUG</string>
+            </property>
+           </widget>
           </item>
           <item>
            <widget class="QToolButton" name="btnLoadProject">

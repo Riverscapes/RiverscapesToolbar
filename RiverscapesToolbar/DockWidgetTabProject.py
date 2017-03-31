@@ -1,7 +1,7 @@
 import xml.etree.ElementTree as ET
 from PyQt4 import QtGui
-from PyQt4.QtGui import QStandardItem, QMenu, QTreeWidgetItem, QStandardItemModel, QMessageBox, QIcon, QPixmap
-from PyQt4.QtCore import Qt
+from PyQt4.QtGui import QStandardItem, QMenu, QTreeWidgetItem, QMessageBox, QIcon, QPixmap, QDesktopServices
+from PyQt4.QtCore import Qt, QUrl
 from StringIO import StringIO
 from lib.toc_management import *
 from os import path, walk
@@ -12,60 +12,38 @@ class DockWidgetTabProject():
 
     def __init__(self, dockWidget):
         print "init"
+        DockWidgetTabProject.treectl = dockWidget.treeProject
+
+        # Set up some connections for app events
+        self.treectl.doubleClicked.connect(self.item_doubleClicked)
+        self.treectl.customContextMenuRequested.connect(self.openMenu)
         dockWidget.btnLoadProject.clicked.connect(self.projectBrowserDlg)
 
     def projectBrowserDlg(self):
         filename = QtGui.QFileDialog.getExistingDirectory(self, "Open XML file", "", "XML File (*.xml);;GCD File (*.gcd);;All files (*)")
-        self.xmlLocation.setText(filename)
-        self.projectLoad(filename, self.treeView)
-        self.recalc_state()
+        self.projectLoad(filename)
 
-    def projectLoad(self, xmlPath, treeControl, parent=None):
+    def loadDebug(self):
+        """
+        Quick and dirty hardcoded project loader so I can start work
+        :return:
+        """
+        self.projectLoad('/Users/work/Projects/Riverscapes/Data/CRB/MiddleForkJohnDay/Network/VBET/project.rs.xml')
+
+    @staticmethod
+    def projectLoad(xmlPath):
         """ Constructor """
         if xmlPath is None or not path.isfile(xmlPath):
             msg = "..."
-            q = QMessageBox(QMessageBox.Warning, "Could not find that file", msg)
+            q = QMessageBox(QMessageBox.Warning, "Could not find the project XML file", msg)
             q.setStandardButtons(QMessageBox.Ok)
             i = QIcon()
             i.addPixmap(QPixmap("..."), QIcon.Normal)
             q.setWindowIcon(i)
             q.exec_()
         else:
-            self.tree = treeControl
-            self.model = QStandardItemModel()
-            # Set up an invisible root item for the tree.
-            # self.treeRoot = self.model.invisibleRootItem()
-            self.treeRoot = QStandardItem("Root Item")
-            self.model.appendRow(self.treeRoot)
-            self.tree.setModel(self.model)
-            self.tree.doubleClicked.connect(self.item_doubleClicked)
-            self.tree.customContextMenuRequested.connect(self.openMenu)
-            self.tree.setDragEnabled(True)
-
-            self.xmlTreeDir = path.join(path.dirname(__file__), "Resources/XML/")
-            self.xmlProjfile = xmlPath
-            self.xmlProjDir = path.dirname(xmlPath)
-            self.namespace = "{http://tempuri.org/ProjectDS.xsd}"
-            self.xmlTreePath = None
-
-            # Load the GCD Project (the raw data that will be used to populate the tree)
-            # instead of ET.fromstring(xml)
-            self.xmlProjectDoc = self.LoadXMLFile(self.xmlProjfile)
-
-            if self.FindTreeParser():
-                print "got ya"
-                # Load the tree file (the rules we use to build the tree)
-
-            else:
-                print "This is an error"
-
-            # Set up the first domino for the recursion
-            projectName = self.xmlProjectDoc.find("Project/name")
-            if projectName is not None:
-                self.treeRoot.setText(projectName.text)
-
-            self.LoadNode(None, self.xmlTemplateDoc.find("node"), self.xmlProjectDoc)
-            self.tree.expandToDepth(5)
+            rootItem = ProjectTreeItem(xmlPath)
+            DockWidgetTabProject.treectl.expandToDepth(5)
 
     def addToMap(self, item):
         print "ADDING TO MAP::", item.data(0, Qt.UserRole)
@@ -75,47 +53,29 @@ class DockWidgetTabProject():
         else:
             AddRasterLayer(item)
 
-    def getTreeAncestry(self, item):
-        ancestry = []
-        parent = item.parent()
-        while parent is not None:
-            ancestry.append(parent.text())
-            parent = parent.parent()
-        ancestry.reverse()
-        return ancestry
-
     def item_doubleClicked(self, index):
         item = self.tree.selectedIndexes()[0]
         self.addToMap(item.model().itemFromIndex(index))
 
     def openMenu(self, position):
         """ Handle the contextual menu """
-        index = self.tree.selectedIndexes()[0]
-        item = index.model().itemFromIndex(index)
+        item = self.treectl.selectedIndexes()[0]
+        theData = item.data(Qt.UserRole)
+
         menu = QMenu()
 
-        receiver = lambda item=item: self.addToMap(item)
-        menu.addAction("Add to Map", receiver)
+        if (theData.type=="node"):
+            addReceiver = lambda item=item: self.addToMap(item)
+            findFolderReceiver = lambda item=theData: self.findFolder(item)
+
+            addAction = menu.addAction("Add to Map", addReceiver)
+            findAction = menu.addAction("Find Folder", findFolderReceiver)
 
         menu.exec_(self.tree.viewport().mapToGlobal(position))
 
-    def getLabel(self, templateNode, projNode):
-        """ Either use the liral text inside <label> or look it
-            up in the project node if there's a <label xpath="/x/path">
-        """
-        labelNode = templateNode.find("label")
-        label = "TITLE_NOT_FOUND"
-        if labelNode is not None:
-            if "xpath" in labelNode.attrib:
-                xpath = labelNode.attrib['xpath']
-                label = projNode.find(xpath).text
-            else:
-                label = labelNode.text
-
-        return label
-
-
-
+    def findFolder(self, rtItem):
+        qurl = QUrl.fromLocalFile(path.join(ProjectTreeItem.localdir, path.sep.join(rtItem.pathArr[:-1])))
+        QDesktopServices.openUrl(qurl)
 
 
 class ProjectTreeItem():
@@ -126,6 +86,8 @@ class ProjectTreeItem():
     parserRootDir = None
     parserFilepath = None
 
+    namespace = "{http://tempuri.org/ProjectDS.xsd}"
+
     ProjectDOM = None
 
     @staticmethod
@@ -135,6 +97,13 @@ class ProjectTreeItem():
         :return:
         """
 
+        ProjectTreeItem.parserRootDir = path.join(path.dirname(__file__), "../XML/")
+        ProjectTreeItem.projectFilePath = projectXMLfile
+        ProjectTreeItem.projectRootDir = path.dirname(projectXMLfile)
+
+        ProjectTreeItem._findTreeParser()
+
+        # projectName = self.xmlProjectDoc.find("Project/name")
 
     def __init__(self, nItem=None, rtParent=None, projectXMLfile=None):
         """
@@ -206,7 +175,7 @@ class ProjectTreeItem():
             self.loadRepeater()
 
         # Add the leaf to the tree
-        newTreeItem = QStandardItem(label)
+        newTreeItem = QStandardItem(self.label)
 
         if self.tnParent is None:
             self.treeRoot.appendRow(newTreeItem)
@@ -342,6 +311,31 @@ class ProjectTreeItem():
                 self.qTreeWItem.addChild(newTreeItem.qTreeWItem)
 
             self.childrenloaded = True
+
+    def getLabel(self):
+        """ Either use the liral text inside <label> or look it
+            up in the project node if there's a <label xpath="/x/path">
+        """
+        labelNode = self.templateNode.find("label")
+        label = "TITLE_NOT_FOUND"
+        if labelNode is not None:
+            if "xpath" in labelNode.attrib:
+                xpath = labelNode.attrib['xpath']
+                label = self.projNode.find(xpath).text
+            else:
+                label = labelNode.text
+
+        return label
+
+    @staticmethod
+    def getTreeAncestry(item):
+        ancestry = []
+        parent = item.parent()
+        while parent is not None:
+            ancestry.append(parent.text())
+            parent = parent.parent()
+        ancestry.reverse()
+        return ancestry
 
     @staticmethod
     def _findTreeParser():

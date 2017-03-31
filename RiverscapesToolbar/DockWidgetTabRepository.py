@@ -6,7 +6,7 @@ from PyQt4.QtGui import QMenu, QTreeWidgetItem, QDesktopServices, QIcon
 from PyQt4.QtCore import Qt, QUrl
 from os import path
 from lib.treehelper import *
-
+from DockWidgetTabProject import DockWidgetTabProject
 
 class DockWidgetTabRepository():
 
@@ -19,7 +19,7 @@ class DockWidgetTabRepository():
         self.dockwidget = dockWidget
 
         # Set as static so we can find it.
-        DockWidgetTabRepository.tree = dockWidget.treeRepository
+        DockWidgetTabRepository.treectl = dockWidget.treeRepository
         self.treectl.setAlternatingRowColors(True)
         self.treectl.setContextMenuPolicy(Qt.CustomContextMenu)
 
@@ -98,17 +98,21 @@ class DockWidgetTabRepository():
         menu.exec_(self.treectl.mapToGlobal(pt))
 
     def addProjectToDownloadQueue(self, rtItem):
-        print "Adding to download Queue: " + '/'.join(rtItem.path)
+        print "Adding to download Queue: " + '/'.join(rtItem.pathArr)
 
     def addProjectToUploadQueue(self, rtItem):
-        print "Adding to Upload Queue: " + '/'.join(rtItem.path)
+        print "Adding to Upload Queue: " + '/'.join(rtItem.pathArr)
 
     def findFolder(self, rtItem):
-        qurl = QUrl.fromLocalFile(path.join(RepoTreeItem.localdir, path.sep.join(rtItem.path[:-1])))
+        qurl = QUrl.fromLocalFile(path.join(RepoTreeItem.localdir, path.sep.join(rtItem.pathArr[:-1])))
         QDesktopServices.openUrl(qurl)
 
     def openProject(self, rtItem):
         print "OPEN THE PROJECT"
+        localpath = path.join(RepoTreeItem.localdir, path.sep.join(rtItem.pathArr))
+        # Switch to the project tab
+        self.dockwidget.tabWidget.setCurrentIndex(self.dockwidget.PROJECT_TAB)
+        DockWidgetTabProject.projectLoad(localpath)
 
 
 class RepoTreeItem():
@@ -344,7 +348,7 @@ class RepoTreeItem():
 
             for child in self.nItem['children']:
                 # Add the leaf to the tree
-                pathstr = '/'.join(self.pathArr) + '/' if len(self.path) > 0 else ""
+                pathstr = '/'.join(self.pathArr) + '/' if len(self.pathArr) > 0 else ""
                 type = child['node']['type']
 
                 if type == 'product':

@@ -38,6 +38,9 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 class RiverscapesToolbarDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
     closingPlugin = pyqtSignal()
+    REPO_TAB = 0
+    PROJECT_TAB = 1
+    DOWNLOAD_TAB = 2
 
     def __init__(self, parent=None):
         """Constructor."""
@@ -52,7 +55,7 @@ class RiverscapesToolbarDockWidget(QtGui.QDockWidget, FORM_CLASS):
         # Connect up our top-level components that aren't in tabs
         # self.btnLoad.clicked.connect(self.raster_file_browser)
         self.btnSettings.clicked.connect(self.settingsLoad)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(self.REPO_TAB)
 
         # The code that runs our tabs lives in a different class
         self.TabRepo = DockWidgetTabRepository(self)
