@@ -11,24 +11,23 @@
   
   
   <!-- Overall Structure  -->
-  <xs:element name="project">
-    <xs:annotation></xs:annotation>
+  <xs:element name="Project">
     <xs:complexType>
       <xs:sequence>
-        <xs:element type="xs:string" name="name"/>
-        <xs:element type="xs:string" name="description" minOccurs="0"/>
-        <xs:element type="xs:string" name="test"/>
-        <!-- First node here -->
-        <xs:element ref="node"/>
+        <xs:element type="xs:string" name="Name"/>
+        <xs:element type="xs:string" name="Description" minOccurs="0"/>
+        <xs:element type="xs:string" name="ProjectType"/>
+        <xs:element type="NodeType" name="Inputs"/>
+        <xs:element type="NodeType" name="Realization"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
 
-  <!-- Node Schema Definition -->
-  <xs:element name="node">
-    <xs:complexType>
+
+  <!-- Node: A one-off tree branch that has an xpath -->
+  <xs:complexType name="NodeType">
       <xs:sequence>
-        <xs:element name="label">
+        <xs:element name="Label">
           <xs:complexType>
             <xs:simpleContent>
               <xs:extension base="xs:string">
@@ -37,26 +36,24 @@
             </xs:simpleContent>
           </xs:complexType>
         </xs:element>
-        <xs:element name="type" minOccurs="0"/>
-        <xs:element ref="entity" minOccurs="0"/>
-        <xs:element name="children" minOccurs="0">
+        <xs:element name="Type" minOccurs="0"/>
+        <xs:element ref="Entity" minOccurs="0"/>
+        <xs:element name="Children" minOccurs="0">
           <xs:complexType>
             <xs:choice maxOccurs="unbounded">
-              <xs:element ref="node" minOccurs="1" maxOccurs="unbounded"/>
-              <xs:element ref="repeater" minOccurs="1" maxOccurs="unbounded"/>
+              <xs:element type="NodeType" name="Node" minOccurs="1" maxOccurs="unbounded"/>
+              <xs:element type="RepeaterType" name="Repeater" minOccurs="1" maxOccurs="unbounded"/>
             </xs:choice>
             <xs:attribute type="xs:string" name="collapsed"/>
           </xs:complexType>
         </xs:element>
       </xs:sequence>
-    </xs:complexType>
-  </xs:element>
+  </xs:complexType>
 
-  <!-- Repeater -->
-  <xs:element name="repeater">
-    <xs:complexType>
+  <!-- Repeaters: loop over xml node "arrays" -->
+  <xs:complexType name="RepeaterType">
       <xs:sequence>
-        <xs:element name="label">
+        <xs:element name="Label">
           <xs:complexType>
             <xs:simpleContent>
               <xs:extension base="xs:string">
@@ -65,26 +62,25 @@
             </xs:simpleContent>
           </xs:complexType>
         </xs:element>
-        <xs:element type="xs:string" name="xpath"/>
+        <xs:element type="xs:string" name="Xpath"/>
         <xs:choice>
-          <xs:element ref="node" maxOccurs="1"/>
-          <xs:element ref="repeater" maxOccurs="1"/>
+          <xs:element type="NodeType" name="Node" maxOccurs="1"/>
+          <xs:element type="RepeaterType" name="Repeater" maxOccurs="1"/>
         </xs:choice>
       </xs:sequence>
-    </xs:complexType>
-  </xs:element>
-  
-  <!-- Entities -->
-  <xs:element name="entity">
+  </xs:complexType>
+
+  <!--Entities are the leaves of the tree-->
+  <xs:element name="Entity">
     <xs:complexType>
       <xs:sequence>
-        <xs:element type="xs:string" name="type"/>
+        <xs:element type="xs:string" name="Type"/>
         <xs:choice>
-          <xs:element type="xs:string" name="xpath"/>
-          <xs:element type="xs:string" name="tileservice"/>
+          <xs:element type="xs:string" name="Xpath"/>
+          <xs:element type="xs:string" name="Tileservice"/>
         </xs:choice>
-        <xs:element type="xs:string" name="label" minOccurs="0"/>
-        <xs:element type="xs:string" name="symbology" minOccurs="0"/>
+        <xs:element type="xs:string" name="Label" minOccurs="0"/>
+        <xs:element type="xs:string" name="Symbology" minOccurs="0"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
