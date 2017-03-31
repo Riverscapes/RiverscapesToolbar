@@ -18,6 +18,7 @@ class DockWidgetTabProject():
         self.treectl.doubleClicked.connect(self.item_doubleClicked)
         self.treectl.customContextMenuRequested.connect(self.openMenu)
         dockWidget.btnLoadProject.clicked.connect(self.projectBrowserDlg)
+        dockWidget.btnDEBUG.clicked.connect(self.loadDebug)
 
     def projectBrowserDlg(self):
         filename = QtGui.QFileDialog.getExistingDirectory(self, "Open XML file", "", "XML File (*.xml);;GCD File (*.gcd);;All files (*)")
@@ -42,7 +43,7 @@ class DockWidgetTabProject():
             q.setWindowIcon(i)
             q.exec_()
         else:
-            rootItem = ProjectTreeItem(xmlPath)
+            rootItem = ProjectTreeItem(projectXMLfile=xmlPath)
             DockWidgetTabProject.treectl.expandToDepth(5)
 
     def addToMap(self, item):
