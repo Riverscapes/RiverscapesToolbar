@@ -3,6 +3,84 @@ from PyQt4.QtCore import QThread, pyqtSignal, QObject, pyqtSlot
 import traceback
 from debug import InitDebug
 
+class TreeLoadQueuesBorg(object):
+    _shared_state = {}
+    _initdone = False
+
+    def __init__(self):
+        self.__dict__ = self._shared_state
+
+class TreeLoadQueues(TreeLoadQueuesBorg):
+
+    def __init__(self):
+        super(TreeLoadQueues, self).__init__()
+        if not self._initdone:
+            print "Init TreeLoadQueues"
+            self.load_q = Queue()
+
+            # These are the thread processes that run the downloading processes
+            self.worker = TreeLoadQueues.Worker()
+            self.worker_thread = QThread()
+            self.worker_thread.start()
+
+            self.worker.moveToThread(self.worker_thread)
+            self.worker.start.connect(self.worker.run)
+
+            self.killrequested = False
+            # Must be the last thing we do in init
+            self._initdone = True
+
+    def startWorker(self):
+        print "Attempting TreeLoadQueues Start:"
+        self.worker.killrequested = False
+        self.worker.start.emit("start")
+
+    def stopWorker(self):
+        print "Attempting TreeLoadQueues Stop:"
+        self.worker.killrequested = True
+
+    def resetQueue(self):
+        if self.worker_thread.isRunning():
+            self.worker_thread.terminate()
+            self.worker_thread.wait()
+            self.worker_thread.start()
+
+    # http://stackoverflow.com/questions/16879971/example-of-the-right-way-to-use-qthread-in-pyqt
+    class Worker(QObject):
+
+        killrequested = False
+
+        def __init__(self):
+            super(TreeLoadQueues.Worker, self).__init__()
+            self.currentProject = None
+
+        start = pyqtSignal(str)
+        status = pyqtSignal(object)
+
+        @pyqtSlot()
+        def run(self):
+            # Gives us breakpoints in a thread but only if we are in debug mode
+            # Note that we're not subclassing QThread as per:
+            # http://stackoverflow.com/questions/20324804/how-to-use-qthread-correctly-in-pyqt-with-movetothread
+            InitDebug()
+            Qs = TreeLoadQueues()
+            try:
+                print "QUEUE STARTED"
+                while not self.killrequested and Qs.load_q.qsize() > 0:
+                    if Qs.transfer_q.qsize() > 0:
+                        listItem = Qs.transfer_q.get()
+                        self.status.emit({'status': 'Loading', 'item': listItem})
+                        listItem.execute()
+                        listItem.task_done()
+                print "QUEUE STOPPED"
+            except Exception, e:
+                print "TransferWorkerThread Exception: {}".format(str(e))
+                traceback.print_exc()
+
+
+
+
+
 class ToolbarQueuesBorg(object):
     _shared_state = {}
     _initdone = False
@@ -43,7 +121,7 @@ class ToolbarQueues(ToolbarQueuesBorg):
     def startWorker(self):
         print "Attempting Queue Start:"
         self.worker.killrequested = False
-        self.worker.start.emit("hello")
+        self.worker.start.emit("start")
 
     def stopWorker(self):
         print "Attempting Queue Stop:"

@@ -33,8 +33,17 @@ class DockWidgetTabRepository():
         # RepoTreeItem.tree.setHeaderLabels(["", "Local", "Remote"])
 
         RepoTreeItem.tree.customContextMenuRequested.connect(self.openMenu)
+        RepoTreeItem.tree.itemExpanded.connect(self.expandItem)
 
         dockWidget.btnRefresh.clicked.connect(self.refreshRoot)
+
+    def expandItem(self, item):
+        """
+        Reload this
+        :param item:
+        :return:
+        """
+        item.data(0, Qt.UserRole).loadChildren()
 
     def refreshRoot(self):
         """
@@ -45,7 +54,7 @@ class DockWidgetTabRepository():
         self.dockwidget.btnRefresh.setEnabled(False)
 
         rootItem = RepoTreeItem(loadlevels = 4)
-        RepoTreeItem.tree.expandToDepth(3)
+        RepoTreeItem.tree.expandToDepth(2)
 
         self.dockwidget.btnRefresh.setEnabled(True)
         self.dockwidget.btnRefresh.setText("Refresh")
@@ -133,22 +142,43 @@ class DockWidgetTabRepository():
 
 
 class RepoTreeItem():
+
+    # Some statics...
     LOADING = 'Loading...'
     program = None
     localdir = None
     tree = None
-    # treemodel = None
+
+    @staticmethod
+    def fetchProgramContext():
+        """
+        Get our program.xml and local Settings
+        :return:
+        """
+        settings = Settings()
+        RepoTreeItem.program = ProgramXML(settings.getSetting('ProgramXMLUrl'))
+        RepoTreeItem.localdir = settings.getSetting('DataDir')
 
     def __init__(self, nItem=None, rtParent=None, path=[], loadlevels=1):
+        """
+        Initialize a new RepoTreeItem
+        :param nItem: nItem is the pseudo-json nested dictionary we get from program.py
+        :param rtParent: rtParent is the RepoTreeItem (or root node) that owns this
+        :param path: path is actually a list so we don't have to deal with slashes
+        :param loadlevels:
+        """
 
+        # Do we have the program XML yet?
         if not RepoTreeItem.program or not RepoTreeItem.localdir:
             self.fetchProgramContext()
 
         self.nItem = nItem
         self.rtParent = rtParent
 
+        # RootNode Stuff
         if not self.nItem:
             self.nItem = RepoTreeItem.program.Hierarchy
+
         if not self.rtParent:
             self.qTreeWItem = QTreeWidgetItem(RepoTreeItem.tree)
         else:
@@ -156,7 +186,6 @@ class RepoTreeItem():
 
         # Set the data backwards so we can find this object later
         self.qTreeWItem.setData(0, Qt.UserRole, self)
-        self.name = ""
 
         self.type = self.nItem['node']['type']
         self.depth = self._getDepth()
@@ -169,23 +198,32 @@ class RepoTreeItem():
 
         self.load(loadlevels)
 
-
-    @staticmethod
-    def fetchProgramContext():
-        settings = Settings()
-        RepoTreeItem.program = ProgramXML(settings.getSetting('ProgramXMLUrl'))
-        RepoTreeItem.localdir = settings.getSetting('DataDir')
+    def refreshAction(self):
+        """
+        When we right click and choose refresh
+        :return:
+        """
+        print "refreshing"
+        self.reset()
+        self.load()
 
     def reset(self):
+        """
+        Reset the node state
+        :return:
+        """
+        self.name = ""
+        self.loaded = False
         self.loaded = False
         self.childrenloaded = False
 
         self.loadtime = None
-        self.loaded = None
-        self.local = False
+
+        self.local = None
         self.localDateTime = None
-        self.remote = False
+        self.remote = None
         self.queued = None
+
         self.qTreeWItem.setText(0, self.LOADING)
         if self.type != "product":
             self.createDummyChild()
@@ -203,7 +241,7 @@ class RepoTreeItem():
             currParent = currParent.rtParent
         return depth
 
-    def load(self, loadlevels):
+    def load(self, loadlevels=1):
         """
         Load a single item in the tree. This sets the name and color. Also gets the state of this item
         :param loadlevels:
@@ -229,11 +267,6 @@ class RepoTreeItem():
         self.recalcState()
         self.loaded = True
         self.loadChildren((loadlevels - 1))
-
-    def refreshAction(self):
-        print "refreshing"
-        self.recalcState()
-        self.loadChildren(loadlevels=1)
 
     def recalcState(self):
         """
@@ -272,9 +305,8 @@ class RepoTreeItem():
         self.qTreeWItem.setText(0, self.name)
         self.loadtime = datetime.datetime.now()
 
-
         # Walk back up the tree and hide things that have no value
-        self.calcVisible()
+        self.backwardCalc()
 
     def createDummyChild(self):
         self.qTreeWItem.takeChildren()
@@ -283,7 +315,7 @@ class RepoTreeItem():
         dummy.setIcon(0, QIcon(qTreeIconStates.GROUP))
         self.qTreeWItem.addChild(dummy)
 
-    def calcVisible(self):
+    def backwardCalc(self):
         """
         This function traverses the list back up to the top hiding items that have visible children
         :return:
@@ -298,43 +330,60 @@ class RepoTreeItem():
 
         # Now walk back up
         if self.rtParent:
-            self.rtParent.calcVisible()
+            self.rtParent.backwardCalc()
 
-    def loadChildren(self, loadlevels):
-        if loadlevels < 1 or self.type == 'product':
+    def loadChildren(self, loadlevels=1, force=False):
+        """
+        Here's where we recurse down the tree to the end nodes.
+        :param loadlevels:
+        :param force:
+        :return:
+        """
+        # This is a hard rule. Children have no products.
+        if self.type == 'product':
+            return
+        # Stop loading past a certain level
+        if loadlevels < 0:
             return
 
-        # Start by clearing out the previous children
-        self.qTreeWItem.takeChildren()
+        if self.childrenloaded and not force:
+            # Just recalculate the children. Don't reload anything
+            for i in range(self.qTreeWItem.childCount()):
+                if self.qTreeWItem.isExpanded():
+                    self.qTreeWItem.child(i).data(0, Qt.UserRole).load()
+        else:
+            # Start by clearing out the previous children (this is a forced or first refresh)
+            self.qTreeWItem.takeChildren()
 
-        for child in self.nItem['children']:
-            # Add the leaf to the tree
-            pathstr = '/'.join(self.path) + '/' if len(self.path) > 0 else ""
-            type = child['node']['type']
+            for child in self.nItem['children']:
+                # Add the leaf to the tree
+                pathstr = '/'.join(self.path) + '/' if len(self.path) > 0 else ""
+                type = child['node']['type']
 
-            if type == 'product':
-                # End of the line
-                newpath = self.path[:]
-                newpath.append(child['node']['folder'])
-                newpath.append(RepoTreeItem.program.ProjectFile)
-                newTreeItem = RepoTreeItem(child, self, newpath, loadlevels=loadlevels)
-                self.qTreeWItem.addChild(newTreeItem.qTreeWItem)
-
-            elif type == 'group':
-                newpath = self.path[:]
-                newpath.append(child['node']['folder'])
-                newTreeItem = RepoTreeItem(child, self, newpath, loadlevels=loadlevels)
-                self.qTreeWItem.addChild(newTreeItem.qTreeWItem)
-
-            elif type == 'collection':
-                # Unfortunately the only way to list collections is to go get them physically.
-                for levelname in s3GetFolderList(RepoTreeItem.program.Bucket, pathstr):
+                if type == 'product':
+                    # End of the line
                     newpath = self.path[:]
-                    newpath.append(levelname)
+                    newpath.append(child['node']['folder'])
+                    newpath.append(RepoTreeItem.program.ProjectFile)
                     newTreeItem = RepoTreeItem(child, self, newpath, loadlevels=loadlevels)
                     self.qTreeWItem.addChild(newTreeItem.qTreeWItem)
 
-        self.childrenloaded = True
+                elif type == 'group':
+                    newpath = self.path[:]
+                    newpath.append(child['node']['folder'])
+                    newTreeItem = RepoTreeItem(child, self, newpath, loadlevels=loadlevels)
+                    self.qTreeWItem.addChild(newTreeItem.qTreeWItem)
+
+                elif type == 'collection':
+                    # Unfortunately the only way to list collections is to go get them physically.
+                    # TODO: THIS NEEDS TO INCORPORATE LOCAL AS WELL.
+                    for levelname in s3GetFolderList(RepoTreeItem.program.Bucket, pathstr):
+                        newpath = self.path[:]
+                        newpath.append(levelname)
+                        newTreeItem = RepoTreeItem(child, self, newpath, loadlevels=loadlevels)
+                        self.qTreeWItem.addChild(newTreeItem.qTreeWItem)
+
+            self.childrenloaded = True
 
 
 class qTreeIconStates:
