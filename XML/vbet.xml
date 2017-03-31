@@ -3,7 +3,7 @@
          xsi:noNamespaceSchemaLocation="XSD/project_explorer.xsd">
   <Name>VBET</Name>
   <ProjectType>VBET</ProjectType>
-  <Root>
+  <Node>
     <Label xpath="/Name"/>
     <Children>
       <Repeater>
@@ -31,5 +31,5 @@
         </Node>
       </Repeater>
     </Children>
-  </Root>
+  </Node>
 </Project>

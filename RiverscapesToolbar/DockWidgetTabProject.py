@@ -80,6 +80,9 @@ class DockWidgetTabProject():
 
 
 class ProjectTreeItem():
+    NODE_TYPE = "Node"
+    REPEATER_TYPE = "Repeater"
+    ENTITY_TYPE = "Entity"
 
     projectRootDir = None
     projectFilePath = None
@@ -102,7 +105,8 @@ class ProjectTreeItem():
         ProjectTreeItem.projectFilePath = projectXMLfile
         ProjectTreeItem.projectRootDir = path.dirname(projectXMLfile)
 
-        ProjectTreeItem._findTreeParser()
+        ProjectTreeItem.projectDOM = ProjectTreeItem._loadXMLFile(projectXMLfile)
+        ProjectTreeItem.parserDOM = ProjectTreeItem._findTreeParser()
 
         # projectName = self.xmlProjectDoc.find("Project/name")
 
@@ -124,7 +128,7 @@ class ProjectTreeItem():
 
         # RootNode Stuff
         if not self.nItem:
-            self.nItem = ProjectTreeItem.program.Hierarchy
+            self.nItem = self.parserDOM.find('Root')
 
         if not self.rtParent:
             self.qTreeWItem = QTreeWidgetItem(DockWidgetTabProject.treectl)
@@ -139,28 +143,6 @@ class ProjectTreeItem():
 
         self.reset()
         self.load()
-
-    def refreshAction(self):
-        """
-        When we right click and choose refresh
-        :return:
-        """
-        print "refreshing"
-        self.load()
-
-
-    def _getDepth(self):
-        """
-        Find the root parent and count the depth of this object
-        :return:
-        """
-        depth = 1
-        currParent = self.rtParent
-        # The first parent is not a RepoTreeItem so we can count them easily to get depth
-        while isinstance(currParent, ProjectTreeItem):
-            depth += 1
-            currParent = currParent.rtParent
-        return depth
 
     def load(self, loadlevels=1):
         """
@@ -214,60 +196,59 @@ class ProjectTreeItem():
         :return:
         """
 
-        # Detect if this is an XML node element and reset the root Project node to this.
-        entityType = self.templateNode.find('entity/type')
-        entityXPath = self.templateNode.find('entity/xpath')
-        newProjNode = self.projNode
 
-        if entityXPath is not None:
-            newProjNode = self.projNode.find(entityXPath.text)
-
-            # This node might be a leaf. If so we need to get some meta dat
-        if entityType is not None and entityXPath is not None:
-            filepathNode = self.projNode.find(entityXPath.text)
-            if filepathNode is not None:
-                # normalize the slashes
-                # filepath = re.sub('[\\\/]+', os.path.sep, filepathNode.text)
-                # make it an absolute path
-                filepath = os.path.join(self.xmlProjDir, filepathNode.text)
-                self.filepath = filepath
+        if self.type == "Node":
+            # Detect if this is an XML node element and reset the root Project node to this.
+            entityType = self.templateNode.find('entity/type')
+            entityXPath = self.templateNode.find('entity/xpath')
+            newProjNode = self.projNode
 
             if entityXPath is not None:
-                self.xpath = entityXPath.text
-            symbologyNode = self.templateNode.find('entity/symbology')
+                newProjNode = self.projNode.find(entityXPath.text)
 
-            if symbologyNode is not None:
-                self.symbology = symbologyNode.text
+                # This node might be a leaf. If so we need to get some meta dat
+            if entityType is not None and entityXPath is not None:
+                filepathNode = self.projNode.find(entityXPath.text)
+                if filepathNode is not None:
+                    # normalize the slashes
+                    # filepath = re.sub('[\\\/]+', os.path.sep, filepathNode.text)
+                    # make it an absolute path
+                    filepath = os.path.join(self.xmlProjDir, filepathNode.text)
+                    self.filepath = filepath
 
-    def loadRepeater(self):
-        """
-        Repeater is for using an XPAth in the project file for repeating elements
-        :return:
-        """
+                if entityXPath is not None:
+                    self.xpath = entityXPath.text
+                symbologyNode = self.templateNode.find('entity/symbology')
 
-        newTreeItem = QStandardItem(self.label)
-        if self.tnParent is None:
-            self.treeRoot.appendRow(newTreeItem)
-        else:
-            tnParent = self.tnParent.appendRow(newTreeItem)
+                if symbologyNode is not None:
+                    self.symbology = symbologyNode.text
 
-        # Remember, repeaters can only contain one "pattern" node
-        xPatternNode = self.templateNode.find("node")
-
-        # If there is an Xpath then reset the base project node to that.
-        xpath = self.templateNode.find("xpath")
-        xNewProjList = []
-        if xPatternNode is not None and xpath is not None:
-            absoluteXPath = xpath.text[:1] == "/"
-            # Should we search from the root or not.
-            if absoluteXPath:
-                xNewProjList = self.xmlProjectDoc.findall("." + xpath.text)
+        elif self.type =="Repeater":
+            newTreeItem = QStandardItem(self.label)
+            if self.tnParent is None:
+                self.treeRoot.appendRow(newTreeItem)
             else:
-                xNewProjList = self.projNode.findall(xpath.text)
+                self.tnParent = self.tnParent.appendRow(newTreeItem)
 
-        # for xProjChild in xNewProjList:
-        #     self.LoadNode(newTreeItem, xPatternNode, xProjChild)
+            # Remember, repeaters can only contain one "pattern" node
+            xPatternNode = self.templateNode.find("node")
 
+            # If there is an Xpath then reset the base project node to that.
+            xpath = self.templateNode.find("xpath")
+            xNewProjList = []
+            if xPatternNode is not None and xpath is not None:
+                absoluteXPath = xpath.text[:1] == "/"
+                # Should we search from the root or not.
+                if absoluteXPath:
+                    xNewProjList = self.xmlProjectDoc.findall("." + xpath.text)
+                else:
+                    xNewProjList = self.projNode.findall(xpath.text)
+
+            # for xProjChild in xNewProjList:
+            #     self.LoadNode(newTreeItem, xPatternNode, xProjChild)
+
+        elif self.type == "Entity":
+            print "entityt"
 
     def loadChildren(self):
         """
@@ -313,7 +294,15 @@ class ProjectTreeItem():
 
             self.childrenloaded = True
 
-    def getLabel(self):
+    def refreshAction(self):
+        """
+        When we right click and choose refresh
+        :return:
+        """
+        print "refreshing"
+        self.load()
+
+    def _getLabel(self):
         """ Either use the liral text inside <label> or look it
             up in the project node if there's a <label xpath="/x/path">
         """
@@ -327,6 +316,19 @@ class ProjectTreeItem():
                 label = labelNode.text
 
         return label
+
+    def _getDepth(self):
+        """
+        Find the root parent and count the depth of this object
+        :return:
+        """
+        depth = 1
+        currParent = self.rtParent
+        # The first parent is not a RepoTreeItem so we can count them easily to get depth
+        while isinstance(currParent, ProjectTreeItem):
+            depth += 1
+            currParent = currParent.rtParent
+        return depth
 
     @staticmethod
     def getTreeAncestry(item):
@@ -345,19 +347,19 @@ class ProjectTreeItem():
         and comparing the project types
         :return:
         """
+        treeParser = None
         for subdir, dirs, files in walk(ProjectTreeItem.parserRootDir):
             xmlfiles = [filename for filename in files if filename.endswith(".xml")]
             for xmlfile in xmlfiles:
                 filePath = path.join(subdir, xmlfile)
                 candidate = ProjectTreeItem._loadXMLFile(filePath)
-                testNode = candidate.find('test')
+                testNode = candidate.find('ProjectType')
+                projType = ProjectTreeItem.projectDOM.find("ProjectType")
 
-                if len(testNode.text) > 10 and testNode is not None:
-                    if ProjectTreeItem.ProjectDOM.find("./" + testNode.text) is not None:
-                        ProjectTreeItem.parserFilepath = filePath
-                        ProjectTreeItem.ProjectDOM = ET.parse(ProjectTreeItem.parserFilepath)
-                        return True
-        return False
+                if testNode is not None and projType is not None and testNode.text == projType.text:
+                    treeParser = candidate
+                    continue
+        return treeParser
 
     @staticmethod
     def _loadXMLFile(file):
