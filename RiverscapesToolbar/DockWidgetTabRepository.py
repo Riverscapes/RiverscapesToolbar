@@ -1,15 +1,16 @@
-import logging
 from lib.program import ProgramXML
 from lib.s3.walkers import s3GetFolderList, s3Exists, s3HeadData
 import datetime
 from settings import Settings
-from PyQt4.QtGui import QMenu, QTreeWidgetItem, QHeaderView, QDesktopServices, QIcon
-from PyQt4.QtCore import Qt, QUrl, QRectF
+from PyQt4.QtGui import QMenu, QTreeWidgetItem, QDesktopServices, QIcon
+from PyQt4.QtCore import Qt, QUrl
 from os import path
 from lib.treehelper import *
-from PopupDialog import okDlg
+
 
 class DockWidgetTabRepository():
+
+    treectl = None
 
     def __init__(self, dockWidget):
         # used to be:
@@ -18,22 +19,15 @@ class DockWidgetTabRepository():
         self.dockwidget = dockWidget
 
         # Set as static so we can find it.
-        RepoTreeItem.tree = dockWidget.treeRepository
-        RepoTreeItem.tree.setAlternatingRowColors(True)
-        RepoTreeItem.tree.setContextMenuPolicy(Qt.CustomContextMenu)
+        DockWidgetTabRepository.tree = dockWidget.treeRepository
+        self.treectl.setAlternatingRowColors(True)
+        self.treectl.setContextMenuPolicy(Qt.CustomContextMenu)
 
-        RepoTreeItem.tree.setColumnCount(1)
-        RepoTreeItem.tree.setHeaderHidden(True)
-        # RepoTreeItem.tree.setColumnWidth(0, 400)
-        # RepoTreeItem.tree.setColumnWidth(1, 20)
-        # RepoTreeItem.tree.setColumnWidth(2, 20)
-        # RepoTreeItem.tree.header().setResizeMode(0, QHeaderView.Stretch)
-        # RepoTreeItem.tree.header().setResizeMode(1, QHeaderView.Fixed)
-        # RepoTreeItem.tree.header().setResizeMode(2, QHeaderView.Fixed)
-        # RepoTreeItem.tree.setHeaderLabels(["", "Local", "Remote"])
+        self.treectl.setColumnCount(1)
+        self.treectl.setHeaderHidden(True)
 
-        RepoTreeItem.tree.customContextMenuRequested.connect(self.openMenu)
-        RepoTreeItem.tree.itemExpanded.connect(self.expandItem)
+        self.treectl.customContextMenuRequested.connect(self.openMenu)
+        self.treectl.itemExpanded.connect(self.expandItem)
 
         dockWidget.btnRefresh.clicked.connect(self.refreshRoot)
 
@@ -54,23 +48,21 @@ class DockWidgetTabRepository():
         self.dockwidget.btnRefresh.setEnabled(False)
 
         rootItem = RepoTreeItem(loadlevels = 4)
-        RepoTreeItem.tree.expandToDepth(2)
+        self.treectl.expandToDepth(2)
 
         self.dockwidget.btnRefresh.setEnabled(True)
         self.dockwidget.btnRefresh.setText("Refresh")
 
-
-    # ------------------------------------------------
-    # Convenience Functions
-    # ------------------------------------------------
     def item_doubleClicked(self, index):
-        item = RepoTreeItem.tree.selectedIndexes()[0]
-        # self.openProject(item.model().itemFromIndex(index))
-        # menu.exec_(self.tree.viewport().mapToGlobal(position))
+        item = self.treectl.selectedIndexes()[0]
+        theData = item.data(Qt.UserRole)
+
+        if (theData.type=="product"):
+            self.openProject(theData)
 
     def openMenu(self, pt):
         """ Handle the contextual menu """
-        item = RepoTreeItem.tree.selectedIndexes()[0]
+        item = self.treectl.selectedIndexes()[0]
         theData = item.data(Qt.UserRole)
 
         menu = QMenu()
@@ -101,10 +93,9 @@ class DockWidgetTabRepository():
             queueContainerAction = menu.addAction("Add projects to Download Queue", dwnQueueReceiver)
             refreshAction = menu.addAction("Refresh", refreshReceiver)
 
-
             queueContainerAction.setEnabled(True)
 
-        menu.exec_(RepoTreeItem.tree.mapToGlobal(pt))
+        menu.exec_(self.treectl.mapToGlobal(pt))
 
     def addProjectToDownloadQueue(self, rtItem):
         print "Adding to download Queue: " + '/'.join(rtItem.path)
@@ -116,29 +107,8 @@ class DockWidgetTabRepository():
         qurl = QUrl.fromLocalFile(path.join(RepoTreeItem.localdir, path.sep.join(rtItem.path[:-1])))
         QDesktopServices.openUrl(qurl)
 
-    def getLabel(self, templateNode, projNode):
-        """ Either use the liral text inside <label> or look it
-            up in the project node if there's a <label xpath="/x/path">
-        """
-        labelNode = templateNode.find("label")
-        label = "TITLE_NOT_FOUND"
-        if labelNode is not None:
-            if "xpath" in labelNode.attrib:
-                xpath = labelNode.attrib['xpath']
-                label = projNode.find(xpath).text
-            else:
-                label = labelNode.text
-
-        return label
-
     def openProject(self, rtItem):
-        print rtItem.path
-        # itemExt = path.splitext(rtItem.data()['filepath'])[1]
-        # if itemExt == '.shp':
-        #     AddVectorLayer(rtItem)
-        # else:
-        #     AddRasterLayer(rtItem)
-
+        print "OPEN THE PROJECT"
 
 
 class RepoTreeItem():
@@ -147,7 +117,6 @@ class RepoTreeItem():
     LOADING = 'Loading...'
     program = None
     localdir = None
-    tree = None
 
     @staticmethod
     def fetchProgramContext():
@@ -159,7 +128,7 @@ class RepoTreeItem():
         RepoTreeItem.program = ProgramXML(settings.getSetting('ProgramXMLUrl'))
         RepoTreeItem.localdir = settings.getSetting('DataDir')
 
-    def __init__(self, nItem=None, rtParent=None, path=[], loadlevels=1):
+    def __init__(self, nItem=None, rtParent=None, pathArr=[], loadlevels=1):
         """
         Initialize a new RepoTreeItem
         :param nItem: nItem is the pseudo-json nested dictionary we get from program.py
@@ -167,6 +136,18 @@ class RepoTreeItem():
         :param path: path is actually a list so we don't have to deal with slashes
         :param loadlevels:
         """
+
+        # Initial setup
+        self.name = ""
+        self.loaded = False
+        self.childrenloaded = False
+
+        self.loadtime = None
+
+        self.local = None
+        self.localDateTime = None
+        self.remote = None
+        self.queued = None
 
         # Do we have the program XML yet?
         if not RepoTreeItem.program or not RepoTreeItem.localdir:
@@ -180,7 +161,7 @@ class RepoTreeItem():
             self.nItem = RepoTreeItem.program.Hierarchy
 
         if not self.rtParent:
-            self.qTreeWItem = QTreeWidgetItem(RepoTreeItem.tree)
+            self.qTreeWItem = QTreeWidgetItem(DockWidgetTabRepository.treectl)
         else:
             self.qTreeWItem = QTreeWidgetItem(self.rtParent.qTreeWItem)
 
@@ -189,12 +170,12 @@ class RepoTreeItem():
 
         self.type = self.nItem['node']['type']
         self.depth = self._getDepth()
-        self.path = path
+        self.pathArr = pathArr
         self.reset()
 
         # TODO: This is a hack for now but it gets us over the hump
-        if len(self.path) == 0:
-            self.path = ["CRB"]
+        if len(self.pathArr) == 0:
+            self.pathArr = ["CRB"]
 
         self.load(loadlevels)
 
@@ -213,7 +194,6 @@ class RepoTreeItem():
         :return:
         """
         self.name = ""
-        self.loaded = False
         self.loaded = False
         self.childrenloaded = False
 
@@ -253,7 +233,7 @@ class RepoTreeItem():
         elif self.type == "group":
             self.name = self.nItem['node']['name']
         elif self.type == 'collection':
-            self.name = self.path[-1]
+            self.name = self.pathArr[-1]
             try:
                 # try and find a better name than just the folder name (not always possible)
                 folderItem = next(
@@ -261,7 +241,7 @@ class RepoTreeItem():
                     None)
                 if folderItem is not None:
                     self.name = folderItem['name']
-            except:
+            except Exception, e:
                 pass
 
         self.recalcState()
@@ -273,8 +253,8 @@ class RepoTreeItem():
         All important state function. This tells us a lot about what's new, what's old and what exists
         :return:
         """
-        s3path = '/'.join(self.path)
-        localpath = path.join(RepoTreeItem.localdir, path.sep.join(self.path))
+        s3path = '/'.join(self.pathArr)
+        localpath = path.join(RepoTreeItem.localdir, path.sep.join(self.pathArr))
 
         if self.type == "product":
             self.qTreeWItem.setIcon(0, QIcon(qTreeIconStates.PRODUCT))
@@ -309,6 +289,11 @@ class RepoTreeItem():
         self.backwardCalc()
 
     def createDummyChild(self):
+        """
+        We create a dummy node with the text  "Loading..." so that it looks like
+        the item can be expanded, even if we don't know that
+        :return:
+        """
         self.qTreeWItem.takeChildren()
         dummy = QTreeWidgetItem()
         dummy.setText(0, self.LOADING)
@@ -324,8 +309,10 @@ class RepoTreeItem():
         if self.type == "product":
             hide = not self.local and not self.remote
         else:
-            allchildrenhidden = all([self.qTreeWItem.child(i).isHidden() for i in range(self.qTreeWItem.childCount())])
-            hide = self.qTreeWItem.childCount() == 0 or allchildrenhidden
+            hide = not self.local and not self.remote
+            # TODO: DECIDE IF THIS IS REALLY OK
+            # allchildrenhidden = all([self.qTreeWItem.child(i).isHidden() for i in range(self.qTreeWItem.childCount())])
+            # hide = self.qTreeWItem.childCount() == 0 or allchildrenhidden
         self.qTreeWItem.setHidden(hide)
 
         # Now walk back up
@@ -357,19 +344,19 @@ class RepoTreeItem():
 
             for child in self.nItem['children']:
                 # Add the leaf to the tree
-                pathstr = '/'.join(self.path) + '/' if len(self.path) > 0 else ""
+                pathstr = '/'.join(self.pathArr) + '/' if len(self.path) > 0 else ""
                 type = child['node']['type']
 
                 if type == 'product':
                     # End of the line
-                    newpath = self.path[:]
+                    newpath = self.pathArr[:]
                     newpath.append(child['node']['folder'])
                     newpath.append(RepoTreeItem.program.ProjectFile)
                     newTreeItem = RepoTreeItem(child, self, newpath, loadlevels=loadlevels)
                     self.qTreeWItem.addChild(newTreeItem.qTreeWItem)
 
                 elif type == 'group':
-                    newpath = self.path[:]
+                    newpath = self.pathArr[:]
                     newpath.append(child['node']['folder'])
                     newTreeItem = RepoTreeItem(child, self, newpath, loadlevels=loadlevels)
                     self.qTreeWItem.addChild(newTreeItem.qTreeWItem)
@@ -378,7 +365,7 @@ class RepoTreeItem():
                     # Unfortunately the only way to list collections is to go get them physically.
                     # TODO: THIS NEEDS TO INCORPORATE LOCAL AS WELL.
                     for levelname in s3GetFolderList(RepoTreeItem.program.Bucket, pathstr):
-                        newpath = self.path[:]
+                        newpath = self.pathArr[:]
                         newpath.append(levelname)
                         newTreeItem = RepoTreeItem(child, self, newpath, loadlevels=loadlevels)
                         self.qTreeWItem.addChild(newTreeItem.qTreeWItem)
