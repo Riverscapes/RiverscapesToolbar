@@ -154,9 +154,6 @@ class RepoTreeItem():
         else:
             self.qTreeWItem = QTreeWidgetItem(self.rtParent.qTreeWItem)
 
-
-        self.qTreeWItem.setText(0, self.LOADING)
-
         # Set the data backwards so we can find this object later
         self.qTreeWItem.setData(0, Qt.UserRole, self)
         self.name = ""
@@ -164,13 +161,7 @@ class RepoTreeItem():
         self.type = self.nItem['node']['type']
         self.depth = self._getDepth()
         self.path = path
-
-        self.loaded = False
-
-        # These are timestamps but they also serve as existence
-        self.local = None
-        self.remote = None
-        self.queued = None
+        self.reset()
 
         # TODO: This is a hack for now but it gets us over the hump
         if len(self.path) == 0:
@@ -190,12 +181,14 @@ class RepoTreeItem():
         self.childrenloaded = False
 
         self.loadtime = None
-
+        self.loaded = None
         self.local = False
         self.localDateTime = None
         self.remote = False
         self.queued = None
         self.qTreeWItem.setText(0, self.LOADING)
+        if self.type != "product":
+            self.createDummyChild()
 
     def _getDepth(self):
         """
@@ -251,6 +244,7 @@ class RepoTreeItem():
         localpath = path.join(RepoTreeItem.localdir, path.sep.join(self.path))
 
         if self.type == "product":
+            self.qTreeWItem.setIcon(0, QIcon(qTreeIconStates.PRODUCT))
             head = s3HeadData(RepoTreeItem.program.Bucket, s3path)
             self.local = path.isfile(localpath)
             self.remote = head is not None
@@ -262,6 +256,7 @@ class RepoTreeItem():
                 setFontColor(self.qTreeWItem, "#cccccc", column=0)
 
         elif self.type == 'group':
+            self.qTreeWItem.setIcon(0, QIcon(qTreeIconStates.GROUP))
             self.remote = s3Exists(RepoTreeItem.program.Bucket, s3path)
             self.local = path.isdir(localpath)
             setFontColor(self.qTreeWItem, "#999999", column=0)
@@ -275,26 +270,18 @@ class RepoTreeItem():
             setFontColor(self.qTreeWItem, "#666666", column=0)
 
         self.qTreeWItem.setText(0, self.name)
+        self.loadtime = datetime.datetime.now()
 
 
         # Walk back up the tree and hide things that have no value
         self.calcVisible()
 
-        # if self.type == "product":
-        #     if self.local:
-        #         self.qTreeWItem.setIcon(1, QIcon(qTreeIconStates.LOCAL_PRESENT))
-        #     else:
-        #         self.qTreeWItem.setIcon(1, QIcon(qTreeIconStates.LOCAL_MISSING))
-            # TODO: Commenting this out since this column is implied by the other
-            # if self.remote:
-            #     self.qTreeWItem.setIcon(2, QIcon(qTreeIconStates.REMOTE_PRESENT))
-            # else:
-            #     self.qTreeWItem.setIcon(2, QIcon(qTreeIconStates.REMOTE_MISSING))
-
-        self.loadtime = datetime.datetime.now()
-
     def createDummyChild(self):
         self.qTreeWItem.takeChildren()
+        dummy = QTreeWidgetItem()
+        dummy.setText(0, self.LOADING)
+        dummy.setIcon(0, QIcon(qTreeIconStates.GROUP))
+        self.qTreeWItem.addChild(dummy)
 
     def calcVisible(self):
         """
@@ -314,10 +301,11 @@ class RepoTreeItem():
             self.rtParent.calcVisible()
 
     def loadChildren(self, loadlevels):
-        self.qTreeWItem.takeChildren()
-
         if loadlevels < 1 or self.type == 'product':
             return
+
+        # Start by clearing out the previous children
+        self.qTreeWItem.takeChildren()
 
         for child in self.nItem['children']:
             # Add the leaf to the tree
@@ -358,3 +346,9 @@ class qTreeIconStates:
     REMOTE_MISSING = ":/plugins/RiverscapesToolbar/cloud_grey.png"
     REMOTE_OLDER = ":/plugins/RiverscapesToolbar/cloud_red.png"
     REMOTE_PRESENT = ":/plugins/RiverscapesToolbar/cloud_black.png"
+
+    GROUP = ":/plugins/RiverscapesToolbar/folder_light.png"
+    COLLECTION = ":/plugins/RiverscapesToolbar/folder_medium.png"
+    PRODUCT = ":/plugins/RiverscapesToolbar/project.png"
+
+    LOADING = ":/plugins/RiverscapesToolbar/loading.png"
