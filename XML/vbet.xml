@@ -1,38 +1,27 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:noNamespaceSchemaLocation="XSD/project_explorer.xsd">
+         xsi:noNamespaceSchemaLocation="XSD/project_explorer.xsd">
   <Name>VBET</Name>
   <ProjectType>VBET</ProjectType>
-  <Inputs>
-    <Label>Inputs</Label>
-    <!--How we render inputs goes here-->
-  </Inputs>
-  <!--This is a template for how each realization should render-->
-  <Realization>
-      <Label xpath="Name"/>
-      <Children collapsed="false">
-        <Node>
-          <Label>Inputs</Label>
-        </Node>
-        <Node>
-          <Label>Analyses</Label>
-          <Children>
-            <Repeater>
-              <Label>Output</Label>
-              <Xpath>/analyses/output</Xpath>
-              <Node>
-                <Label xpath="name"></Label>
-                <Type>valley bottom</Type>
-                <Entity>
-                  <Type>vector</Type>
-                  <Xpath>filepath</Xpath>
-                </Entity>
-              </Node>
-            </Repeater>
-          </Children>
-        </Node>
-      </Children>
-  </Realization>
-
-
+  <Root>
+    <Label xpath="/Name"/>
+    <Children>
+      <Node>
+        <Label>Inputs</Label>
+        <!--How we render inputs goes here-->
+      </Node>
+      <Node>
+        <!--This is a template for how each realization should render-->
+        <Label>Realizations</Label>
+        <Children collapsed="false">
+          <Node>
+            <Label>Inputs</Label>
+          </Node>
+          <Node>
+            <Label>Analyses</Label>
+          </Node>
+        </Children>
+      </Node>
+    </Children>
+  </Root>
 </Project>

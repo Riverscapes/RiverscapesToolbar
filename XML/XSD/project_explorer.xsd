@@ -17,8 +17,7 @@
         <xs:element type="xs:string" name="Name"/>
         <xs:element type="xs:string" name="Description" minOccurs="0"/>
         <xs:element type="xs:string" name="ProjectType"/>
-        <xs:element type="NodeType" name="Inputs"/>
-        <xs:element type="NodeType" name="Realization"/>
+        <xs:element type="NodeType" name="Root"/>
       </xs:sequence>
     </xs:complexType>
   </xs:element>
