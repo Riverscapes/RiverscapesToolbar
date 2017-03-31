@@ -6,22 +6,30 @@
   <Root>
     <Label xpath="/Name"/>
     <Children>
-      <Node>
+      <Repeater>
+        <!--This is a template for how each realization should render-->
         <Label>Inputs</Label>
-        <!--How we render inputs goes here-->
-      </Node>
-      <Node>
+        <Xpath>/Inputs</Xpath>
+        <Node>
+          <Label xpath="Name"/>
+        </Node>
+      </Repeater>
+      <Repeater>
         <!--This is a template for how each realization should render-->
         <Label>Realizations</Label>
-        <Children collapsed="false">
-          <Node>
-            <Label>Inputs</Label>
-          </Node>
-          <Node>
-            <Label>Analyses</Label>
-          </Node>
-        </Children>
-      </Node>
+        <Xpath>/Realizations</Xpath>
+        <Node>
+          <Label xpath="Name"/>
+          <Children collapsed="false">
+            <Node>
+              <Label>Inputs</Label>
+            </Node>
+            <Node>
+              <Label>Analyses</Label>
+            </Node>
+          </Children>
+        </Node>
+      </Repeater>
     </Children>
   </Root>
 </Project>
