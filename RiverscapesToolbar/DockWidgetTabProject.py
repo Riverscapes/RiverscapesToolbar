@@ -13,12 +13,16 @@ class DockWidgetTabProject():
     def __init__(self, dockWidget):
         print "init"
         DockWidgetTabProject.treectl = dockWidget.treeProject
+        self.treectl.setColumnCount(1)
+        self.treectl.setHeaderHidden(True)
 
         # Set up some connections for app events
         self.treectl.doubleClicked.connect(self.item_doubleClicked)
         self.treectl.customContextMenuRequested.connect(self.openMenu)
         dockWidget.btnLoadProject.clicked.connect(self.projectBrowserDlg)
         dockWidget.btnDEBUG.clicked.connect(self.loadDebug)
+
+
 
     def projectBrowserDlg(self):
         filename = QtGui.QFileDialog.getExistingDirectory(self, "Open XML file", "", "XML File (*.xml);;GCD File (*.gcd);;All files (*)")
@@ -92,7 +96,8 @@ class ProjectTreeItem():
 
     namespace = "{http://tempuri.org/ProjectDS.xsd}"
 
-    ProjectDOM = None
+    projectDOM = None
+    parserDOM = None
 
     @staticmethod
     def fetchProgramContext(projectXMLfile):
@@ -110,7 +115,7 @@ class ProjectTreeItem():
 
         # projectName = self.xmlProjectDoc.find("Project/name")
 
-    def __init__(self, nItem=None, rtParent=None, projectXMLfile=None):
+    def __init__(self, parseNode=None, projNode=None, rtParent=None, projectXMLfile=None):
         """
         Initialize a new RepoTreeItem
         :param nItem: nItem is the pseudo-json nested dictionary we get from program.py
@@ -123,12 +128,16 @@ class ProjectTreeItem():
         if projectXMLfile:
             self.fetchProgramContext(projectXMLfile)
 
-        self.nItem = nItem
+        self.parseNode = parseNode
+        self.projNode = projNode
         self.rtParent = rtParent
 
-        # RootNode Stuff
-        if not self.nItem:
-            self.nItem = self.parserDOM.find('Root')
+        # RootNode Stuff. We've got to keep the parser in line and tracking the project node
+        if not self.parseNode:
+            self.parseNode = self.parserDOM.find('Node')
+        if not self.projNode:
+            self.projNode = self.projectDOM
+
 
         if not self.rtParent:
             self.qTreeWItem = QTreeWidgetItem(DockWidgetTabProject.treectl)
@@ -138,10 +147,8 @@ class ProjectTreeItem():
         # Set the data backwards so we can find this object later
         self.qTreeWItem.setData(0, Qt.UserRole, self)
 
-        self.type = self.nItem['node']['type']
+        self.type = self.parseNode.tag
         self.depth = self._getDepth()
-
-        self.reset()
         self.load()
 
     def load(self, loadlevels=1):
@@ -151,23 +158,17 @@ class ProjectTreeItem():
         :return:
         """
 
-        self.name = self.getLabel(self.templateNode, self.projNode)
-        if self.type == 'node':
+        self.name = self._getLabel()
+        self.qTreeWItem.setText(0, self.name)
+
+        if self.type == 'Node':
             self.loadNode()
-        elif self.type == "repeater":
+        elif self.type == "Repeater":
             self.loadRepeater()
-
-        # Add the leaf to the tree
-        newTreeItem = QStandardItem(self.label)
-
-        if self.tnParent is None:
-            self.treeRoot.appendRow(newTreeItem)
-        else:
-            tnParent = self.tnParent.appendRow(newTreeItem)
 
         self.recalcState()
         self.loaded = True
-        self.loadChildren((loadlevels - 1))
+        self.loadChildren()
 
     def recalcState(self):
         """
@@ -195,60 +196,55 @@ class ProjectTreeItem():
         Load a single node
         :return:
         """
+        # Detect if this is an XML node element and reset the root Project node to this.
+        entityType = self.parseNode.find('entity/type')
+        entityXPath = self.parseNode.find('entity/xpath')
+        newProjNode = self.projNode
 
+        if entityXPath is not None:
+            newProjNode = self.projNode.find(entityXPath.text)
 
-        if self.type == "Node":
-            # Detect if this is an XML node element and reset the root Project node to this.
-            entityType = self.templateNode.find('entity/type')
-            entityXPath = self.templateNode.find('entity/xpath')
-            newProjNode = self.projNode
+        # This node might be a leaf. If so we need to get some meta dat
+        if entityType is not None and entityXPath is not None:
+            filepathNode = self.projNode.find(entityXPath.text)
+            if filepathNode is not None:
+                # normalize the slashes
+                # filepath = re.sub('[\\\/]+', os.path.sep, filepathNode.text)
+                # make it an absolute path
+                filepath = os.path.join(self.xmlProjDir, filepathNode.text)
+                self.filepath = filepath
 
             if entityXPath is not None:
-                newProjNode = self.projNode.find(entityXPath.text)
+                self.xpath = entityXPath.text
+            symbologyNode = self.templateNode.find('entity/symbology')
 
-                # This node might be a leaf. If so we need to get some meta dat
-            if entityType is not None and entityXPath is not None:
-                filepathNode = self.projNode.find(entityXPath.text)
-                if filepathNode is not None:
-                    # normalize the slashes
-                    # filepath = re.sub('[\\\/]+', os.path.sep, filepathNode.text)
-                    # make it an absolute path
-                    filepath = os.path.join(self.xmlProjDir, filepathNode.text)
-                    self.filepath = filepath
+            if symbologyNode is not None:
+                self.symbology = symbologyNode.text
 
-                if entityXPath is not None:
-                    self.xpath = entityXPath.text
-                symbologyNode = self.templateNode.find('entity/symbology')
+    def loadRepeater(self):
 
-                if symbologyNode is not None:
-                    self.symbology = symbologyNode.text
+        # Remember, repeaters can only contain one "pattern" <Node>
+        xPatternNode = self.parseNode.find("node")
 
-        elif self.type =="Repeater":
-            newTreeItem = QStandardItem(self.label)
-            if self.tnParent is None:
-                self.treeRoot.appendRow(newTreeItem)
+        # If there is an Xpath then reset the base project node to that.
+        xpath = self.parseNode.find("xpath")
+        xNewProjList = []
+        if xPatternNode is not None and xpath is not None:
+            absoluteXPath = xpath.text[:1] == "/"
+
+            # Should we search from the root or not.
+            if absoluteXPath:
+                xNewProjList = self.projectDOM.findall("." + xpath.text)
+                newTreeItem = ProjectTreeItem(xNewProjList, self)
             else:
-                self.tnParent = self.tnParent.appendRow(newTreeItem)
+                xNewProjList = self.projNode.findall(xpath.text)
+                newTreeItem = ProjectTreeItem(xNewProjList, self)
 
-            # Remember, repeaters can only contain one "pattern" node
-            xPatternNode = self.templateNode.find("node")
+            self.qTreeWItem.addChild(newTreeItem.qTreeWItem)
 
-            # If there is an Xpath then reset the base project node to that.
-            xpath = self.templateNode.find("xpath")
-            xNewProjList = []
-            if xPatternNode is not None and xpath is not None:
-                absoluteXPath = xpath.text[:1] == "/"
-                # Should we search from the root or not.
-                if absoluteXPath:
-                    xNewProjList = self.xmlProjectDoc.findall("." + xpath.text)
-                else:
-                    xNewProjList = self.projNode.findall(xpath.text)
+        # for xProjChild in xNewProjList:
+        #     self.LoadNode(newTreeItem, xPatternNode, xProjChild)
 
-            # for xProjChild in xNewProjList:
-            #     self.LoadNode(newTreeItem, xPatternNode, xProjChild)
-
-        elif self.type == "Entity":
-            print "entityt"
 
     def loadChildren(self):
         """
@@ -257,42 +253,17 @@ class ProjectTreeItem():
         :param force:
         :return:
         """
-        # This is a hard rule. Children have no products.
-        if self.type == 'node':
-            return
-
-        #     # Just a regular node with children
-        # for xChild in self.templateNode.findall("children/node"):
-        #     self.LoadNode(newTreeItem, xChild, newProjNode)
-        # for xRepeater in self.templateNode.findall("children/repeater"):
-        #     self.LoadRepeater(newTreeItem, xRepeater, newProjNode)
-        #
         # self.group_layers = self.getTreeAncestry(newTreeItem)
-
-
         # Start by clearing out the previous children (this is a forced or first refresh)
         self.qTreeWItem.takeChildren()
 
-        for child in self.nItem['children']:
-            # Add the leaf to the tree
-            pathstr = '/'.join(self.path) + '/' if len(self.path) > 0 else ""
-            type = child['node']['type']
+        children = self.parseNode.find('Children')
 
-            if type == 'node':
-                # End of the line
-                newpath = self.path[:]
-                newpath.append(child['node']['folder'])
-                newpath.append(ProjectTreeItem.program.ProjectFile)
-                newTreeItem = ProjectTreeItem(child, self, newpath)
+        if children:
+            for child in list(children):
+                # Add the leaf to the tree
+                newTreeItem = ProjectTreeItem(child, self)
                 self.qTreeWItem.addChild(newTreeItem.qTreeWItem)
-
-            elif type == 'repeater':
-                newpath = self.path[:]
-                newpath.append(child['node']['folder'])
-                newTreeItem = ProjectTreeItem(child, self, newpath)
-                self.qTreeWItem.addChild(newTreeItem.qTreeWItem)
-
-            self.childrenloaded = True
 
     def refreshAction(self):
         """
@@ -306,15 +277,14 @@ class ProjectTreeItem():
         """ Either use the liral text inside <label> or look it
             up in the project node if there's a <label xpath="/x/path">
         """
-        labelNode = self.templateNode.find("label")
         label = "TITLE_NOT_FOUND"
+        labelNode = self.parseNode.find("Label")
         if labelNode is not None:
             if "xpath" in labelNode.attrib:
                 xpath = labelNode.attrib['xpath']
                 label = self.projNode.find(xpath).text
             else:
                 label = labelNode.text
-
         return label
 
     def _getDepth(self):
