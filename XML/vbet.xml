@@ -3,30 +3,27 @@
          xsi:noNamespaceSchemaLocation="XSD/project_explorer.xsd">
   <Name>VBET</Name>
   <ProjectType>VBET</ProjectType>
-  <Node>
-    <Label xpath="Name"/>
+  <Node label="Project" xpath="/">
     <Children>
-      <Repeater>
+      <Repeater xpath="Realizations">
         <!--This is a template for how each realization should render-->
-        <Label>Inputs</Label>
-        <Xpath>/Inputs</Xpath>
-        <Node>
-          <Label xpath="Name"/>
-        </Node>
-      </Repeater>
-      <Repeater>
-        <!--This is a template for how each realization should render-->
-        <Label>Realizations</Label>
-        <Xpath>/Realizations</Xpath>
-        <Node>
-          <Label xpath="Name"/>
+        <Node xpathlabel="Name" xpath="VBET">
           <Children collapsed="false">
-            <Node>
-              <Label>Inputs</Label>
+            <Node label="Inputs" xpath="Inputs">
+              <Children>
+                <Node label="Topography" xpath="Topography">
+                  <Children>
+                    <Node xpathlabel="Name" xpath="DEM" type="raster" symbology="DEM"/>
+                    <Node xpathlabel="Name" xpath="Flow" type="raster" symbology="Flow"/>
+                    <Node xpathlabel="Name" xpath="Slope" type="raster" symbology="SlopePer"/>
+                  </Children>
+                </Node>
+                <Repeater xpath="Inputs/DrainageNetworks/Network/Buffers">
+                  <Node xpathlabel="Name" type="vector"/>
+                </Repeater>
+              </Children>
             </Node>
-            <Node>
-              <Label>Analyses</Label>
-            </Node>
+            <Node label="Analyses"/>
           </Children>
         </Node>
       </Repeater>

@@ -14,7 +14,7 @@ class Symbology():
     @staticmethod
     def loadPlugins():
         """
-        Load the symbology plugins
+        Load the symbology plugins into a library. Use whatever we can find. 
         :return: 
         """
         pluginpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), Symbology._pluginpath)
@@ -34,6 +34,7 @@ class Symbology():
     def symbolize(layer, type):
         """
         Here's where we choose the actual symbology
+        and apply to the layer
         """
         # TODO: implement raster/vector check on layer
         # Callback

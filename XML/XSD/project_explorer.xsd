@@ -1,15 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
-  <!-- Documentation -->
-  <xs:annotation>
-    <xs:appinfo>Whiz thing</xs:appinfo>
-    <xs:documentation xml:lang="en">
-      This Schema defines a tree that is used by the various tools out there.
-    </xs:documentation>
-  </xs:annotation>
-  
-  
   <!-- Overall Structure  -->
   <xs:element name="Project">
     <xs:complexType>
@@ -22,66 +13,48 @@
     </xs:complexType>
   </xs:element>
 
+  <!--Allowable things to add to the map-->
+  <xs:simpleType name="datatype">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="vector" />
+      <xs:enumeration value="raster" />
+      <xs:enumeration value="tile" />
+      <xs:enumeration value="file" />
+    </xs:restriction>
+  </xs:simpleType>
 
   <!-- Node: A one-off tree branch that has an xpath -->
   <xs:complexType name="NodeType">
-      <xs:sequence>
-        <xs:element name="Label">
-          <xs:complexType>
-            <xs:simpleContent>
-              <xs:extension base="xs:string">
-                <xs:attribute type="xs:string" name="xpath"/>
-              </xs:extension>
-            </xs:simpleContent>
-          </xs:complexType>
-        </xs:element>
-        <xs:element name="Type" minOccurs="0"/>
-        <xs:element ref="Entity" minOccurs="0"/>
-        <xs:element name="Children" minOccurs="0">
-          <xs:complexType>
-            <xs:choice maxOccurs="unbounded">
-              <xs:element type="NodeType" name="Node" minOccurs="1" maxOccurs="unbounded"/>
-              <xs:element type="RepeaterType" name="Repeater" minOccurs="1" maxOccurs="unbounded"/>
-            </xs:choice>
-            <xs:attribute type="xs:string" name="collapsed"/>
-          </xs:complexType>
-        </xs:element>
-      </xs:sequence>
+    <xs:sequence>
+      <xs:element type="xs:string" name="Tileservice" minOccurs="0"/>
+      <xs:element type="ChildrenType" name="Children" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute type="xs:string" name="label" use="optional"/>
+    <xs:attribute type="xs:string" name="xpathlabel" use="optional"/>
+    <xs:attribute type="xs:string" name="xpath" use="optional"/>
+    <xs:attribute type="datatype" name="type" use="optional"/>
+    <xs:attribute type="xs:string" name="symbology" use="optional"/>
   </xs:complexType>
 
   <!-- Repeaters: loop over xml node "arrays" -->
   <xs:complexType name="RepeaterType">
-      <xs:sequence>
-        <xs:element name="Label">
-          <xs:complexType>
-            <xs:simpleContent>
-              <xs:extension base="xs:string">
-                <xs:attribute type="xs:string" name="xpath"/>
-              </xs:extension>
-            </xs:simpleContent>
-          </xs:complexType>
-        </xs:element>
-        <xs:element type="xs:string" name="Xpath"/>
-        <xs:choice>
-          <xs:element type="NodeType" name="Node" maxOccurs="1"/>
-          <xs:element type="RepeaterType" name="Repeater" maxOccurs="1"/>
-        </xs:choice>
-      </xs:sequence>
+    <xs:sequence>
+      <xs:choice>
+        <xs:element type="NodeType" name="Node" maxOccurs="1"/>
+        <xs:element type="RepeaterType" name="Repeater" maxOccurs="1"/>
+      </xs:choice>
+    </xs:sequence>
+    <xs:attribute type="xs:string" name="xpath" use="required"/>
   </xs:complexType>
 
-  <!--Entities are the leaves of the tree-->
-  <xs:element name="Entity">
-    <xs:complexType>
-      <xs:sequence>
-        <xs:element type="xs:string" name="Type"/>
-        <xs:choice>
-          <xs:element type="xs:string" name="Xpath"/>
-          <xs:element type="xs:string" name="Tileservice"/>
-        </xs:choice>
-        <xs:element type="xs:string" name="Label" minOccurs="0"/>
-        <xs:element type="xs:string" name="Symbology" minOccurs="0"/>
-      </xs:sequence>
-    </xs:complexType>
-  </xs:element>
+
+  <!--Children is basically just a bucket that can contain nodes and repeaters-->
+  <xs:complexType name="ChildrenType">
+    <xs:choice maxOccurs="unbounded">
+      <xs:element type="NodeType" name="Node" minOccurs="1" maxOccurs="unbounded"/>
+      <xs:element type="RepeaterType" name="Repeater" minOccurs="1" maxOccurs="unbounded"/>
+    </xs:choice>
+    <xs:attribute type="xs:string" name="collapsed" use="optional"/>
+  </xs:complexType>
 
 </xs:schema>
