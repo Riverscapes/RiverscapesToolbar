@@ -43,7 +43,10 @@
         <xs:element type="NodeType" name="Node" maxOccurs="1"/>
       </xs:choice>
     </xs:sequence>
+    <xs:attribute type="xs:string" name="label" use="optional"/>
+    <xs:attribute type="xs:string" name="xpathlabel" use="optional"/>
     <xs:attribute type="xs:string" name="xpath" use="required"/>
+    <xs:attribute type="xs:boolean" name="collapsed" use="optional"/>
   </xs:complexType>
 
   <!--Children is basically just a bucket that can contain nodes and repeaters-->

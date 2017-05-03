@@ -3,11 +3,11 @@
          xsi:noNamespaceSchemaLocation="XSD/project_explorer.xsd">
   <Name>VBET</Name>
   <ProjectType>VBET</ProjectType>
-  <Node label="Project" xpath="/">
+  <Node xpathlabel="Name" first="TRUE">
     <Children>
-      <Repeater xpath="Realizations">
+      <Repeater label="Realizations" xpath="Realizations/VBET">
         <!--This is a template for how each realization should render-->
-        <Node xpathlabel="Name" xpath="VBET">
+        <Node xpathlabel="Name" second="TRUE">
           <Children collapsed="false">
             <Node label="Inputs" xpath="Inputs">
               <Children>
@@ -18,7 +18,7 @@
                     <Node xpathlabel="Name" xpath="Slope" type="raster" symbology="SlopePer"/>
                   </Children>
                 </Node>
-                <Repeater xpath="Inputs/DrainageNetworks/Network/Buffers">
+                <Repeater label="Network Buffers" xpath="DrainageNetworks/Network/Buffers/Buffer">
                   <Node xpathlabel="Name" type="vector"/>
                 </Repeater>
               </Children>

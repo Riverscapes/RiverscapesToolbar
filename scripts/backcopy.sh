@@ -18,3 +18,4 @@ QGSPATH=~/.qgis2/python/plugins/RiverscapesToolbar
 
 cp $QGSPATH/*.py ../
 cp -fr $QGSPATH/RiverscapesToolbar ../
+cp -fr $QGSPATH/XML ../
