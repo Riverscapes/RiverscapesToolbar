@@ -1,9 +1,8 @@
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt4.QtGui import QColor
 from qgis.core import QgsRasterBandStats, QgsColorRampShader, QgsRasterShader, QgsSingleBandPseudoColorRenderer, QgsRasterLayer
 import math
 
-class RasterSymbolizerPlugin():
+class RasterPlugin():
 
     def __init__(self, layer):
         self.colDic = {'tan': '#ffebb0', 'green': '#267300', 'brown': '#734d00', 'white': '#ffffff',

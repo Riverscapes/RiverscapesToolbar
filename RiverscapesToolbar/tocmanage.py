@@ -4,7 +4,7 @@ import os.path
 from qgis.utils import iface
 from qgis.core import QgsMapLayer, QgsRasterLayer, QgsVectorLayer, QgsMapLayerRegistry, QgsProject
 
-from RiverscapesToolbar.symbology.symbology import RasterSymbolizer
+from symbology.symbology import Symbology
 
 # http://www.lutraconsulting.co.uk/blog/2014/07/25/qgis-layer-tree-api-part-2/
 
@@ -66,7 +66,7 @@ def AddRasterLayer(theRaster):
         
         # call Konrad's symbology method here using data()["symbology"]
         # DEBUG:: FILL IN THE PROPER TYPE
-        RasterSymbolizer.symbolize(rOutput, 'DoD')
+        Symbology().symbolize(rOutput, 'DoD')
 
         if theRaster.data()["symbology"].lower() == "dem":
             demPath, demExtension = os.path.splitext( theRaster.data()["filepath"])

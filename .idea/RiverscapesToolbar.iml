@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <module type="PYTHON_MODULE" version="4">
   <component name="NewModuleRootManager">
-    <content url="file://$USER_HOME$/.qgis2/python/plugins/RiverscapesToolbar" />
+    <content url="file://$USER_HOME$/.qgis2/python/plugins/RiverscapesToolbar">
+      <sourceFolder url="file://$USER_HOME$/.qgis2/python/plugins/RiverscapesToolbar" isTestSource="false" />
+      <excludeFolder url="file://$USER_HOME$/.qgis2/python/plugins/RiverscapesToolbar/XML" />
+      <excludeFolder url="file://$USER_HOME$/.qgis2/python/plugins/RiverscapesToolbar/help" />
+    </content>
     <content url="file://$MODULE_DIR$" />
     <orderEntry type="jdk" jdkName="Python 2.7.10 (/usr/bin/python) QGIS" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />

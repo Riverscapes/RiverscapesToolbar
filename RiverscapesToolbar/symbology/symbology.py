@@ -1,6 +1,6 @@
 import os
 import sys
-from raster import RasterSymbolizerPlugin
+import raster
 
 class Symbology():
     _pluginpath = "plugins"
@@ -9,9 +9,10 @@ class Symbology():
 
     def __init__(self):
         if not self._loaded:
-            self.loadPlugins()
+            Symbology.loadPlugins()
 
-    def loadPlugins(self):
+    @staticmethod
+    def loadPlugins():
         """
         Load the symbology plugins
         :return: 
@@ -20,15 +21,17 @@ class Symbology():
         sys.path.insert(0, pluginpath)
 
         # Loop over all our plugins and add them if we can
-        for f in os.listdir(Symbology._pluginpath):
+        for f in os.listdir(pluginpath):
             fname, ext = os.path.splitext(f)
             if ext == '.py':
                 mod = __import__(fname)
-                Symbology._plugins.append(mod.Plugin)
+                if "Plugin" in mod.__dict__:
+                    Symbology._plugins.append(mod.Plugin)
         sys.path.pop(0)
         Symbology._loaded = True
 
-    def symbolize(self, layer, type):
+    @staticmethod
+    def symbolize(layer, type):
         """
         Here's where we choose the actual symbology
         """
@@ -36,9 +39,12 @@ class Symbology():
         # Callback
         for plugin in Symbology.plugins:
             if plugin.NAME == type:
-                return plugin(layer).apply()
+                # Monkey patch!
+                symbolizerInst = raster.RasterPlugin(layer)
+                symbolizerInst.SetSymbology = plugin.SetSymbology
+                return symbolizerInst.apply()
         # Just choose the default
-        return RasterSymbolizerPlugin(layer)
+        return raster.RasterPlugin(layer)
 
 
 

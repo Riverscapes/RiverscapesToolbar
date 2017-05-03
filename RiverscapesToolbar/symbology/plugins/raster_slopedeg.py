@@ -1,8 +1,7 @@
-from RiverscapesToolbar.symbology.raster import RasterSymbolizerPlugin
 from PyQt4.QtGui import QColor
 from qgis.core import QgsRasterBandStats, QgsColorRampShader, QgsRasterShader, QgsSingleBandPseudoColorRenderer, QgsRasterLayer
 
-class Plugin(RasterSymbolizerPlugin):
+class Plugin():
 
     NAME="SlopeDeg"
 
