@@ -2,39 +2,6 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 from qgis.core import QgsRasterBandStats, QgsColorRampShader, QgsRasterShader, QgsSingleBandPseudoColorRenderer, QgsRasterLayer
 import math
-import os
-import sys
-
-PLUGIN_PATH = "symbology"
-plugins = []
-
-def loadPlugins():
-    """
-    Load the symbology plugins
-    :return: 
-    """
-    pluginpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), PLUGIN_PATH)
-    sys.path.insert(0, pluginpath)
-
-    # Loop over all our plugins and add them if we can
-    for f in os.listdir(pluginpath):
-        fname, ext = os.path.splitext(f)
-        if ext == '.py':
-            mod = __import__(fname)
-            plugins.append(mod.Plugin)
-    sys.path.pop(0)
-
-def symbolize(layer, type):
-    """
-    Here's where we choose the actual symbology
-    """
-    # TODO: implement raster/vector check on layer
-    # Callback
-    for plugin in plugins:
-        if plugin.NAME == type:
-            return plugin(layer).apply()
-    # Just choose the default
-    return RasterSymbolizerPlugin(layer)
 
 class RasterSymbolizerPlugin():
 

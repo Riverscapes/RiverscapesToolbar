@@ -4,6 +4,7 @@ from PyQt4.QtGui import QStandardItem, QMenu, QTreeWidgetItem, QMessageBox, QIco
 from PyQt4.QtCore import Qt, QUrl
 from StringIO import StringIO
 from lib.tocmanage import *
+from symbology.symbology import Symbology
 from os import path, walk
 
 class DockWidgetTabProject():
@@ -15,7 +16,8 @@ class DockWidgetTabProject():
         DockWidgetTabProject.treectl = dockWidget.treeProject
         self.treectl.setColumnCount(1)
         self.treectl.setHeaderHidden(True)
-
+        # Load the plugins
+        self.symbology = Symbology()
         # Set up some connections for app events
         self.treectl.doubleClicked.connect(self.item_doubleClicked)
         self.treectl.customContextMenuRequested.connect(self.openMenu)

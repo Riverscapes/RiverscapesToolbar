@@ -1,4 +1,4 @@
-from RiverscapesToolbar.symbology import RasterSymbolizerPlugin
+from RiverscapesToolbar.symbology.raster import RasterSymbolizerPlugin
 from PyQt4.QtGui import QColor
 from qgis.core import QgsRasterBandStats, QgsColorRampShader, QgsRasterShader, QgsSingleBandPseudoColorRenderer, QgsRasterLayer
 
