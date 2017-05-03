@@ -3,7 +3,7 @@ from PyQt4 import QtGui
 from PyQt4.QtGui import QStandardItem, QMenu, QTreeWidgetItem, QMessageBox, QIcon, QPixmap, QDesktopServices
 from PyQt4.QtCore import Qt, QUrl
 from StringIO import StringIO
-from lib.toc_management import *
+from lib.tocmanage import *
 from os import path, walk
 
 class DockWidgetTabProject():

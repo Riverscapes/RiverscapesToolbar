@@ -11,7 +11,7 @@ from PyQt4.QtCore import *
 
 from os import path
 import xml.etree.ElementTree as ET
-from toc_management import *
+from tocmanage import *
 from os import path
 
 # class Project():

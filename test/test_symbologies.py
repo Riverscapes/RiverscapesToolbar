@@ -13,12 +13,11 @@ __date__ = '2016-07-12'
 __copyright__ = 'Copyright 2016, NorthArrowResearch'
 
 import unittest
+import qgis
 
-from PyQt4.QtGui import QIcon
+from RiverscapesToolbar.symbology import loadPlugins, symbolize
 
-
-
-class GCDViewerDialogTest(unittest.TestCase):
+class SymbologyTest(unittest.TestCase):
     """Test rerources work."""
 
     def setUp(self):
@@ -29,16 +28,15 @@ class GCDViewerDialogTest(unittest.TestCase):
         """Runs after each test."""
         pass
 
-    def test_icon_png(self):
+    def test_symbology_load(self):
         """Test we can click OK."""
-        path = ':/plugins/GCDViewer/icon.png'
-        icon = QIcon(path)
-        self.assertFalse(icon.isNull())
+        loadPlugins()
+        symbolize({}, "DoD")
 
-if __name__ == "__main__":
-    suite = unittest.makeSuite(GCDViewerDialogTest)
-    runner = unittest.TextTestRunner(verbosity=2)
-    runner.run(suite)
+# if __name__ == "__main__":
+#     suite = unittest.makeSuite(SymbologyTest)
+#     runner = unittest.TextTestRunner(verbosity=2)
+#     runner.run(suite)
 
 
 
