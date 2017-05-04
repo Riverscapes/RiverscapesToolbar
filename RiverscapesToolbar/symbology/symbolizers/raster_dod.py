@@ -6,7 +6,7 @@ class RasterSymbolizer():
 
     symbology = "DoD"
 
-    def setramp(self):
+    def symbolize(self):
         self.colorramptype = QgsColorRampShader.DISCRETE
 
         nClasses = 20

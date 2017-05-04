@@ -5,7 +5,7 @@ class RasterSymbolizer():
 
     symbology = "Roughness"
 
-    def setramp(self):
+    def symbolize(self):
         self.colorramptype = QgsColorRampShader.DISCRETE
         # Now you have a self.layer object you can work with
         # self.opacity = 1.0

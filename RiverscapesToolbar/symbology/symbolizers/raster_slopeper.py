@@ -1,11 +1,11 @@
 from PyQt4.QtGui import QColor
-from qgis.core import QgsRasterBandStats, QgsColorRampShader, QgsRasterShader, QgsSingleBandPseudoColorRenderer, QgsRasterLayer
+from qgis.core import QgsColorRampShader
 
 class RasterSymbolizer():
 
     symbology = "SlopePer"
 
-    def setramp(self):
+    def symbolize(self):
         self.colorramptype = QgsColorRampShader.DISCRETE
         # Now you have a self.layer object you can work with
         # self.opacity = 1.0

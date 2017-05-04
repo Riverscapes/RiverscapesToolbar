@@ -27,9 +27,11 @@ class DockWidgetTabRepository():
         self.treectl.setHeaderHidden(True)
 
         self.treectl.customContextMenuRequested.connect(self.openMenu)
+        self.treectl.doubleClicked.connect(self.item_doubleClicked)
         self.treectl.itemExpanded.connect(self.expandItem)
 
         dockWidget.btnRefresh.clicked.connect(self.refreshRoot)
+        self.refreshRoot()
 
     def expandItem(self, item):
         """
@@ -47,8 +49,8 @@ class DockWidgetTabRepository():
         self.dockwidget.btnRefresh.setText("Loading...")
         self.dockwidget.btnRefresh.setEnabled(False)
 
-        rootItem = RepoTreeItem(loadlevels = 4)
-        self.treectl.expandToDepth(2)
+        rootItem = RepoTreeItem(loadlevels = 2)
+        self.treectl.expandToDepth(0)
 
         self.dockwidget.btnRefresh.setEnabled(True)
         self.dockwidget.btnRefresh.setText("Refresh")
@@ -57,8 +59,9 @@ class DockWidgetTabRepository():
         item = self.treectl.selectedIndexes()[0]
         theData = item.data(Qt.UserRole)
 
-        if (theData.type=="product"):
+        if theData.type=="product" and theData.local:
             self.openProject(theData)
+
 
     def openMenu(self, pt):
         """ Handle the contextual menu """
@@ -274,7 +277,8 @@ class RepoTreeItem():
 
         elif self.type == 'group':
             self.qTreeWItem.setIcon(0, QIcon(qTreeIconStates.GROUP))
-            self.remote = s3Exists(RepoTreeItem.program.Bucket, s3path)
+            # self.remote = s3Exists(RepoTreeItem.program.Bucket, s3path)
+            self.remote = True
             self.local = path.isdir(localpath)
             setFontColor(self.qTreeWItem, "#999999", column=0)
 

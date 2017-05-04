@@ -25,16 +25,22 @@ def AddGroup(sGroupName, parentGroup):
 def AddVectorLayer(theVector):
     # Loop over all the parent group layers for this raster
     # ensuring they are in the tree in correct, nested order
+    nodeData = theVector.data(Qt.UserRole)
+    symbology = nodeData.symbology
+    filepath = nodeData.filepath
+
+    # Loop over all the parent group layers for this raster
+    # ensuring they are in the tree in correct, nested order
     parentGroup = None
-    if len(theVector.data()) > 0:
-        for aGroup in theVector.data()["group_layers"]:
+    if len(filepath) > 0:
+        for aGroup in getTreeAncestry(nodeData):
             parentGroup = AddGroup(aGroup, parentGroup)
 
     assert parentGroup, "All rasters should be nested and so parentGroup should be instantiated by now"
 
     # Only add the layer if it's not already in the registry
-    if not QgsMapLayerRegistry.instance().mapLayersByName(theVector.text()):
-        rOutput = QgsVectorLayer(theVector.data()["filepath"].replace('\\', '/'), theVector.text(), "ogr")
+    if not QgsMapLayerRegistry.instance().mapLayersByName(nodeData.name):
+        rOutput = QgsVectorLayer(filepath, "ogr")
         QgsMapLayerRegistry.instance().addMapLayer(rOutput, False)
         parentGroup.addLayer(rOutput)
 
@@ -45,7 +51,7 @@ def AddVectorLayer(theVector):
     # if the layer already exists trigger a refresh
     else:
         print "REFRESH"
-        QgsMapLayerRegistry.instance().mapLayersByName(theVector.text())[0].triggerRepaint()
+        QgsMapLayerRegistry.instance().mapLayersByName(nodeData.name)[0].triggerRepaint()
 
 def AddRasterLayer(theRaster):
 

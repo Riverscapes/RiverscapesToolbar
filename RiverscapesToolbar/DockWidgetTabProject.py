@@ -4,7 +4,7 @@ from settings import Settings
 from PyQt4.QtGui import QStandardItem, QMenu, QTreeWidgetItem, QMessageBox, QIcon, QPixmap, QDesktopServices
 from PyQt4.QtCore import Qt, QUrl
 from StringIO import StringIO
-from tocmanage import AddGroup, AddRasterLayer, AddVectorLayer
+from tocmanage import AddRasterLayer, AddVectorLayer
 from symbology.symbology import Symbology
 from lib.treehelper import *
 from os import path, walk
@@ -34,7 +34,7 @@ class DockWidgetTabProject():
     def projectBrowserDlg(self):
         settings = Settings()
         filename = QtGui.QFileDialog.getExistingDirectory(self.widget, "Open a project", settings.getSetting('DataDir'))
-        self.projectLoad(filename)
+        self.projectLoad(path.join(filename, "project.rs.xml"))
 
     def loadDebug(self):
         """
@@ -72,7 +72,13 @@ class DockWidgetTabProject():
 
     def item_doubleClicked(self, index):
         item = self.treectl.selectedIndexes()[0]
-        self.addToMap(item.model().itemFromIndex(index))
+        theData = item.data(Qt.UserRole)
+
+        addEnabled = theData.maptype != "file"
+        if addEnabled:
+            self.addToMap(item)
+        else:
+            self.findFolder(item)
 
     def openMenu(self, position):
         """ Handle the contextual menu """
@@ -150,6 +156,7 @@ class ProjectTreeItem():
         self.rtParent = rtParent
         self.xpath = None
         self.maptype = None
+        self.symbology = None
 
         # RootNode Stuff. We've got to keep the parser in line and tracking the project node
         if self.parseNode is None:
@@ -254,9 +261,7 @@ class ProjectTreeItem():
                 filepath = path.join(ProjectTreeItem.projectRootDir, filepathNode.text)
                 self.filepath = filepath
 
-            symbologyNode = ProjectTreeItem.getAttr(self.parseNode, 'symbology')
-            if symbologyNode is not None:
-                self.symbology = symbologyNode
+            self.symbology = ProjectTreeItem.getAttr(self.parseNode, 'symbology')
 
 
     def loadRepeater(self):

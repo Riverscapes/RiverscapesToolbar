@@ -5,7 +5,7 @@ class RasterSymbolizer():
 
     symbology = "DEM"
 
-    def setramp(self):
+    def symbolize(self):
         self.colorramptype = QgsColorRampShader.INTERPOLATED
         # Now you have a self.layer object and self.stats you can work with
         self.opacity = 0.6

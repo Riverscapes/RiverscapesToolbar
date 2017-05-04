@@ -4,11 +4,11 @@
 from PyQt4.QtGui import QColor
 from qgis.core import QgsColorRampShader
 
-class Plugin():
+class RasterSymbolizer():
 
-    NAME="Roughness"
+    symbology = "Roughness"
 
-    def SetSymbology(self):
+    def symbolize(self):
         self.colorramptype = QgsColorRampShader.DISCRETE
         # Now you have a self.layer object you can work with
         # self.opacity = 1.0
@@ -23,11 +23,11 @@ class Plugin():
 
 ```
 
-### `NAME`
+### `symbology`
 
-* `NAME`: This corresponds to the `symbology=""` attribute in your business logic XML file.
+* `symbology`: This corresponds to the `symbology=""` attribute in your business logic XML file.
 
-## SetSymbology()
+## symbolize()
 
 ### What can I change?
 
@@ -35,7 +35,7 @@ class Plugin():
 * `self.colorramptype`:  `QgsColorRampShader.DISCRETE`, `EXACT`, `INTERPOLATED`
 * `self.colLst`: a list lists `[float(val), QColor(), str(labe)]`
 
-If this isn't enough we can add functionality to `RasterSymbolizerPlugin` easily enough.
+If this isn't feature-rich enough we can add functionality to `RasterSymbolizerPlugin` easily enough.
 
 feel free to import modules like `math` to help you generate `self.colLst`
 
