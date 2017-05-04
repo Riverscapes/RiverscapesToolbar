@@ -32,7 +32,7 @@ LOGGER = logging.getLogger('QGIS')
 
 #noinspection PyMethodMayBeStatic,PyPep8Naming
 class QgisInterface(QObject):
-    """Class to expose QGIS objects and functions to plugins.
+    """Class to expose QGIS objects and functions to symbolizers.
 
     This class is here for enabling us to run unit tests only,
     so most methods are simply stubs.
@@ -155,7 +155,7 @@ class QgisInterface(QObject):
             return layers[item]
 
     def addToolBarIcon(self, action):
-        """Add an icon to the plugins toolbar.
+        """Add an icon to the symbolizers toolbar.
 
         :param action: Action to add to the toolbar.
         :type action: QAction

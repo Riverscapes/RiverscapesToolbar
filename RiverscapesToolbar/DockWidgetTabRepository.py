@@ -379,16 +379,16 @@ class RepoTreeItem():
 
 class qTreeIconStates:
     # Think of this like an enumeration for icons
-    LOCAL_MISSING = ":/plugins/RiverscapesToolbar/monitor_grey.png"
-    LOCAL_OLDER = ":/plugins/RiverscapesToolbar/monitor_red.png"
-    LOCAL_PRESENT = ":/plugins/RiverscapesToolbar/monitor_black.png"
+    LOCAL_MISSING = ":/symbolizers/RiverscapesToolbar/monitor_grey.png"
+    LOCAL_OLDER = ":/symbolizers/RiverscapesToolbar/monitor_red.png"
+    LOCAL_PRESENT = ":/symbolizers/RiverscapesToolbar/monitor_black.png"
 
-    REMOTE_MISSING = ":/plugins/RiverscapesToolbar/cloud_grey.png"
-    REMOTE_OLDER = ":/plugins/RiverscapesToolbar/cloud_red.png"
-    REMOTE_PRESENT = ":/plugins/RiverscapesToolbar/cloud_black.png"
+    REMOTE_MISSING = ":/symbolizers/RiverscapesToolbar/cloud_grey.png"
+    REMOTE_OLDER = ":/symbolizers/RiverscapesToolbar/cloud_red.png"
+    REMOTE_PRESENT = ":/symbolizers/RiverscapesToolbar/cloud_black.png"
 
-    GROUP = ":/plugins/RiverscapesToolbar/folder_light.png"
-    COLLECTION = ":/plugins/RiverscapesToolbar/folder_medium.png"
-    PRODUCT = ":/plugins/RiverscapesToolbar/project.png"
+    GROUP = ":/symbolizers/RiverscapesToolbar/folder_light.png"
+    COLLECTION = ":/symbolizers/RiverscapesToolbar/folder_medium.png"
+    PRODUCT = ":/symbolizers/RiverscapesToolbar/project.png"
 
-    LOADING = ":/plugins/RiverscapesToolbar/loading.png"
+    LOADING = ":/symbolizers/RiverscapesToolbar/loading.png"

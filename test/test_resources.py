@@ -31,7 +31,7 @@ class GCDViewerDialogTest(unittest.TestCase):
 
     def test_icon_png(self):
         """Test we can click OK."""
-        path = ':/plugins/GCDViewer/icon.png'
+        path = ':/symbolizers/GCDViewer/icon.png'
         icon = QIcon(path)
         self.assertFalse(icon.isNull())
 

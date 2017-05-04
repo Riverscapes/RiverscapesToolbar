@@ -3,7 +3,7 @@ import sys
 import raster
 
 class Symbology():
-    _pluginpath = "plugins"
+    _pluginpath = "symbolizers"
     _plugins = []
     _loaded = False
 
@@ -14,13 +14,13 @@ class Symbology():
     @staticmethod
     def loadPlugins():
         """
-        Load the symbology plugins into a library. Use whatever we can find. 
+        Load the symbology symbolizers into a library. Use whatever we can find. 
         :return: 
         """
         pluginpath = os.path.join(os.path.dirname(os.path.realpath(__file__)), Symbology._pluginpath)
         sys.path.insert(0, pluginpath)
 
-        # Loop over all our plugins and add them if we can
+        # Loop over all our symbolizers and add them if we can
         for f in os.listdir(pluginpath):
             fname, ext = os.path.splitext(f)
             if ext == '.py':

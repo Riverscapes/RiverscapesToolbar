@@ -1,6 +1,5 @@
 from PyQt4.QtGui import QColor
 from qgis.core import QgsRasterBandStats, QgsColorRampShader, QgsRasterShader, QgsSingleBandPseudoColorRenderer, QgsRasterLayer
-import math
 
 class RasterPlugin():
 
@@ -11,8 +10,6 @@ class RasterPlugin():
         self.ramp = QgsColorRampShader()
 
         self.colLst = []
-        self.valLst = []
-        self.labLst = []
         self.opacity = 1.0
         self.colorramptype = QgsColorRampShader.INTERPOLATED
 
@@ -28,6 +25,9 @@ class RasterPlugin():
         :return: 
         """
         self.SetSymbology()
+
+        # Map each [val, QColor, label] into a color shader
+        colRampMap = list(map(lambda x: QgsColorRampShader.ColorRampItem(*x), self.colLst))
 
         self.ramp.setColorRampItemList(self.colLst)
         self.ramp.setColorRampType(self.colorramptype)
@@ -58,6 +58,3 @@ class RasterPlugin():
                            QgsColorRampShader.ColorRampItem(self.valLst[2], QColor(self.colDic['brown']), str(self.valLst[2])),
                            QgsColorRampShader.ColorRampItem(self.valLst[3], QColor(self.colDic['white']), str(self.valLst[3]))]
 
-    @staticmethod
-    def magnitude(x):
-        return int(math.floor(math.log10(x)))

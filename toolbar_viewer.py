@@ -110,7 +110,7 @@ class RiverscapesToolbarViewer:
         """Add a toolbar icon to the toolbar.
 
         :param icon_path: Path to the icon for this action. Can be a resource
-            path (e.g. ':/plugins/foo/bar.png') or a normal file system path.
+            path (e.g. ':/symbolizers/foo/bar.png') or a normal file system path.
         :type icon_path: str
 
         :param text: Text that should be shown in menu items for this action.
@@ -173,7 +173,7 @@ class RiverscapesToolbarViewer:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        icon_path = ':/plugins/RiverscapesToolbar/icon.png'
+        icon_path = ':/symbolizers/RiverscapesToolbar/icon.png'
         self.add_action(
             icon_path,
             text=self.tr(u'Analyst Toolbar'),
