@@ -4,8 +4,6 @@ from qgis.core import QgsRasterBandStats, QgsColorRampShader, QgsRasterShader, Q
 class RasterPlugin():
 
     def __init__(self, layer):
-        self.colDic = {'tan': '#ffebb0', 'green': '#267300', 'brown': '#734d00', 'white': '#ffffff',
-                       'red': '#e60000', 'light gray': '#f0f0f0', 'blue': '#004cab'}
         self.shader = QgsRasterShader()
         self.ramp = QgsColorRampShader()
 
@@ -45,16 +43,12 @@ class RasterPlugin():
         """ YOU NEED TO IMPLEMENT THIS AS A SENSIBLE DEFAULT"""
         self.colorramptype = QgsColorRampShader.INTERPOLATED
         # Now you have a self.layer object and self.stats you can work with
-        self.opacity = 0.6
-
+        self.opacity = 1.0
         lo = self.stats.minimumValue
         hi = self.stats.maximumValue
-        rng = hi - lo
-        interval = rng/3.0
 
-        self.valLst = [lo, lo+interval, hi-interval, hi]
-        self.colLst = [QgsColorRampShader.ColorRampItem(self.valLst[0], QColor(self.colDic['tan']), str(self.valLst[0])),
-                           QgsColorRampShader.ColorRampItem(self.valLst[1], QColor(self.colDic['green']), str(self.valLst[1])),
-                           QgsColorRampShader.ColorRampItem(self.valLst[2], QColor(self.colDic['brown']), str(self.valLst[2])),
-                           QgsColorRampShader.ColorRampItem(self.valLst[3], QColor(self.colDic['white']), str(self.valLst[3]))]
+        self.colLst = [
+            [lo, QColor('black'), str(lo)],
+            [hi, QColor('white'), str(hi)]
+        ]
 

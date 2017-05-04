@@ -38,15 +38,13 @@ class Symbology():
         """
         # TODO: implement raster/vector check on layer
         # Callback
-        for plugin in Symbology.plugins:
+        symbolizerInst = raster.RasterPlugin(layer)
+        for plugin in Symbology._plugins:
             if plugin.NAME == type:
                 # Monkey patch!
-                symbolizerInst = raster.RasterPlugin(layer)
-                symbolizerInst.SetSymbology = plugin.SetSymbology
-                return symbolizerInst.apply()
+                symbolizerInst.SetSymbology = plugin.SetSymbology.__get__(symbolizerInst)
         # Just choose the default
-        return raster.RasterPlugin(layer)
-
+        return symbolizerInst.apply()
 
 
 
