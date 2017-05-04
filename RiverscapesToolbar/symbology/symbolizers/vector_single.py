@@ -17,5 +17,3 @@ class VectorSymbolizer():
         # assign the symbol layer to the symbol
         renderer.symbols()[0].changeSymbolLayer(0, symbol_layer)
 
-        # assign the renderer to the layer
-        self.layer.setRendererV2(renderer)

@@ -1,13 +1,15 @@
-import xml.etree.ElementTree as ET
+from os import path
 from PyQt4 import QtGui
 from settings import Settings
-from PyQt4.QtGui import QStandardItem, QMenu, QTreeWidgetItem, QMessageBox, QIcon, QPixmap, QDesktopServices
+from PyQt4.QtGui import  QMenu, QTreeWidgetItem, QMessageBox, QIcon, QPixmap, QDesktopServices
 from PyQt4.QtCore import Qt, QUrl
-from StringIO import StringIO
-from tocmanage import AddRasterLayer, AddVectorLayer
+
 from symbology.symbology import Symbology
-from lib.treehelper import *
-from os import path, walk
+
+from qgis.utils import iface
+from qgis.core import QgsProject, QgsMapLayerRegistry, QgsRasterLayer, QgsVectorLayer
+from lib.projects import ProjectTreeItem
+
 
 class DockWidgetTabProject():
 
@@ -19,8 +21,10 @@ class DockWidgetTabProject():
         self.widget = dockWidget
         self.treectl.setColumnCount(1)
         self.treectl.setHeaderHidden(True)
-        # Load the symbolizers
+
+        # Load the symbolizer plugins
         self.symbology = Symbology()
+
         # Set up some connections for app events
         self.treectl.doubleClicked.connect(self.item_doubleClicked)
 
@@ -45,38 +49,13 @@ class DockWidgetTabProject():
         QTreeWidgetItem(DockWidgetTabProject.treectl).takeChildren()
         self.projectLoad('/Users/work/Projects/Riverscapes/Data/CRB/MiddleForkJohnDay/Network/VBET/project.rs.xml')
 
-    @staticmethod
-    def projectLoad(xmlPath):
-        """ Constructor """
-        if xmlPath is None or not path.isfile(xmlPath):
-            msg = "..."
-            q = QMessageBox(QMessageBox.Warning, "Could not find the project XML file", msg)
-            q.setStandardButtons(QMessageBox.Ok)
-            i = QIcon()
-            i.addPixmap(QPixmap("..."), QIcon.Normal)
-            q.setWindowIcon(i)
-            q.exec_()
-        else:
-            rootItem = ProjectTreeItem(projectXMLfile=xmlPath)
-            DockWidgetTabProject.treectl.expandToDepth(5)
-
-    def addToMap(self, item):
-        print "ADDING TO MAP::", item.data(Qt.UserRole).filepath
-        type = item.data(Qt.UserRole).maptype
-        if  type == 'vector':
-            AddVectorLayer(item)
-        elif type == 'raster':
-            AddRasterLayer(item)
-        elif type == 'tilelayer':
-            print "not implemented yet"
-
     def item_doubleClicked(self, index):
         item = self.treectl.selectedIndexes()[0]
         theData = item.data(Qt.UserRole)
 
         addEnabled = theData.maptype != "file"
         if addEnabled:
-            self.addToMap(item)
+            self.addlayertomap(item)
         else:
             self.findFolder(item)
 
@@ -89,292 +68,102 @@ class DockWidgetTabProject():
 
         if theData.maptype is not None:
 
-            addReceiver = lambda item=item: self.addToMap(item)
+            addReceiver = lambda item=item: self.addlayertomap(item)
             findFolderReceiver = lambda item=theData: self.findFolder(item)
+            externalOpenReceiver = lambda item=theData: self.externalOpen(item)
 
-            findAction = menu.addAction("Find Folder", findFolderReceiver)
-            addAction = menu.addAction("Add to Map", addReceiver)
+            findAction = menu.addAction("Open Containing Folder", findFolderReceiver)
 
             addEnabled = theData.maptype != "file"
-            addAction.setEnabled(addEnabled)
 
+            if addEnabled:
+                addAction = menu.addAction("Add to Map", addReceiver)
+            else:
+                openAction = menu.addAction("Open File", externalOpenReceiver)
 
         menu.exec_(self.treectl.mapToGlobal(position))
+
+    def externalOpen(self, rtItem):
+        qurl = QUrl.fromLocalFile(rtItem.filepath)
+        QDesktopServices.openUrl(qurl)
 
     def findFolder(self, rtItem):
         qurl = QUrl.fromLocalFile(path.dirname(rtItem.filepath))
         QDesktopServices.openUrl(qurl)
 
 
-class ProjectTreeItem():
-    NODE_TYPE = "Node"
-    REPEATER_TYPE = "Repeater"
-    ENTITY_TYPE = "Entity"
-
-    projectRootDir = None
-    projectFilePath = None
-
-    parserRootDir = None
-    parserFilepath = None
-
-    namespace = "{http://tempuri.org/ProjectDS.xsd}"
-
-    projectDOM = None
-    parserDOM = None
 
     @staticmethod
-    def fetchProgramContext(projectXMLfile):
-        """
-        Get our program.xml and local Settings
-        :return:
-        """
+    def addgrouptomap(sGroupName, parentGroup):
 
-        ProjectTreeItem.parserRootDir = path.join(path.dirname(__file__), "../XML/")
-        ProjectTreeItem.projectFilePath = projectXMLfile
-        ProjectTreeItem.projectRootDir = path.dirname(projectXMLfile)
+        # If no parent group specified then the parent is the ToC tree root
+        if not parentGroup:
+            parentGroup = QgsProject.instance().layerTreeRoot()
 
-        ProjectTreeItem.projectDOM = ProjectTreeItem._loadXMLFile(projectXMLfile)
-        ProjectTreeItem.parserDOM = ProjectTreeItem._findTreeParser()
+        # Attempt to find the specified group in the parent
+        thisGroup = parentGroup.findGroup(sGroupName)
+        if not thisGroup:
+            thisGroup = parentGroup.insertGroup(0, sGroupName)
 
-        # projectName = self.xmlProjectDoc.find("Project/name")
+        return thisGroup
 
-    def __init__(self, parseNode=None, projNode=None, rtParent=None, projectXMLfile=None):
-        """        
-        :param parseNode: The business logic to decide what to do with this
-        :param projNode: The actual project node we're working with.
-        :param rtParent: rtParent is the RepoTreeItem (or root node) that owns this
-        :param projectXMLfile: If we're loading from a file this is what you pass in
-        """
+    @staticmethod
+    def addlayertomap(layer):
 
-        # Do we have the program XML yet?
-        if projectXMLfile:
-            self.fetchProgramContext(projectXMLfile)
+        # Loop over all the parent group layers for this raster
+        # ensuring they are in the tree in correct, nested order
+        nodeData = layer.data(Qt.UserRole)
+        symbology = nodeData.symbology
+        filepath = nodeData.filepath
 
-        self.name = ""
-        self.parseNode = parseNode
-        self.projNode = projNode
-        self.rtParent = rtParent
-        self.xpath = None
-        self.maptype = None
-        self.symbology = None
+        print "ADDING TO MAP::", nodeData.filepath
+        # Loop over all the parent group layers for this raster
+        # ensuring they are in the tree in correct, nested order
+        parentGroup = None
+        if len(filepath) > 0:
+            for aGroup in nodeData.getTreeAncestry():
+                parentGroup = DockWidgetTabProject.addgrouptomap(aGroup, parentGroup)
 
-        # RootNode Stuff. We've got to keep the parser in line and tracking the project node
-        if self.parseNode is None:
-            self.parseNode = self.parserDOM.find('Node')
-        if self.projNode is None:
-            self.projNode = self.projectDOM
+        assert parentGroup, "All rasters should be nested and so parentGroup should be instantiated by now"
 
-        if not self.rtParent:
-            self.qTreeWItem = QTreeWidgetItem(DockWidgetTabProject.treectl)
-            self.qTreeWItem.takeChildren()
+        # Only add the layer if it's not already in the registry
+        if not QgsMapLayerRegistry.instance().mapLayersByName(nodeData.name):
+            if nodeData.maptype == 'vector':
+                rOutput = QgsVectorLayer(filepath, "ogr")
+                QgsMapLayerRegistry.instance().addMapLayer(rOutput, False)
+                parentGroup.addLayer(rOutput)
+
+                legend = iface.legendInterface()
+                legend.setLayerExpanded(rOutput, False)
+
+            elif nodeData.maptype == 'raster':
+                # Raster
+                rOutput = QgsRasterLayer(filepath, nodeData.name)
+                QgsMapLayerRegistry.instance().addMapLayer(rOutput, False)
+                parentGroup.addLayer(rOutput)
+
+            elif nodeData.maptype == 'tilelayer':
+                print "WARNING:::  not implemented yet"
+
+            # Symbolize this layer
+            Symbology().symbolize(rOutput, symbology)
+
+        # if the layer already exists trigger a refresh
         else:
-            self.qTreeWItem = QTreeWidgetItem(self.rtParent.qTreeWItem)
-
-        # This node could be referring to another.
-        # refNode could be the projNode or it could be the lookup
-        self.refNode = self.projNode
-
-        # Set the data backwards so we can find this object later
-        self.qTreeWItem.setData(0, Qt.UserRole, self)
-
-        self.type = self.parseNode.tag
-        self.depth = self._getDepth()
-        self.load()
-
-    def load(self, loadlevels=1):
-        """
-        Load a single item in the tree. This sets the name and color. Also gets the state of this item
-        :param loadlevels:
-        :return:
-        """
-
-        if self.type == 'Node':
-            self.loadNode()
-            self.loadChildren()
-        elif self.type == "Repeater":
-            self.loadRepeater()
-
-        self.name = self.getLabel()
-        self.recalcState()
-        self.loaded = True
-
-    def recalcState(self):
-        """
-        All important state function. This tells us a lot about what's new, what's old and what exists
-        :return:
-        """
-        self.qTreeWItem.setText(0, self.name)
-
-        # Walk back up the tree and hide things that have no value
-        self.backwardCalc()
-
-    def backwardCalc(self):
-        """
-        This function traverses the list back up to the top hiding items that have visible children
-        :return:
-        """
-        self.qTreeWItem.setHidden(False)
-
-        # Now walk back up
-        if self.rtParent:
-            self.rtParent.backwardCalc()
+            print "REFRESH"
+            QgsMapLayerRegistry.instance().mapLayersByName(nodeData.name)[0].triggerRepaint()
 
     @staticmethod
-    def getAttr(node, lookupstr):
-        output = None
-        if lookupstr in node.attrib:
-            output = node.attrib[lookupstr]
-        return output
-
-    def loadNode(self):
-        """
-        Load a single node
-        :return:
-        """
-        # Detect if this is an XML node element and reset the root Project node to this.
-        nodeType = ProjectTreeItem.getAttr(self.parseNode, 'type')
-
-        # the Project node can be further updated by an xpath attribute
-        nodeXPath = ProjectTreeItem.getAttr(self.parseNode, 'xpath')
-        if nodeXPath is not None:
-            self.xpath = nodeXPath
-            self.projNode = self.projNode.find(nodeXPath)
-            self.refNode = self.projNode
-
-        # This node might be referring to another one. Go look that up
-        refID = ProjectTreeItem.getAttr(self.projNode, 'ref')
-        if refID is not None:
-            # We have a ref attribute. Go find it.
-            self.refNode = self.projectDOM.find(".//*[@id='{0}']".format(refID))
-
-        # This node might be a leaf. If so we need to get some meta dat
-        if nodeType is not None:
-            self.maptype = nodeType
-            setFontBold(self.qTreeWItem, column=0)
-            setFontColor(self.qTreeWItem, "#444444", column=0)
-
-            filepathNode = self.refNode.find('Path')
-            if filepathNode is not None:
-                # normalize the slashes
-                # filepath = re.sub('[\\\/]+', os.path.sep, filepathNode.text)
-                # make it an absolute path
-                filepath = path.join(ProjectTreeItem.projectRootDir, filepathNode.text)
-                self.filepath = filepath
-
-            self.symbology = ProjectTreeItem.getAttr(self.parseNode, 'symbology')
-
-
-    def loadRepeater(self):
-
-        # Remember, repeaters can only contain one "pattern" <Node>
-        xPatternNode = self.parseNode.find("Node")
-
-        # If there is an Xpath then reset the base project node to that.
-        xpath = ProjectTreeItem.getAttr(self.parseNode, 'xpath')
-
-        xNewProjList = []
-        if xPatternNode is not None and xpath is not None:
-            absoluteXPath = xpath[:1] == "/"
-
-            # Should we search from the root or not.
-            if absoluteXPath:
-                xNewProjList = self.projectDOM.findall("." + xpath)
-            else:
-                xNewProjList = self.projNode.findall(xpath)
-
-            for xProjChild in xNewProjList:
-                newTreeItem = ProjectTreeItem(xPatternNode, xProjChild, self)
-                self.qTreeWItem.addChild(newTreeItem.qTreeWItem)
-
-
-    def loadChildren(self):
-        """
-        Here's where we recurse down the tree to the end nodes.
-        :param loadlevels:
-        :param force:
-        :return:
-        """
-        # Start by clearing out the previous children (this is a forced or first refresh)
-        self.qTreeWItem.takeChildren()
-
-        for xParseChild in self.parseNode.findall('Children/*'):
-            # Add the leaf to the tree
-            newTreeItem = ProjectTreeItem(xParseChild, self.projNode, self)
-            self.qTreeWItem.addChild(newTreeItem.qTreeWItem)
-
-    def refreshAction(self):
-        """
-        When we right click and choose refresh
-        :return:
-        """
-        print "refreshing"
-        self.load()
-
-    def getLabel(self):
-        """ Either use the liral text inside <label> or look it
-            up in the project node if there's a <label xpath="/x/path">
-        """
-        label = "TITLE_NOT_FOUND"
-        labellit = ProjectTreeItem.getAttr(self.parseNode, 'label')
-        labelxpath = ProjectTreeItem.getAttr(self.parseNode, 'xpathlabel')
-
-        if labelxpath is not None:
-            labelNode = self.refNode.find(labelxpath)
-            if labelNode is not None:
-                label = labelNode.text
-        elif labellit is not None:
-            label = labellit
-        # return "{0} - ({1})".format(label, self.type)
-        return label
-
-
-    def _getDepth(self):
-        """
-        Find the root parent and count the depth of this object
-        :return:
-        """
-        depth = 1
-        currParent = self.rtParent
-        # The first parent is not a RepoTreeItem so we can count them easily to get depth
-        while isinstance(currParent, ProjectTreeItem):
-            depth += 1
-            currParent = currParent.rtParent
-        return depth
-
-    @staticmethod
-    def _findTreeParser():
-        """
-        We need to figure out which kind of project it is. We do this by opening each parser we have
-        and comparing the project types
-        :return:
-        """
-        treeParser = None
-        for subdir, dirs, files in walk(ProjectTreeItem.parserRootDir):
-            xmlfiles = [filename for filename in files if filename.endswith(".xml")]
-            for xmlfile in xmlfiles:
-                filePath = path.join(subdir, xmlfile)
-                candidate = ProjectTreeItem._loadXMLFile(filePath)
-                testNode = candidate.find('ProjectType')
-                projType = ProjectTreeItem.projectDOM.find("ProjectType")
-
-                if testNode is not None and projType is not None and testNode.text == projType.text:
-                    treeParser = candidate
-                    continue
-        return treeParser
-
-    @staticmethod
-    def _loadXMLFile(file):
-        """
-        Convenience method parse a filepath into a dom node and return the root
-        :param file:
-        :return:
-        """
-        with open(file, 'r') as myfile:
-            data = myfile.read().replace('\n', '')
-            it = ET.iterparse(StringIO(data))
-            # strip all namespaces. This is an XML antipattern but it makes the project SOOOOO much
-            # easier to work with.
-            for _, el in it:
-                if '}' in el.tag:
-                    el.tag = el.tag.split('}', 1)[1]
-            return it.root
+    def projectLoad(xmlPath):
+        """ Constructor """
+        if xmlPath is None or not path.isfile(xmlPath):
+            msg = "..."
+            q = QMessageBox(QMessageBox.Warning, "Could not find the project XML file", msg)
+            q.setStandardButtons(QMessageBox.Ok)
+            i = QIcon()
+            i.addPixmap(QPixmap("..."), QIcon.Normal)
+            q.setWindowIcon(i)
+            q.exec_()
+        else:
+            rootItem = ProjectTreeItem(projectXMLfile=xmlPath, treectl=DockWidgetTabProject.treectl)
+            DockWidgetTabProject.treectl.expandToDepth(5)
