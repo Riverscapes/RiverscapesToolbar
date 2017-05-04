@@ -173,10 +173,10 @@ class RiverscapesToolbarViewer:
     def initGui(self):
         """Create the menu entries and toolbar icons inside the QGIS GUI."""
 
-        icon_path = ':/symbolizers/RiverscapesToolbar/icon.png'
+        icon_path = ':/plugins/RiverscapesToolbar/icon.png'
         self.add_action(
             icon_path,
-            text=self.tr(u'Analyst Toolbar'),
+            text=self.tr(u'Riverscapes Toolbar'),
             callback=self.run,
             parent=self.iface.mainWindow())
 
