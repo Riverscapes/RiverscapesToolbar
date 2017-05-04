@@ -26,7 +26,7 @@ class DockWidgetTabProject():
         self.symbology = Symbology()
 
         # Set up some connections for app events
-        self.treectl.doubleClicked.connect(self.item_doubleClicked)
+        self.treectl.doubleClicked.connect(self.doubleClicked)
 
         self.treectl.setContextMenuPolicy(Qt.CustomContextMenu)
         self.treectl.customContextMenuRequested.connect(self.openMenu)
@@ -49,15 +49,17 @@ class DockWidgetTabProject():
         QTreeWidgetItem(DockWidgetTabProject.treectl).takeChildren()
         self.projectLoad('/Users/work/Projects/Riverscapes/Data/CRB/MiddleForkJohnDay/Network/VBET/project.rs.xml')
 
-    def item_doubleClicked(self, index):
+    def doubleClicked(self, index):
         item = self.treectl.selectedIndexes()[0]
         theData = item.data(Qt.UserRole)
 
-        addEnabled = theData.maptype != "file"
-        if addEnabled:
-            self.addlayertomap(item)
-        else:
-            self.findFolder(item)
+        if theData.maptype is not None:
+
+            addEnabled = theData.maptype != "file"
+            if addEnabled:
+                self.addlayertomap(item)
+            else:
+                self.findFolder(item)
 
     def openMenu(self, position):
         """ Handle the contextual menu """
@@ -92,7 +94,6 @@ class DockWidgetTabProject():
         QDesktopServices.openUrl(qurl)
 
 
-
     @staticmethod
     def addgrouptomap(sGroupName, parentGroup):
 
@@ -106,6 +107,7 @@ class DockWidgetTabProject():
             thisGroup = parentGroup.insertGroup(0, sGroupName)
 
         return thisGroup
+
 
     @staticmethod
     def addlayertomap(layer):
@@ -129,21 +131,21 @@ class DockWidgetTabProject():
         # Only add the layer if it's not already in the registry
         if not QgsMapLayerRegistry.instance().mapLayersByName(nodeData.name):
             if nodeData.maptype == 'vector':
-                rOutput = QgsVectorLayer(filepath, "ogr")
-                QgsMapLayerRegistry.instance().addMapLayer(rOutput, False)
-                parentGroup.addLayer(rOutput)
+                rOutput = QgsVectorLayer(filepath, nodeData.name, "ogr")
 
-                legend = iface.legendInterface()
-                legend.setLayerExpanded(rOutput, False)
+                # legend = iface.legendInterface()
+                # legend.setLayerExpanded(rOutput, False)
 
             elif nodeData.maptype == 'raster':
                 # Raster
                 rOutput = QgsRasterLayer(filepath, nodeData.name)
-                QgsMapLayerRegistry.instance().addMapLayer(rOutput, False)
-                parentGroup.addLayer(rOutput)
+
 
             elif nodeData.maptype == 'tilelayer':
                 print "WARNING:::  not implemented yet"
+
+            QgsMapLayerRegistry.instance().addMapLayer(rOutput, False)
+            parentGroup.addLayer(rOutput)
 
             # Symbolize this layer
             Symbology().symbolize(rOutput, symbology)

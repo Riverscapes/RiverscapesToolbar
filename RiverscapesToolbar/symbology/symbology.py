@@ -50,17 +50,17 @@ class Symbology():
 
         if type(layer) is QgsRasterLayer:
             symbolizerInst = RasterPlugin(layer)
-            for plugin in Symbology._plugins.raster:
-                if plugin.symbology == symbology:
-                    # Monkey patch!
-                    symbolizerInst.symbolize = plugin.symbolize.__get__(symbolizerInst)
+            library = Symbology._plugins.raster
+
 
         elif type(layer) is QgsVectorLayer:
             symbolizerInst = VectorPlugin(layer)
-            for plugin in Symbology._plugins.vector:
-                if plugin.symbology == symbology:
-                    # Monkey patch!
-                    symbolizerInst.symbolize = plugin.symbolize.__get__(symbolizerInst)
+            library = Symbology._plugins.vector
+
+        for plugin in library:
+            if plugin.symbology == symbology:
+                # Monkey patch!
+                symbolizerInst.symbolize = plugin.symbolize.__get__(symbolizerInst)
 
         # Just choose the default
         return symbolizerInst.apply()

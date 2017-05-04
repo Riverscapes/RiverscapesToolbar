@@ -24,5 +24,5 @@ class VectorSymbolizer():
 
         # create the renderer and assign it to a layer
         expression = 'cost'  # field name
-        renderer = QgsGraduatedSymbolRendererV2(expression, ranges)
-        self.layer.setRendererV2(renderer)
+        self.renderer = QgsGraduatedSymbolRendererV2(expression, ranges)
+

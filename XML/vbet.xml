@@ -19,7 +19,7 @@
                   </Children>
                 </Node>
                 <Repeater label="Network Buffers" xpath="DrainageNetworks/Network/Buffers/Buffer">
-                  <Node xpathlabel="Name" type="vector"/>
+                  <Node xpathlabel="Name" type="vector" symbology="DEMO_singlefill"/>
                 </Repeater>
               </Children>
             </Node>

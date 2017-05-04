@@ -16,10 +16,10 @@ class VectorSymbolizer():
 
         # create a new rule-based renderer
         symbol = QgsSymbolV2.defaultSymbol(self.layer.geometryType())
-        renderer = QgsRuleBasedRendererV2(symbol)
+        self.renderer = QgsRuleBasedRendererV2(symbol)
 
         # get the "root" rule
-        root_rule = renderer.rootRule()
+        root_rule = self.renderer.rootRule()
 
         for label, expression, color_name, scale in road_rules:
             # create a clone (i.e. a copy) of the default rule
@@ -37,6 +37,3 @@ class VectorSymbolizer():
 
         # delete the default rule
         root_rule.removeChildAt(0)
-
-        # apply the renderer to the layer
-        self.layer.setRendererV2(renderer)

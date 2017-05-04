@@ -25,5 +25,4 @@ class VectorSymbolizer():
 
         # create the renderer and assign it to a layer
         expression = 'animal'  # field name
-        renderer = QgsCategorizedSymbolRendererV2(expression, categories)
-        self.layer.setRendererV2(renderer)
+        self.renderer = QgsCategorizedSymbolRendererV2(expression, categories)
