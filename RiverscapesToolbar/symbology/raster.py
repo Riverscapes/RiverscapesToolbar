@@ -27,7 +27,7 @@ class RasterPlugin():
         # Map each [val, QColor, label] into a color shader
         colRampMap = list(map(lambda x: QgsColorRampShader.ColorRampItem(*x), self.colLst))
 
-        self.ramp.setColorRampItemList(self.colLst)
+        self.ramp.setColorRampItemList(colRampMap)
         self.ramp.setColorRampType(self.colorramptype)
 
         self.shader.setRasterShaderFunction(self.ramp)
