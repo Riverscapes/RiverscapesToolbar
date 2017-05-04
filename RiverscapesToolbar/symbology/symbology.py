@@ -1,10 +1,17 @@
 import os
 import sys
-import raster
+from raster import RasterPlugin
+from vector import VectorPlugin
+from qgis.core import QgsRasterLayer, QgsVectorLayer
 
 class Symbology():
+
     _pluginpath = "symbolizers"
-    _plugins = []
+
+    class _plugins:
+        vector=[]
+        raster=[]
+
     _loaded = False
 
     def __init__(self):
@@ -25,24 +32,36 @@ class Symbology():
             fname, ext = os.path.splitext(f)
             if ext == '.py':
                 mod = __import__(fname)
-                if "Plugin" in mod.__dict__:
-                    Symbology._plugins.append(mod.Plugin)
+                if "RasterSymbolizer" in mod.__dict__:
+                    Symbology._plugins.raster.append(mod.RasterSymbolizer)
+                if "VectorSymbolizer" in mod.__dict__:
+                    Symbology._plugins.vector.append(mod.VectorSymbolizer)
         sys.path.pop(0)
         Symbology._loaded = True
 
     @staticmethod
-    def symbolize(layer, type):
+    def symbolize(layer, symbology):
         """
         Here's where we choose the actual symbology
         and apply to the layer
         """
         # TODO: implement raster/vector check on layer
         # Callback
-        symbolizerInst = raster.RasterPlugin(layer)
-        for plugin in Symbology._plugins:
-            if plugin.NAME == type:
-                # Monkey patch!
-                symbolizerInst.SetSymbology = plugin.SetSymbology.__get__(symbolizerInst)
+
+        if type(layer) is QgsRasterLayer:
+            symbolizerInst = RasterPlugin(layer)
+            for plugin in Symbology._plugins.raster:
+                if plugin.symbology == symbology:
+                    # Monkey patch!
+                    symbolizerInst.setramp = plugin.setramp.__get__(symbolizerInst)
+
+        elif type(layer) is QgsVectorLayer:
+            symbolizerInst = VectorPlugin(layer)
+            for plugin in Symbology._plugins.vector:
+                if plugin.symbology == symbology:
+                    # Monkey patch!
+                    symbolizerInst.setramp = plugin.setramp.__get__(symbolizerInst)
+
         # Just choose the default
         return symbolizerInst.apply()
 

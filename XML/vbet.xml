@@ -3,11 +3,11 @@
          xsi:noNamespaceSchemaLocation="XSD/project_explorer.xsd">
   <Name>VBET</Name>
   <ProjectType>VBET</ProjectType>
-  <Node xpathlabel="Name" first="TRUE">
+  <Node xpathlabel="Name">
     <Children>
       <Repeater label="Realizations" xpath="Realizations/VBET">
         <!--This is a template for how each realization should render-->
-        <Node xpathlabel="Name" second="TRUE">
+        <Node xpathlabel="Name">
           <Children collapsed="false">
             <Node label="Inputs" xpath="Inputs">
               <Children>

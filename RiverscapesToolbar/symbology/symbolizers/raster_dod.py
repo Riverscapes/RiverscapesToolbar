@@ -2,11 +2,11 @@ from PyQt4.QtGui import QColor
 from qgis.core import QgsColorRampShader
 import math
 
-class Plugin():
+class RasterSymbolizer():
 
-    NAME="DoD"
+    symbology = "DoD"
 
-    def SetSymbology(self):
+    def setramp(self):
         self.colorramptype = QgsColorRampShader.DISCRETE
 
         nClasses = 20
@@ -18,7 +18,7 @@ class Plugin():
         else:
             lo = hi*-1.0
 
-        rng = hi*2.0
+        rng = hi * 2.0
         interval = rng/(nClasses*1.0)
 
         # Custom function
@@ -26,7 +26,6 @@ class Plugin():
 
         if nRound < 0:
             nRound = abs(nRound) + 2
-
         else:
             nRound = 2
 

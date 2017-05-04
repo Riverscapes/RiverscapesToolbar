@@ -1,17 +1,21 @@
 from PyQt4.QtGui import QColor
 from qgis.core import QgsColorRampShader
 
-class Plugin():
+class RasterSymbolizer():
 
-    NAME="DEM"
+    symbology = "DEM"
 
-    def SetSymbology(self):
+    def setramp(self):
         self.colorramptype = QgsColorRampShader.INTERPOLATED
         # Now you have a self.layer object and self.stats you can work with
         self.opacity = 0.6
 
-        colDic = {'tan': '#ffebb0', 'green': '#267300', 'brown': '#734d00', 'white': '#ffffff',
-                       'red': '#e60000', 'light gray': '#f0f0f0', 'blue': '#004cab'}
+        colDic = {
+            'tan': '#ffebb0',
+            'green': '#267300',
+            'brown': '#734d00',
+            'white': '#ffffff'
+        }
 
         lo = self.stats.minimumValue
         hi = self.stats.maximumValue

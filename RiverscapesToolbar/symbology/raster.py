@@ -1,5 +1,5 @@
 from PyQt4.QtGui import QColor
-from qgis.core import QgsRasterBandStats, QgsColorRampShader, QgsRasterShader, QgsSingleBandPseudoColorRenderer, QgsRasterLayer
+from qgis.core import QgsRasterBandStats, QgsColorRampShader, QgsRasterShader, QgsSingleBandPseudoColorRenderer
 
 class RasterPlugin():
 
@@ -22,7 +22,7 @@ class RasterPlugin():
         This applies the ramps and shaders you've already defined.
         :return: 
         """
-        self.SetSymbology()
+        self.setramp()
 
         # Map each [val, QColor, label] into a color shader
         colRampMap = list(map(lambda x: QgsColorRampShader.ColorRampItem(*x), self.colLst))
@@ -39,7 +39,7 @@ class RasterPlugin():
         # Finally trigger the repaint with the new style
         self.layer.triggerRepaint()
 
-    def SetSymbology(self):
+    def setramp(self):
         """ YOU NEED TO IMPLEMENT THIS AS A SENSIBLE DEFAULT"""
         self.colorramptype = QgsColorRampShader.INTERPOLATED
         # Now you have a self.layer object and self.stats you can work with
