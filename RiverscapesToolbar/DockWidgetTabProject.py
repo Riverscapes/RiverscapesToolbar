@@ -6,6 +6,7 @@ from PyQt4.QtCore import Qt, QUrl
 from StringIO import StringIO
 from tocmanage import AddGroup, AddRasterLayer, AddVectorLayer
 from symbology.symbology import Symbology
+from lib.treehelper import *
 from os import path, walk
 
 class DockWidgetTabProject():
@@ -18,11 +19,14 @@ class DockWidgetTabProject():
         self.widget = dockWidget
         self.treectl.setColumnCount(1)
         self.treectl.setHeaderHidden(True)
-        # Load the plugins
+        # Load the symbolizers
         self.symbology = Symbology()
         # Set up some connections for app events
         self.treectl.doubleClicked.connect(self.item_doubleClicked)
+
+        self.treectl.setContextMenuPolicy(Qt.CustomContextMenu)
         self.treectl.customContextMenuRequested.connect(self.openMenu)
+
         dockWidget.btnLoadProject.clicked.connect(self.projectBrowserDlg)
         dockWidget.btnDEBUG.clicked.connect(self.loadDebug)
 
@@ -57,15 +61,17 @@ class DockWidgetTabProject():
             DockWidgetTabProject.treectl.expandToDepth(5)
 
     def addToMap(self, item):
-        print "ADDING TO MAP::", item.data(0, Qt.UserRole)
-        itemExt = path.splitext(item.data(0, Qt.UserRole)['filepath'])[1]
-        if itemExt == '.shp':
+        print "ADDING TO MAP::", item.data(Qt.UserRole).filepath
+        type = item.data(Qt.UserRole).maptype
+        if  type == 'vector':
             AddVectorLayer(item)
-        else:
+        elif type == 'raster':
             AddRasterLayer(item)
+        elif type == 'tilelayer':
+            print "not implemented yet"
 
     def item_doubleClicked(self, index):
-        item = self.tree.selectedIndexes()[0]
+        item = self.treectl.selectedIndexes()[0]
         self.addToMap(item.model().itemFromIndex(index))
 
     def openMenu(self, position):
@@ -75,17 +81,22 @@ class DockWidgetTabProject():
 
         menu = QMenu()
 
-        if (theData.type=="node"):
+        if theData.maptype is not None:
+
             addReceiver = lambda item=item: self.addToMap(item)
             findFolderReceiver = lambda item=theData: self.findFolder(item)
 
-            addAction = menu.addAction("Add to Map", addReceiver)
             findAction = menu.addAction("Find Folder", findFolderReceiver)
+            addAction = menu.addAction("Add to Map", addReceiver)
 
-        menu.exec_(self.tree.viewport().mapToGlobal(position))
+            addEnabled = theData.maptype != "file"
+            addAction.setEnabled(addEnabled)
+
+
+        menu.exec_(self.treectl.mapToGlobal(position))
 
     def findFolder(self, rtItem):
-        qurl = QUrl.fromLocalFile(path.join(ProjectTreeItem.localdir, path.sep.join(rtItem.pathArr[:-1])))
+        qurl = QUrl.fromLocalFile(path.dirname(rtItem.filepath))
         QDesktopServices.openUrl(qurl)
 
 
@@ -133,10 +144,12 @@ class ProjectTreeItem():
         if projectXMLfile:
             self.fetchProgramContext(projectXMLfile)
 
+        self.name = ""
         self.parseNode = parseNode
         self.projNode = projNode
         self.rtParent = rtParent
         self.xpath = None
+        self.maptype = None
 
         # RootNode Stuff. We've got to keep the parser in line and tracking the project node
         if self.parseNode is None:
@@ -174,7 +187,7 @@ class ProjectTreeItem():
         elif self.type == "Repeater":
             self.loadRepeater()
 
-        self.name = self._getLabel()
+        self.name = self.getLabel()
         self.recalcState()
         self.loaded = True
 
@@ -229,6 +242,10 @@ class ProjectTreeItem():
 
         # This node might be a leaf. If so we need to get some meta dat
         if nodeType is not None:
+            self.maptype = nodeType
+            setFontBold(self.qTreeWItem, column=0)
+            setFontColor(self.qTreeWItem, "#444444", column=0)
+
             filepathNode = self.refNode.find('Path')
             if filepathNode is not None:
                 # normalize the slashes
@@ -272,7 +289,6 @@ class ProjectTreeItem():
         :param force:
         :return:
         """
-        # self.group_layers = self.getTreeAncestry(newTreeItem)
         # Start by clearing out the previous children (this is a forced or first refresh)
         self.qTreeWItem.takeChildren()
 
@@ -289,7 +305,7 @@ class ProjectTreeItem():
         print "refreshing"
         self.load()
 
-    def _getLabel(self):
+    def getLabel(self):
         """ Either use the liral text inside <label> or look it
             up in the project node if there's a <label xpath="/x/path">
         """
@@ -301,8 +317,6 @@ class ProjectTreeItem():
             labelNode = self.refNode.find(labelxpath)
             if labelNode is not None:
                 label = labelNode.text
-            else:
-                print "thing"
         elif labellit is not None:
             label = labellit
         # return "{0} - ({1})".format(label, self.type)
@@ -321,16 +335,6 @@ class ProjectTreeItem():
             depth += 1
             currParent = currParent.rtParent
         return depth
-
-    @staticmethod
-    def getTreeAncestry(item):
-        ancestry = []
-        parent = item.parent()
-        while parent is not None:
-            ancestry.append(parent.text())
-            parent = parent.parent()
-        ancestry.reverse()
-        return ancestry
 
     @staticmethod
     def _findTreeParser():

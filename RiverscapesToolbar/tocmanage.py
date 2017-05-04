@@ -3,7 +3,7 @@ import os.path
 
 from qgis.utils import iface
 from qgis.core import QgsMapLayer, QgsRasterLayer, QgsVectorLayer, QgsMapLayerRegistry, QgsProject
-
+from PyQt4.QtCore import Qt
 from symbology.symbology import Symbology
 
 # http://www.lutraconsulting.co.uk/blog/2014/07/25/qgis-layer-tree-api-part-2/
@@ -51,35 +51,41 @@ def AddRasterLayer(theRaster):
 
     # Loop over all the parent group layers for this raster
     # ensuring they are in the tree in correct, nested order
+    nodeData = theRaster.data(Qt.UserRole)
+    symbology = nodeData.symbology
+    filepath = nodeData.filepath
+
     parentGroup = None
-    if len(theRaster.data()) > 0:
-        for aGroup in theRaster.data()["group_layers"]:
+    if len(filepath) > 0:
+        for aGroup in getTreeAncestry(nodeData):
             parentGroup = AddGroup(aGroup, parentGroup)
 
     assert parentGroup, "All rasters should be nested and so parentGroup should be instantiated by now"
 
     # Only add the layer if it's not already in the registry
-    if not QgsMapLayerRegistry.instance().mapLayersByName(theRaster.text()):
-        rOutput = QgsRasterLayer(theRaster.data()["filepath"], theRaster.text())
+    if not QgsMapLayerRegistry.instance().mapLayersByName(nodeData.name):
+        rOutput = QgsRasterLayer(filepath, nodeData.name)
         QgsMapLayerRegistry.instance().addMapLayer(rOutput, False)
         parentGroup.addLayer(rOutput)
-        
-        # call Konrad's symbology method here using data()["symbology"]
-        # DEBUG:: FILL IN THE PROPER TYPE
-        Symbology().symbolize(rOutput, 'DoD')
 
-        if theRaster.data()["symbology"].lower() == "dem":
-            demPath, demExtension = os.path.splitext( theRaster.data()["filepath"])
-            hillshadePath = demPath + "HS" + demExtension
-            
-            if os.path.isfile(hillshadePath):
-                rHillshade = QgsRasterLayer(hillshadePath, "Hillshade")
-                QgsMapLayerRegistry.instance().addMapLayer(rHillshade, False)
-                lHillshade = parentGroup.addLayer(rHillshade)
-                legend = iface.legendInterface()
-                legend.setLayerExpanded(rHillshade, False)
+        # Symbolize this layer
+        Symbology().symbolize(rOutput, symbology)
 
     # if the layer already exists trigger a refresh
     else:
-        print "REFRESJH"
-        QgsMapLayerRegistry.instance().mapLayersByName(theRaster.text())[0].triggerRepaint()
+        print "REFRESH"
+        QgsMapLayerRegistry.instance().mapLayersByName(nodeData.name)[0].triggerRepaint()
+
+def getTreeAncestry(item):
+    """
+    Returns a really simple ancestry line so we can 
+    build a map layer later
+    :return: 
+    """
+    ancestry = []
+    parent = item.rtParent
+    while parent is not None:
+        ancestry.append(parent.name)
+        parent = parent.rtParent
+    ancestry.reverse()
+    return ancestry
