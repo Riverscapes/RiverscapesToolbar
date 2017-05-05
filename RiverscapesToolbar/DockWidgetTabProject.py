@@ -14,11 +14,12 @@ from lib.projects import ProjectTreeItem
 class DockWidgetTabProject():
 
     treectl = None
+    widget = None
 
     def __init__(self, dockWidget):
         print "init"
         DockWidgetTabProject.treectl = dockWidget.treeProject
-        self.widget = dockWidget
+        DockWidgetTabProject.widget = dockWidget
         self.treectl.setColumnCount(1)
         self.treectl.setHeaderHidden(True)
 
@@ -46,7 +47,6 @@ class DockWidgetTabProject():
         :return:
         """
         # Start by clearing out the previous children (this is a forced or first refresh)
-        QTreeWidgetItem(DockWidgetTabProject.treectl).takeChildren()
         self.projectLoad('/Users/work/Projects/Riverscapes/Data/CRB/MiddleForkJohnDay/Network/VBET/project.rs.xml')
 
     def doubleClicked(self, index):
@@ -167,5 +167,6 @@ class DockWidgetTabProject():
             q.setWindowIcon(i)
             q.exec_()
         else:
+            DockWidgetTabProject.treectl.takeTopLevelItem(0)
             rootItem = ProjectTreeItem(projectXMLfile=xmlPath, treectl=DockWidgetTabProject.treectl)
             DockWidgetTabProject.treectl.expandToDepth(5)

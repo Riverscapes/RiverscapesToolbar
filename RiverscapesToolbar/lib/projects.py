@@ -67,9 +67,10 @@ class ProjectTreeItem():
 
         if not self.rtParent:
             self.qTreeWItem = QTreeWidgetItem(treectl)
-            self.qTreeWItem.takeChildren()
         else:
             self.qTreeWItem = QTreeWidgetItem(self.rtParent.qTreeWItem)
+
+        self.qTreeWItem.takeChildren()
 
         # This node could be referring to another.
         # refNode could be the projNode or it could be the lookup
@@ -88,6 +89,7 @@ class ProjectTreeItem():
         :param loadlevels:
         :return:
         """
+        # Start by clearing out the previous children (this is a forced or first refresh)
 
         if self.type == 'Node':
             self.loadNode()
@@ -196,7 +198,6 @@ class ProjectTreeItem():
         :return:
         """
         # Start by clearing out the previous children (this is a forced or first refresh)
-        self.qTreeWItem.takeChildren()
 
         for xParseChild in self.parseNode.findall('Children/*'):
             # Add the leaf to the tree
