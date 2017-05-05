@@ -1,3 +1,7 @@
+---
+title: Business logic XML
+---
+
 ## Business logic XML
 
 The purpose of the business logic XML is to translate `project.rs.xml` files into project trees with elements that can be added to a map.
