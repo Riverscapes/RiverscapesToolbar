@@ -2,7 +2,7 @@
 
 
 User Stories
-
+git 
 - I want to see all projects in the online warehouse
     * Caveat: This is not a reporting tool. You will be able to see them by navigating to them.
 - I want an indication of which of the projects in the online warehouse I have locally

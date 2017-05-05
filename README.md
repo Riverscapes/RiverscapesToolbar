@@ -2,4 +2,4 @@
 
 The documentation for this plugin is here:
 
-<https://riverscapes.github.io/RiverscapesToolbar>
+<https://riverscapes.github.io/RiverscapesToolbar/>
