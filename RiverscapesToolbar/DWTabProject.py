@@ -8,7 +8,7 @@ from symbology.symbology import Symbology
 
 from qgis.utils import iface
 from qgis.core import QgsProject, QgsMapLayerRegistry, QgsRasterLayer, QgsVectorLayer
-from lib.projects import ProjectTreeItem
+from DWTabProjectsItem import ProjectTreeItem
 
 
 class DockWidgetTabProject():
@@ -17,7 +17,7 @@ class DockWidgetTabProject():
     widget = None
 
     def __init__(self, dockWidget):
-        print "init"
+
         DockWidgetTabProject.treectl = dockWidget.treeProject
         DockWidgetTabProject.widget = dockWidget
         self.treectl.setColumnCount(1)
@@ -37,8 +37,12 @@ class DockWidgetTabProject():
 
 
     def projectBrowserDlg(self):
+        """
+        Browse for a project directory
+        :return: 
+        """
         settings = Settings()
-        filename = QtGui.QFileDialog.getExistingDirectory(self.widget, "Open a project", settings.getSetting('DataDir'))
+        filename = QtGui.QFileDialog.getExistingDirectory(self.widget, "Open a project folder", settings.getSetting('DataDir'))
         self.projectLoad(path.join(filename, "project.rs.xml"))
 
     def loadDebug(self):
@@ -50,6 +54,11 @@ class DockWidgetTabProject():
         self.projectLoad('/Users/work/Projects/Riverscapes/Data/CRB/MiddleForkJohnDay/Network/VBET/project.rs.xml')
 
     def doubleClicked(self, index):
+        """
+        Tree item double clicks
+        :param index: 
+        :return: 
+        """
         item = self.treectl.selectedIndexes()[0]
         theData = item.data(Qt.UserRole)
 
@@ -62,7 +71,11 @@ class DockWidgetTabProject():
                 self.findFolder(item)
 
     def openMenu(self, position):
-        """ Handle the contextual menu """
+        """
+        Handle the right-click contextual menu
+        :param position: 
+        :return: 
+        """
         item = self.treectl.selectedIndexes()[0]
         theData = item.data(Qt.UserRole)
 
@@ -86,16 +99,32 @@ class DockWidgetTabProject():
         menu.exec_(self.treectl.mapToGlobal(position))
 
     def externalOpen(self, rtItem):
+        """
+        Open the file in an external app
+        :param rtItem: 
+        :return: 
+        """
         qurl = QUrl.fromLocalFile(rtItem.filepath)
         QDesktopServices.openUrl(qurl)
 
     def findFolder(self, rtItem):
+        """
+        Open the folder in finder or windows explorer
+        :param rtItem: 
+        :return: 
+        """
         qurl = QUrl.fromLocalFile(path.dirname(rtItem.filepath))
         QDesktopServices.openUrl(qurl)
 
 
     @staticmethod
-    def addgrouptomap(sGroupName, parentGroup):
+    def _addgrouptomap(sGroupName, parentGroup):
+        """
+        Add a hierarchical group to the layer manager
+        :param sGroupName: 
+        :param parentGroup: 
+        :return: 
+        """
 
         # If no parent group specified then the parent is the ToC tree root
         if not parentGroup:
@@ -111,6 +140,11 @@ class DockWidgetTabProject():
 
     @staticmethod
     def addlayertomap(layer):
+        """
+        Add a layer to the map
+        :param layer: 
+        :return: 
+        """
 
         # Loop over all the parent group layers for this raster
         # ensuring they are in the tree in correct, nested order
@@ -124,7 +158,7 @@ class DockWidgetTabProject():
         parentGroup = None
         if len(filepath) > 0:
             for aGroup in nodeData.getTreeAncestry():
-                parentGroup = DockWidgetTabProject.addgrouptomap(aGroup, parentGroup)
+                parentGroup = DockWidgetTabProject._addgrouptomap(aGroup, parentGroup)
 
         assert parentGroup, "All rasters should be nested and so parentGroup should be instantiated by now"
 
@@ -132,9 +166,6 @@ class DockWidgetTabProject():
         if not QgsMapLayerRegistry.instance().mapLayersByName(nodeData.name):
             if nodeData.maptype == 'vector':
                 rOutput = QgsVectorLayer(filepath, nodeData.name, "ogr")
-
-                # legend = iface.legendInterface()
-                # legend.setLayerExpanded(rOutput, False)
 
             elif nodeData.maptype == 'raster':
                 # Raster
@@ -157,7 +188,11 @@ class DockWidgetTabProject():
 
     @staticmethod
     def projectLoad(xmlPath):
-        """ Constructor """
+        """
+        Load the XML file into the tree
+        :param xmlPath: 
+        :return: 
+        """
         if xmlPath is None or not path.isfile(xmlPath):
             msg = "..."
             q = QMessageBox(QMessageBox.Warning, "Could not find the project XML file", msg)

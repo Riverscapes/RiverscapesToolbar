@@ -3,6 +3,10 @@ from qgis.core import QgsRasterBandStats, QgsColorRampShader, QgsRasterShader, Q
 
 class RasterPlugin():
 
+    """
+    The raster plugin symbolizes rasters. It can be augmented with symbolizer plugins
+    """
+
     def __init__(self, layer):
         self.shader = QgsRasterShader()
         self.ramp = QgsColorRampShader()
@@ -22,7 +26,7 @@ class RasterPlugin():
         This applies the ramps and shaders you've already defined.
         :return: 
         """
-        self.symbolize()
+        self.symbolize() # This is monkey-patched in from `symbology.py`
 
         # Map each [val, QColor, label] into a color shader
         colRampMap = list(map(lambda x: QgsColorRampShader.ColorRampItem(*x), self.colLst))

@@ -84,24 +84,37 @@ class SettingsDialog(QtGui.QDialog, FORM_CLASS):
 
     def dlgReset(self):
         """
+        Reset the form to sensible defaults
         """
         print "Reset"
         self.settings.resetAll()
         self.refreshTextBoxes()
 
     def addMsg(self,msg):
+        """
+        Show a message in the label
+        :param msg: 
+        :return: 
+        """
         if len(self.lblMsgs.text()) > 0:
             msg = "\n" + msg
         self.lblMsgs.setText(self.lblMsgs.text() + msg)
 
 
     def refreshTextBoxes(self):
-        # put the values in memory back into the text boxes
+        """
+        put the values in memory back into the text boxes
+        :return: 
+        """
         for key, val in self.settingMap.iteritems():
             val.setText(self.settings.getSetting(key))
 
 
     def browseDataFolder(self):
+        """
+        Browse for a data folder
+        :return: 
+        """
         dataDir = QtGui.QFileDialog.getExistingDirectory(self, "Open a folder", os.path.expanduser("~"), QtGui.QFileDialog.ShowDirsOnly)
         self.txtDataRoot.setText(dataDir)
         self.validate()

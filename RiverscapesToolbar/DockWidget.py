@@ -28,9 +28,9 @@ import PyQt4.uic as uic
 from PyQt4.QtCore import pyqtSignal
 from SettingsDialog import SettingsDialog
 
-from DockWidgetTabRepository import DockWidgetTabRepository
-from DockWidgetTabDownload import DockWidgetTabDownload
-from DockWidgetTabProject import DockWidgetTabProject
+from DWTabRepository import DockWidgetTabRepository
+from DWTabDownload import DockWidgetTabDownload
+from DWTabProject import DockWidgetTabProject
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), '../DockWidget.ui'))

@@ -1,122 +1,11 @@
 from lib.program import ProgramXML
-from lib.s3.walkers import s3GetFolderList, s3Exists, s3HeadData
+from lib.s3.walkers import s3GetFolderList, s3HeadData
 import datetime
 from settings import Settings
-from PyQt4.QtGui import QMenu, QTreeWidgetItem, QDesktopServices, QIcon
-from PyQt4.QtCore import Qt, QUrl
+from PyQt4.QtGui import QTreeWidgetItem, QIcon
+from PyQt4.QtCore import Qt
 from os import path
-from lib.treehelper import *
-from DockWidgetTabProject import DockWidgetTabProject
-
-class DockWidgetTabRepository():
-
-    treectl = None
-
-    def __init__(self, dockWidget):
-        # used to be:
-        # def __init__(self, xmlPath, treeControl, parent=None):
-        # Connect up our buttons to functions
-        self.dockwidget = dockWidget
-
-        # Set as static so we can find it.
-        DockWidgetTabRepository.treectl = dockWidget.treeRepository
-        self.treectl.setAlternatingRowColors(True)
-        self.treectl.setContextMenuPolicy(Qt.CustomContextMenu)
-
-        self.treectl.setColumnCount(1)
-        self.treectl.setHeaderHidden(True)
-
-        self.treectl.customContextMenuRequested.connect(self.openMenu)
-        self.treectl.doubleClicked.connect(self.item_doubleClicked)
-        self.treectl.itemExpanded.connect(self.expandItem)
-
-        dockWidget.btnRefresh.clicked.connect(self.refreshRoot)
-        self.refreshRoot()
-
-    def expandItem(self, item):
-        """
-        Reload this
-        :param item:
-        :return:
-        """
-        item.data(0, Qt.UserRole).loadChildren()
-
-    def refreshRoot(self):
-        """
-        Refresh the main dialog
-        :return:
-        """
-        self.dockwidget.btnRefresh.setText("Loading...")
-        self.dockwidget.btnRefresh.setEnabled(False)
-
-        rootItem = RepoTreeItem(loadlevels = 2)
-        self.treectl.expandToDepth(0)
-
-        self.dockwidget.btnRefresh.setEnabled(True)
-        self.dockwidget.btnRefresh.setText("Refresh")
-
-    def item_doubleClicked(self, index):
-        item = self.treectl.selectedIndexes()[0]
-        theData = item.data(Qt.UserRole)
-
-        if theData.type=="product" and theData.local:
-            self.openProject(theData)
-
-
-    def openMenu(self, pt):
-        """ Handle the contextual menu """
-        item = self.treectl.selectedIndexes()[0]
-        theData = item.data(Qt.UserRole)
-
-        menu = QMenu()
-        refreshReceiver = lambda item=theData: item.refreshAction()
-
-        if (theData.type=="product"):
-            openReceiver = lambda item=theData: self.openProject(item)
-            downloadReceiver = lambda item=theData: self.addProjectToDownloadQueue(item)
-            uploadReceiver = lambda item=theData: self.addProjectToUploadQueue(item)
-            findFolderReceiver = lambda item=theData: self.findFolder(item)
-
-            openAction = menu.addAction("Open Project", openReceiver)
-            menu.addSeparator()
-            downAction = menu.addAction("Download Project", downloadReceiver)
-            uploAction = menu.addAction("Upload Project", uploadReceiver)
-            menu.addSeparator()
-            refreshAction = menu.addAction("Refresh", refreshReceiver)
-            findAction = menu.addAction("Find Folder", findFolderReceiver)
-
-            # The actions are available if the projects are available locally or otherwise
-            openAction.setEnabled(theData.local)
-            downAction.setEnabled(theData.remote)
-            uploAction.setEnabled(theData.local)
-            findAction.setEnabled(theData.local)
-
-        else:
-            dwnQueueReceiver = lambda item=theData: self.openProject(item)
-            queueContainerAction = menu.addAction("Add projects to Download Queue", dwnQueueReceiver)
-            refreshAction = menu.addAction("Refresh", refreshReceiver)
-
-            queueContainerAction.setEnabled(True)
-
-        menu.exec_(self.treectl.mapToGlobal(pt))
-
-    def addProjectToDownloadQueue(self, rtItem):
-        print "Adding to download Queue: " + '/'.join(rtItem.pathArr)
-
-    def addProjectToUploadQueue(self, rtItem):
-        print "Adding to Upload Queue: " + '/'.join(rtItem.pathArr)
-
-    def findFolder(self, rtItem):
-        qurl = QUrl.fromLocalFile(path.join(RepoTreeItem.localdir, path.sep.join(rtItem.pathArr[:-1])))
-        QDesktopServices.openUrl(qurl)
-
-    def openProject(self, rtItem):
-        print "OPEN THE PROJECT"
-        localpath = path.join(RepoTreeItem.localdir, path.sep.join(rtItem.pathArr))
-        # Switch to the project tab
-        self.dockwidget.tabWidget.setCurrentIndex(self.dockwidget.PROJECT_TAB)
-        DockWidgetTabProject.projectLoad(localpath)
-
+from lib.treeitem import *
 
 class RepoTreeItem():
 
@@ -135,7 +24,7 @@ class RepoTreeItem():
         RepoTreeItem.program = ProgramXML(settings.getSetting('ProgramXMLUrl'))
         RepoTreeItem.localdir = settings.getSetting('DataDir')
 
-    def __init__(self, nItem=None, rtParent=None, pathArr=[], loadlevels=1):
+    def __init__(self, nItem=None, rtParent=None, pathArr=[], loadlevels=1, treectl=None):
         """
         Initialize a new RepoTreeItem
         :param nItem: nItem is the pseudo-json nested dictionary we get from program.py
@@ -168,7 +57,7 @@ class RepoTreeItem():
             self.nItem = RepoTreeItem.program.Hierarchy
 
         if not self.rtParent:
-            self.qTreeWItem = QTreeWidgetItem(DockWidgetTabRepository.treectl)
+            self.qTreeWItem = QTreeWidgetItem(treectl)
         else:
             self.qTreeWItem = QTreeWidgetItem(self.rtParent.qTreeWItem)
 
@@ -257,7 +146,7 @@ class RepoTreeItem():
 
     def recalcState(self):
         """
-        All important state function. This tells us a lot about what's new, what's old and what exists
+        All-important state function. This tells us a lot about what's new, what's old and what exists
         :return:
         """
         s3path = '/'.join(self.pathArr)
@@ -380,9 +269,11 @@ class RepoTreeItem():
 
             self.childrenloaded = True
 
-
 class qTreeIconStates:
-    # Think of this like an enumeration for icons
+    """
+    Think of this like an enumeration for icons
+    """
+
     LOCAL_MISSING = ":/symbolizers/RiverscapesToolbar/monitor_grey.png"
     LOCAL_OLDER = ":/symbolizers/RiverscapesToolbar/monitor_red.png"
     LOCAL_PRESENT = ":/symbolizers/RiverscapesToolbar/monitor_black.png"

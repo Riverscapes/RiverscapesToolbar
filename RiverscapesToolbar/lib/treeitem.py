@@ -6,8 +6,6 @@ def setFontColor(qtreeitem, colorhex, column=None):
     else:
         qtreeitem.setForeground(QBrush(QColor(colorhex)))
 
-
-
 def setFontBold(qtreeitem, column=None):
     font = QFont()
     font.setWeight(QFont.Bold)
