@@ -6,6 +6,43 @@ title: Business logic XML
 
 The purpose of the business logic XML is to translate `project.rs.xml` files into project trees with elements that can be added to a map.
 
+``` xml
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="XSD/project_explorer.xsd">
+  <Name>VBET</Name>
+  <ProjectType>VBET</ProjectType>
+  <Node xpathlabel="Name">
+    <Children>
+      <Repeater label="Realizations" xpath="Realizations/VBET">
+        <!--This is a template for how each realization should render-->
+        <Node xpathlabel="Name">
+          <Children collapsed="false">
+            <Node label="Inputs" xpath="Inputs">
+              <Children>
+                <Node label="Topography" xpath="Topography">
+                  <Children>
+                    <Node xpathlabel="Name" xpath="DEM" type="raster" symbology="DEM"/>
+                    <Node xpathlabel="Name" xpath="Flow" type="raster" symbology="Flow"/>
+                    <Node xpathlabel="Name" xpath="Slope" type="raster" symbology="SlopePer"/>
+                  </Children>
+                </Node>
+                <Repeater label="Network Buffers" xpath="DrainageNetworks/Network/Buffers/Buffer">
+                  <Node xpathlabel="Name" type="vector" symbology="DEMO_singlefill"/>
+                </Repeater>
+              </Children>
+            </Node>
+            <Node label="Analyses"/>
+          </Children>
+        </Node>
+      </Repeater>
+    </Children>
+  </Node>
+</Project>
+```
+
+By layering the various building blocks together you should be able t accomplish a wide variety of tree structures.
+
 ### `<Project>`
 
 ### `<Repeater>`

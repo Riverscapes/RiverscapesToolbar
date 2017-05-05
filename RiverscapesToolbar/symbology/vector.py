@@ -24,9 +24,11 @@ class VectorPlugin():
         self.layer.triggerRepaint()
 
     def symbolize(self):
+
         """ YOU NEED TO IMPLEMENT THIS AS A SENSIBLE DEFAULT"""
         # https://snorfalorpagus.net/blog/2014/03/04/symbology-of-vector-layers-in-qgis-python-plugins/
         # create a new single symbol renderer
+
         symbol = QgsSymbolV2.defaultSymbol(self.layer.geometryType())
         self.renderer = QgsSingleSymbolRendererV2(symbol)
 
