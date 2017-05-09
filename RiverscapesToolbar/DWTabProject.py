@@ -145,7 +145,6 @@ class DockWidgetTabProject():
         :param layer: 
         :return: 
         """
-
         # Loop over all the parent group layers for this raster
         # ensuring they are in the tree in correct, nested order
         nodeData = layer.data(Qt.UserRole)

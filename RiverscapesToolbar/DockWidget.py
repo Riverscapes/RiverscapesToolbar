@@ -55,7 +55,7 @@ class RiverscapesToolbarDockWidget(QtGui.QDockWidget, FORM_CLASS):
         # Connect up our top-level components that aren't in tabs
         # self.btnLoad.clicked.connect(self.raster_file_browser)
         self.btnSettings.clicked.connect(self.settingsLoad)
-        self.tabWidget.setCurrentIndex(self.PROJECT_TAB)
+        self.tabWidget.setCurrentIndex(self.REPO_TAB)
 
         # The code that runs our tabs lives in a different class
         self.TabRepo = DockWidgetTabRepository(self)

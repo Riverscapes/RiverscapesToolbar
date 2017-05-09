@@ -2,7 +2,7 @@ import botocore
 import binascii
 import hashlib
 import os
-from transfers import Transfer
+from transfers import FileTransfer
 
 def s3issame(filepath, s3obj):
     """
@@ -41,12 +41,12 @@ def md5sum(sourcePath):
     filesize = os.path.getsize(sourcePath)
     hash = hashlib.md5()
 
-    if filesize > Transfer.AWS_UPLOAD_MAX_SIZE:
+    if filesize > FileTransfer.AWS_UPLOAD_MAX_SIZE:
 
         block_count = 0
         md5string = ""
         with open(sourcePath, "r+b") as f:
-            for block in iter(lambda: f.read(Transfer.AWS_UPLOAD_PART_SIZE), ""):
+            for block in iter(lambda: f.read(FileTransfer.AWS_UPLOAD_PART_SIZE), ""):
                 hash = hashlib.md5()
                 hash.update(block)
                 md5string = md5string + binascii.unhexlify(hash.hexdigest())
@@ -58,6 +58,6 @@ def md5sum(sourcePath):
 
     else:
         with open(sourcePath, "r+b") as f:
-            for block in iter(lambda: f.read(Transfer.AWS_UPLOAD_PART_SIZE), ""):
+            for block in iter(lambda: f.read(FileTransfer.AWS_UPLOAD_PART_SIZE), ""):
                 hash.update(block)
         return hash.hexdigest()

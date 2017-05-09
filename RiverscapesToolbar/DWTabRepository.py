@@ -4,6 +4,7 @@ from os import path
 from DWTabProject import DockWidgetTabProject
 from DWTabRepositoryItem import RepoTreeItem
 
+
 class DockWidgetTabRepository():
 
     treectl = None
@@ -46,6 +47,7 @@ class DockWidgetTabRepository():
         self.dockwidget.btnRefresh.setText("Loading...")
         self.dockwidget.btnRefresh.setEnabled(False)
 
+        DockWidgetTabRepository.treectl.takeTopLevelItem(0)
         rootItem = RepoTreeItem(loadlevels = self.START_LEVELS, treectl=self.treectl)
         self.treectl.expandToDepth(self.START_LEVELS - 2)
 

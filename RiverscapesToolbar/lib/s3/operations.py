@@ -1,7 +1,7 @@
 import os
 import logging
 from comparison import s3issame
-from transfers import Transfer
+from transfers import FileTransfer
 
 class S3Operation:
     """
@@ -34,19 +34,19 @@ class S3Operation:
         :param conf: the configuration dictionary
         """
         self.log = logging.getLogger()
-        self.s3 = Transfer(conf['bucket'])
+        self.s3 = FileTransfer(conf.bucket)
         self.key = key
 
         # Set some sensible defaults
         self.filestate = self.FileState.SAME
         self.op = self.FileOps.IGNORE
 
-        self.delete = conf['delete']
-        self.force = conf['force']
-        self.localroot = conf['localroot']
-        self.bucket = conf['bucket']
-        self.direction = conf['direction']
-        self.keyprefix = conf['keyprefix']
+        self.delete = conf.delete
+        self.force = conf.force
+        self.localroot = conf.localroot
+        self.bucket = conf.bucket
+        self.direction = conf.direction
+        self.keyprefix = conf.keyprefix
         self.s3size = 0
 
         # And the final paths we use:
@@ -175,7 +175,6 @@ class S3Operation:
         :param filepath:
         :return:
         """
-        log = Logger('S3FileDownload')
 
         # Make a directory if that's needed
         dirpath = os.path.dirname(self.abspath)
@@ -185,11 +184,11 @@ class S3Operation:
             except Exception as e:
                 raise Exception("ERROR: Directory `{0}` could not be created.".format(dirpath))
 
-        log.info("Downloading: {0} ==> ".format(self.fullkey))
+        self.log.info("Downloading: {0} ==> ".format(self.fullkey))
         # This step prints straight to stdout and does not log
         self.s3.download(self.fullkey, self.abspath, size=self.s3size)
         print ""
-        log.debug("Download Completed: {0}".format(self.abspath))
+        self.log.debug("Download Completed: {0}".format(self.abspath))
 
     def upload(self):
         """
@@ -199,13 +198,12 @@ class S3Operation:
         :param filepath:
         :return:
         """
-        log = Logger('S3FileUpload')
 
-        log.info("Uploading: {0} ==> s3://{1}/{2}".format(self.abspath, self.bucket, self.fullkey))
+        self.log.info("Uploading: {0} ==> s3://{1}/{2}".format(self.abspath, self.bucket, self.fullkey))
         # This step prints straight to stdout and does not log
         self.s3.upload(self.abspath, self.fullkey)
         print ""
-        log.debug("Upload Completed: {0}".format(self.abspath))
+        self.log.debug("Upload Completed: {0}".format(self.abspath))
 
 
 

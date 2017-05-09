@@ -1,40 +1,28 @@
 import os
 import logging
-from riverscapestools.userinput import querychoices
-
-from transfers import Transfer
 from operations import S3Operation
+from transfers import FileTransfer
 
-def s3BuildOps(conf):
+
+def s3BuildOps(self):
     """
     Compare a source folder with what's already in S3 and given
     the direction you specify it should figure out what to do.
-
-    conf = {
-        "delete": args.delete,
-        "force": args.force,
-        "direction": direction,
-        "localroot": path.join(datadir, keyprefix),
-        "keyprefix": keyprefix,
-        "bucket": program.Bucket
-    }
-    :return: opstore
     """
-    s3 = Transfer(conf['bucket'])
+    s3 = FileTransfer(self.conf.bucket)
     opstore = {}
     log = logging.getLogger()
-    prefix = "{0}/".format(conf['keyprefix']).replace("//", "/")
+    prefix = "{0}/".format(self.conf.keyprefix).replace("//", "/")
 
     log.info('The following locations were found:')
-    if conf['direction'] == S3Operation.Direction.UP:
-        tostr = 's3://{0}/{1}'.format(conf['bucket'], conf['keyprefix'])
-        fromstr = conf['localroot']
+    if self.conf.direction == S3Operation.Direction.UP:
+        tostr = 's3://{0}/{1}'.format(self.conf.bucket, self.conf.keyprefix)
+        fromstr = self.conf.localroot
     else:
-        fromstr = 's3://{0}/{1}'.format(conf['bucket'], conf['keyprefix'])
-        tostr = conf['localroot']
+        fromstr = 's3://{0}/{1}'.format(self.conf.bucket, self.conf.keyprefix)
+        tostr = self.conf.localroot
     log.info('FROM: {0}'.format(fromstr))
     log.info('TO  : {0}'.format(tostr))
-
 
     log.info('The following operations are queued:')
 
@@ -42,9 +30,9 @@ def s3BuildOps(conf):
 
     # Get all the files we have locally
     files = {}
-    if os.path.isdir(conf['localroot']):
+    if os.path.isdir(self.conf.localroot):
         files = {}
-        localProductWalker(conf['localroot'], files)
+        localProductWalker(self.conf.localroot, files)
 
     # Fill in any files we find on the remote
     if 'Contents' in response:
@@ -53,15 +41,14 @@ def s3BuildOps(conf):
             if dstkey in files:
                 files[dstkey]['dst'] = result
             else:
-                files[dstkey] = { 'dst': result }
+                files[dstkey] = {'dst': result}
 
     for relname in files:
         fileobj = files[relname]
-        opstore[relname] = S3Operation(relname, fileobj, conf)
+        opstore[relname] = S3Operation(relname, fileobj, self.conf)
 
     if len(opstore) == 0:
         log.info("-- NO Operations Queued --")
-
 
     return opstore
 
@@ -83,10 +70,11 @@ def localProductWalker(projroot, filedict, currentdir=""):
         abspath = os.path.join(projroot, relpath).replace('\\', '/')
         if os.path.isfile(abspath):
             log.debug(spaces + relpath)
-            filedict[relpath] = { 'src': abspath }
+            filedict[relpath] = {'src': abspath}
         elif os.path.isdir(abspath):
             log.debug(spaces + pathseg + '/')
             localProductWalker(projroot, filedict, relpath)
+
 
 def s3Exists(bucket, prefix):
     """
@@ -97,7 +85,7 @@ def s3Exists(bucket, prefix):
     :param currlevel:
     :return:
     """
-    s3 = Transfer(bucket)
+    s3 = FileTransfer(bucket)
     result = False
     # list everything at this collection
     try:
@@ -119,7 +107,7 @@ def s3HeadData(bucket, key):
     :param currlevel:
     :return: A dictionary or None
     """
-    s3 = Transfer(bucket)
+    s3 = FileTransfer(bucket)
     head = None
     # list everything at this collection
     try:
@@ -140,7 +128,7 @@ def s3GetFolderList(bucket, prefix):
     :return:
     """
     log = logging.getLogger()
-    s3 = Transfer(bucket)
+    s3 = FileTransfer(bucket)
     results = []
     # list everything at this collection
     response = s3.list(prefix, Delimiter='/')
@@ -159,7 +147,7 @@ def s3ProductWalker(bucket, patharr, currpath=[], currlevel=0):
     :return:
     """
     log = logging.getLogger()
-    s3 = Transfer(bucket)
+    s3 = FileTransfer(bucket)
     if currlevel >= len(patharr):
         return
 
@@ -189,45 +177,45 @@ def s3ProductWalker(bucket, patharr, currpath=[], currlevel=0):
                     log.info('Project: {0} (Modified: {1})'.format(c['Key'], c['LastModified']))
         return
 
-def menuwalk(program, nodes=None, currpath=[]):
-    """
-    Walks through the program letting users choose if it's a level
-    or specify if it's a container It returns a set of program paths
-    that we then need to go and lookup to make our download queue
-    :param currlevelObj:
-    :param path:
-    :return:
-    """
-    log = logging.getLogger()
-    if nodes is None:
-        nodes = [program.Hierarchy]
-
-    name = nodes[0]['node']['name'] if len(nodes) == 1 else ""
-
-    # Get the list at the current path
-    pathstr = '/'.join(currpath) + '/' if len(currpath) > 0 else ""
-    levellist = s3GetFolderList(program.Bucket, pathstr)
-    querystr = "Collection Choice: {0}{1}".format(pathstr, name)
-    choicename = querychoices(querystr, levellist, "Select:")
-    currpath.append(choicename)
-
-    if len(nodes) > 1:
-        node = getnodekeyval(nodes, 'folder', choicename)
-    else:
-        node = nodes[0]
-
-    if node['type'] == 'product':
-        pathstr = '/'.join(currpath) + '/' if len(currpath) > 0 else ""
-        log.info("\nProduct Found: {0}".format(pathstr))
-        return currpath
-
-    # No we've made out choice. We need to move on.
-    elif 'children' in node and len(node['children']) > 0:
-        # child1 = node['children'][0]
-        children = node['children']
-        # if child1['type'] == 'collection':
-        #     chil
-        return menuwalk(program, children, currpath[:])
+# def menuwalk(program, nodes=None, currpath=[]):
+#     """
+#     Walks through the program letting users choose if it's a level
+#     or specify if it's a container It returns a set of program paths
+#     that we then need to go and lookup to make our download queue
+#     :param currlevelObj:
+#     :param path:
+#     :return:
+#     """
+#     log = logging.getLogger()
+#     if nodes is None:
+#         nodes = [program.Hierarchy]
+#
+#     name = nodes[0]['node']['name'] if len(nodes) == 1 else ""
+#
+#     # Get the list at the current path
+#     pathstr = '/'.join(currpath) + '/' if len(currpath) > 0 else ""
+#     levellist = s3GetFolderList(program.Bucket, pathstr)
+#     querystr = "Collection Choice: {0}{1}".format(pathstr, name)
+#     choicename = querychoices(querystr, levellist, "Select:")
+#     currpath.append(choicename)
+#
+#     if len(nodes) > 1:
+#         node = getnodekeyval(nodes, 'folder', choicename)
+#     else:
+#         node = nodes[0]
+#
+#     if node['type'] == 'product':
+#         pathstr = '/'.join(currpath) + '/' if len(currpath) > 0 else ""
+#         log.info("\nProduct Found: {0}".format(pathstr))
+#         return currpath
+#
+#     # No we've made out choice. We need to move on.
+#     elif 'children' in node and len(node['children']) > 0:
+#         # child1 = node['children'][0]
+#         children = node['children']
+#         # if child1['type'] == 'collection':
+#         #     chil
+#         return menuwalk(program, children, currpath[:])
 
 
 def getnodekeyval(thelist, key, val):

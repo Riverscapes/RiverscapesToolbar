@@ -33,3 +33,6 @@ class DockWidgetTabDownload():
         # self.progProject
         # self.progFile
         # setTabText(2, "New tab title");
+
+
+

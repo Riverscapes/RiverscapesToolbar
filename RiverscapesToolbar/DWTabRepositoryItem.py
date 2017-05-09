@@ -6,6 +6,10 @@ from PyQt4.QtGui import QTreeWidgetItem, QIcon
 from PyQt4.QtCore import Qt
 from os import path
 from lib.treeitem import *
+from lib.async import TreeLoadQueues
+
+Qs = TreeLoadQueues()
+Qs.startWorker()
 
 class RepoTreeItem():
 
