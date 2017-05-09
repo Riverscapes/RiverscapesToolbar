@@ -4,17 +4,17 @@ import logging
 from settings import Settings
 import xml.etree.ElementTree as ET
 
-class ProgramXMLBorg(object):
+class ProgramBorg(object):
     _shared_state = {}
     _initdone = False
 
     def __init__(self):
         self.__dict__ = self._shared_state
 
-class ProgramXML(ProgramXMLBorg):
+class Program(ProgramBorg):
 
     def __init__(self, force=False):
-        super(ProgramXML, self).__init__()
+        super(Program, self).__init__()
         if not self._initdone or force:
             print "Init ProgramXML"
 

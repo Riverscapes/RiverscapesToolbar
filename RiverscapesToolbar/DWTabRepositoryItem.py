@@ -1,4 +1,4 @@
-from lib.program import ProgramXML
+from program import Program
 from lib.s3.walkers import s3GetFolderList, s3HeadData
 import datetime
 from settings import Settings
@@ -39,7 +39,7 @@ class RepoTreeItem():
 
         # Do we have the program XML yet? If not, go get it.
         settings = Settings()
-        self.program = ProgramXML()
+        self.program = Program()
         self.localdir = settings.getSetting('DataDir')
 
         self.nItem = nItem

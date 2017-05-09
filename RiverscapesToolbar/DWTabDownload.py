@@ -4,7 +4,7 @@ from lib.async import ToolbarQueues
 from PyQt4.QtGui import QMenu, QDesktopServices, QListWidgetItem
 from PyQt4.QtCore import Qt, QUrl, QObject, SIGNAL, SLOT
 from settings import Settings
-from lib.program import ProgramXML
+from program import Program
 from lib.async import TreeLoadQueues
 
 """
@@ -39,7 +39,7 @@ class DockWidgetTabDownload():
         print "init DockWidgetTabDownload"
         self.Qs = ToolbarQueues()
         self.settings = Settings()
-        self.program = ProgramXML()
+        self.program = Program()
 
         self.dw = dockWidget
         self.Q = TreeLoadQueues()
@@ -138,13 +138,13 @@ class DockWidgetTabDownload():
         :return:
         """
 
-        #  lbl_QueueStatus
-        # ﻿lbl_ProjectStatus
-        # ﻿lbl_FileStatus
+        # lbl_QueueStatus
+        # lbl_ProjectStatus
+        # lbl_FileStatus
 
 
         # if project selected then removebtn enabled
-
+        print "here"
 
 
 class QItem():

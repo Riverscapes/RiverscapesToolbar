@@ -5,7 +5,7 @@ from PyQt4 import QtGui
 from PyQt4.QtCore import pyqtSignal
 import PyQt4.uic as uic
 from settings import Settings
-from lib.program import ProgramXML
+from program import Program
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'SettingsDialog.ui'))
@@ -84,7 +84,7 @@ class SettingsDialog(QtGui.QDialog, FORM_CLASS):
             self.btnBox.button(QtGui.QDialogButtonBox.Apply).setEnabled(False)
 
             # Refresh the programXML
-            program = ProgramXML(force=True)
+            program = Program(force=True)
 
     def dlgReset(self):
         """
