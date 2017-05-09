@@ -55,7 +55,6 @@ class TreeLoadQueues(TreeLoadQueuesBorg):
             self.currentProject = None
 
         start = pyqtSignal(str)
-        status = pyqtSignal(object)
 
         @pyqtSlot()
         def run(self):
@@ -67,18 +66,14 @@ class TreeLoadQueues(TreeLoadQueuesBorg):
             try:
                 print "QUEUE STARTED"
                 while not self.killrequested and Qs.load_q.qsize() > 0:
-                    if Qs.transfer_q.qsize() > 0:
-                        listItem = Qs.transfer_q.get()
-                        self.status.emit({'status': 'Loading', 'item': listItem})
-                        listItem.execute()
+                    if Qs.load_q.qsize() > 0:
+                        listItem = Qs.load_q.get()
+                        listItem["context"].loadChildren(listItem["loadlevels"])
                         listItem.task_done()
                 print "QUEUE STOPPED"
             except Exception, e:
                 print "TransferWorkerThread Exception: {}".format(str(e))
                 traceback.print_exc()
-
-
-
 
 
 class ToolbarQueuesBorg(object):
@@ -90,33 +85,44 @@ class ToolbarQueuesBorg(object):
 
 class ToolbarQueues(ToolbarQueuesBorg):
 
+    Qstatus = pyqtSignal(object)
+
     def __init__(self):
         super(ToolbarQueues, self).__init__()
         if not self._initdone:
             print "Init ToolbarQueues"
             self.project_q = Queue()
-            self.project_complete_q = Queue()
             self.transfer_q = Queue()
-            self.transfer_complete_q = Queue()
 
             # These are the thread processes that run the downloading processes
             self.worker = TransferWorker()
             self.worker_thread = QThread()
             self.worker_thread.start()
-
             self.worker.moveToThread(self.worker_thread)
+
             self.worker.start.connect(self.worker.run)
+            self.worker.status.connect(self.updateStatus)
 
             self.killrequested = False
             # Must be the last thing we do in init
             self._initdone = True
 
+    def updateStatus(self, fileStatus):
+        statusObj = {
+            "file": fileStatus,
+            "project": self.transfer_q.qsize(),
+            "overall": self.project_q.qsize()
+        }
+        self.Qstatus.emit(statusObj)
+
     def popProject(self):
-        opstore = self.project_q.get()
+        """When we pop a project we push all its files on to the file transfer queue"""
+        project = self.project_q.get()
+
         # opstore is a dict with { s3key: S3Operation }
-        for key, val in opstore.iteritems():
+        for key, val in project.opstore.iteritems():
             self.transfer_q.put((key, val))
-        return opstore
+        return project
 
     def startWorker(self):
         print "Attempting Queue Start:"
@@ -146,12 +152,13 @@ class TransferWorker(QObject):
     """
     killrequested = False
 
+    # Signals we will hook our progress bars to
+    start = pyqtSignal(str)
+    status = pyqtSignal(object)
+
     def __init__(self):
         super(TransferWorker, self).__init__()
         self.currentProject = None
-
-    start = pyqtSignal(str)
-    status = pyqtSignal(object)
 
     @pyqtSlot()
     def run(self):
@@ -169,14 +176,12 @@ class TransferWorker(QObject):
                     self.status.emit({'status': 'Processing', 'item': transferitem})
                     transferitem.execute()
                     # Put it into the complete queue
-                    Qs.transfer_complete_q.put(transferitem)
                     transferitem.task_done()
 
                 else:
                     # Transfer queue is empty. Find something else to do:
                     if self.currentProject:
                         self.currentProject.task_done()
-                        Qs.project_complete_q.put(self.currentProject)
                         self.currentProject = None
                     # Anything in the project Queue?
                     if Qs.project_q.qsize() > 0:

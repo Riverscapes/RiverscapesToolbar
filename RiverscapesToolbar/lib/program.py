@@ -1,27 +1,42 @@
 import urllib2
 import re
 import logging
+from settings import Settings
 import xml.etree.ElementTree as ET
 
-class ProgramXML():
-    def __init__(self, xmpProgUrl):
+class ProgramXMLBorg(object):
+    _shared_state = {}
+    _initdone = False
 
-        self.DOM = None
-        self.getProgram(xmpProgUrl)
-        self.Collections = {}
-        self.Groups = {}
-        self.Products = {}
-        self.Hierarchy = {}
-        self.Bucket = None
-        self.log = logging.getLogger()
+    def __init__(self):
+        self.__dict__ = self._shared_state
 
-        # Populate everything
-        self.getBucket()
-        self.getProjectFile()
-        self.parseCollections()
-        self.parseGroups()
-        self.parseProducts()
-        self.parseTree(self.DOM.find('Hierarchy/*'))
+class ProgramXML(ProgramXMLBorg):
+
+    def __init__(self, force=False):
+        super(ProgramXML, self).__init__()
+        if not self._initdone or force:
+            print "Init ProgramXML"
+
+            settings = Settings()
+            self.DOM = None
+            self.getProgram(settings.getSetting('ProgramXMLUrl'))
+            self.Collections = {}
+            self.Groups = {}
+            self.Products = {}
+            self.Hierarchy = {}
+            self.Bucket = None
+            self.log = logging.getLogger()
+
+            # Populate everything
+            self.getBucket()
+            self.getProjectFile()
+            self.parseCollections()
+            self.parseGroups()
+            self.parseProducts()
+            self.parseTree(self.DOM.find('Hierarchy/*'))
+            # Must be the last thing we do in init
+            self._initdone = True
 
     def parseCollections(self):
         """

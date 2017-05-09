@@ -15,18 +15,6 @@ class RepoTreeItem():
 
     # Some statics...
     LOADING = 'Loading...'
-    program = None
-    localdir = None
-
-    @staticmethod
-    def fetchProgramContext():
-        """
-        Get our program.xml and local Settings
-        :return:
-        """
-        settings = Settings()
-        RepoTreeItem.program = ProgramXML(settings.getSetting('ProgramXMLUrl'))
-        RepoTreeItem.localdir = settings.getSetting('DataDir')
 
     def __init__(self, nItem=None, rtParent=None, pathArr=[], loadlevels=1, treectl=None):
         """
@@ -49,16 +37,17 @@ class RepoTreeItem():
         self.remote = None
         self.queued = None
 
-        # Do we have the program XML yet?
-        if not RepoTreeItem.program or not RepoTreeItem.localdir:
-            self.fetchProgramContext()
+        # Do we have the program XML yet? If not, go get it.
+        settings = Settings()
+        self.program = ProgramXML()
+        self.localdir = settings.getSetting('DataDir')
 
         self.nItem = nItem
         self.rtParent = rtParent
 
         # RootNode Stuff
         if not self.nItem:
-            self.nItem = RepoTreeItem.program.Hierarchy
+            self.nItem = self.program.Hierarchy
 
         if not self.rtParent:
             self.qTreeWItem = QTreeWidgetItem(treectl)
@@ -154,11 +143,11 @@ class RepoTreeItem():
         :return:
         """
         s3path = '/'.join(self.pathArr)
-        localpath = path.join(RepoTreeItem.localdir, path.sep.join(self.pathArr))
+        localpath = path.join(self.localdir, path.sep.join(self.pathArr))
 
         if self.type == "product":
             self.qTreeWItem.setIcon(0, QIcon(qTreeIconStates.PRODUCT))
-            head = s3HeadData(RepoTreeItem.program.Bucket, s3path)
+            head = s3HeadData(self.program.Bucket, s3path)
             self.local = path.isfile(localpath)
             self.remote = head is not None
 
@@ -170,7 +159,7 @@ class RepoTreeItem():
 
         elif self.type == 'group':
             self.qTreeWItem.setIcon(0, QIcon(qTreeIconStates.GROUP))
-            # self.remote = s3Exists(RepoTreeItem.program.Bucket, s3path)
+            # self.remote = s3Exists(self.program.Bucket, s3path)
             self.remote = True
             self.local = path.isdir(localpath)
             setFontColor(self.qTreeWItem, "#999999", column=0)
@@ -252,7 +241,7 @@ class RepoTreeItem():
                     # End of the line
                     newpath = self.pathArr[:]
                     newpath.append(child['node']['folder'])
-                    newpath.append(RepoTreeItem.program.ProjectFile)
+                    newpath.append(self.program.ProjectFile)
                     newTreeItem = RepoTreeItem(child, self, newpath, loadlevels=loadlevels)
                     self.qTreeWItem.addChild(newTreeItem.qTreeWItem)
 
@@ -265,7 +254,7 @@ class RepoTreeItem():
                 elif type == 'collection':
                     # Unfortunately the only way to list collections is to go get them physically.
                     # TODO: THIS NEEDS TO INCORPORATE LOCAL AS WELL.
-                    for levelname in s3GetFolderList(RepoTreeItem.program.Bucket, pathstr):
+                    for levelname in s3GetFolderList(self.program.Bucket, pathstr):
                         newpath = self.pathArr[:]
                         newpath.append(levelname)
                         newTreeItem = RepoTreeItem(child, self, newpath, loadlevels=loadlevels)

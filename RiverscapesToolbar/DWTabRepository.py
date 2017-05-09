@@ -1,9 +1,11 @@
 from PyQt4.QtGui import QMenu, QDesktopServices
 from PyQt4.QtCore import Qt, QUrl
 from os import path
+
 from DWTabProject import DockWidgetTabProject
 from DWTabRepositoryItem import RepoTreeItem
-
+from DWTabDownload import DockWidgetTabDownload
+from lib.s3.operations import S3Operation
 
 class DockWidgetTabRepository():
 
@@ -105,9 +107,11 @@ class DockWidgetTabRepository():
 
     def addProjectToDownloadQueue(self, rtItem):
         print "Adding to download Queue: " + '/'.join(rtItem.pathArr)
+        DockWidgetTabDownload.addItemToQueue(S3Operation.Direction.DOWN, rtItem)
 
     def addProjectToUploadQueue(self, rtItem):
         print "Adding to Upload Queue: " + '/'.join(rtItem.pathArr)
+        DockWidgetTabDownload.addItemToQueue(S3Operation.Direction.UP, rtItem)
 
     def findFolder(self, rtItem):
         qurl = QUrl.fromLocalFile(path.join(RepoTreeItem.localdir, path.sep.join(rtItem.pathArr[:-1])))
@@ -119,6 +123,3 @@ class DockWidgetTabRepository():
         # Switch to the project tab
         self.dockwidget.tabWidget.setCurrentIndex(self.dockwidget.PROJECT_TAB)
         DockWidgetTabProject.projectLoad(localpath)
-
-
-

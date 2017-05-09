@@ -3,31 +3,8 @@ import os
 import sys
 import math
 import boto3
-import logging
 from boto3.s3.transfer import TransferConfig
-from walkers import s3BuildOps
 from progressbar import ProgressBar
-
-class TransferConf():
-    # This object gets passed around a lot so we package it up
-    def __init__(self, bucket, localroot, keyprefix, direction, force=False, delete=False):
-        self.delete = delete
-        self.force = force,
-        self.direction = direction,
-        self.localroot = localroot,
-        self.keyprefix = keyprefix,
-        self.bucket = bucket
-
-class ProjectTransfer():
-
-    def __init__(self, bucket, localroot, keyprefix, direction, delete=False, force=False):
-        # This object gets passed around a lot so we package it up
-        self.conf= TransferConf(bucket, localroot, keyprefix, direction, force, delete)
-        self.log = logging.getLogger()
-        self.opstore = s3BuildOps(self.conf)
-
-        for key in self.opstore:
-            self.opstore[key].execute()
 
 class FileTransfer:
     # Max size in bytes before uploading in parts.
