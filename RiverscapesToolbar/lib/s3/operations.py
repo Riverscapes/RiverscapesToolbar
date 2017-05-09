@@ -34,6 +34,7 @@ class S3Operation:
         :param conf: the configuration dictionary
         """
         self.log = logging.getLogger()
+        self.log.setLevel(logging.ERROR)
         self.s3 = FileTransfer(conf.bucket)
         self.key = key
 

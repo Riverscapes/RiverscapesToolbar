@@ -1,15 +1,18 @@
+from os import path
+from functools import partial
+import datetime
+
 from program import Program
 from lib.s3.walkers import s3GetFolderList, s3HeadData
-import datetime
 from settings import Settings
 from PyQt4.QtGui import QTreeWidgetItem, QIcon
 from PyQt4.QtCore import Qt
-from os import path
 from lib.treeitem import *
 from lib.async import TreeLoadQueues
 
 Qs = TreeLoadQueues()
 Qs.startWorker()
+settings = Settings()
 
 class RepoTreeItem():
 
@@ -38,7 +41,6 @@ class RepoTreeItem():
         self.queued = None
 
         # Do we have the program XML yet? If not, go get it.
-        settings = Settings()
         self.program = Program()
         self.localdir = settings.getSetting('DataDir')
 
@@ -53,6 +55,9 @@ class RepoTreeItem():
             self.qTreeWItem = QTreeWidgetItem(treectl)
         else:
             self.qTreeWItem = QTreeWidgetItem(self.rtParent.qTreeWItem)
+
+        self.qTreeWItem.setText(0, self.LOADING)
+        self.qTreeWItem.setHidden(True)
 
         # Set the data backwards so we can find this object later
         self.qTreeWItem.setData(0, Qt.UserRole, self)
@@ -74,7 +79,9 @@ class RepoTreeItem():
         :return:
         """
         print "refreshing"
-        self.reset()
+        self.loaded = False
+        self.childrenloaded = False
+        self.qTreeWItem.takeChildren()
         self.load()
 
     def reset(self):
@@ -93,9 +100,8 @@ class RepoTreeItem():
         self.remote = None
         self.queued = None
 
-        self.qTreeWItem.setText(0, self.LOADING)
-        if self.type != "product":
-            self.createDummyChild()
+        # if self.type != "product":
+        #     self.createDummyChild()
 
     def _getDepth(self):
         """
@@ -117,24 +123,30 @@ class RepoTreeItem():
         :return:
         """
 
-        if self.type == 'product':
-            self.name = self.nItem['node']['name']
-        elif self.type == "group":
-            self.name = self.nItem['node']['name']
-        elif self.type == 'collection':
-            self.name = self.pathArr[-1]
-            try:
-                # try and find a better name than just the folder name (not always possible)
-                folderItem = next(
-                    (d for d in self.nItem['node']['allows'] if d["folder"] == self.name and d['type'] == 'fixed'),
-                    None)
-                if folderItem is not None:
-                    self.name = folderItem['name']
-            except Exception, e:
-                pass
+        if not self.loaded:
+            if self.type == 'product':
+                self.name = self.nItem['node']['name']
+            elif self.type == "group":
+                self.name = self.nItem['node']['name']
+                self.createDummyChild()
+            elif self.type == 'collection':
+                self.name = self.pathArr[-1]
+                self.createDummyChild()
+                try:
+                    # try and find a better name than just the folder name (not always possible)
+                    folderItem = next(
+                        (d for d in self.nItem['node']['allows'] if d["folder"] == self.name and d['type'] == 'fixed'),
+                        None)
+                    if folderItem is not None:
+                        self.name = folderItem['name']
+                except Exception, e:
+                    pass
 
-        self.recalcState()
-        self.loaded = True
+        # Now add this onto a queue since it involves S3 operations
+        self.qTreeWItem.setIcon(0, QIcon(qTreeIconStates.LOADING))
+        Qs.load_q.put(self.recalcState);
+        Qs.startWorker()
+
         self.loadChildren((loadlevels - 1))
 
     def recalcState(self):
@@ -170,6 +182,7 @@ class RepoTreeItem():
             # So we assume the remote
             self.remote = True
             self.local = path.isdir(localpath)
+            self.qTreeWItem.setIcon(0, QIcon())
             setFontColor(self.qTreeWItem, "#666666", column=0)
 
         self.qTreeWItem.setText(0, self.name)
@@ -177,18 +190,7 @@ class RepoTreeItem():
 
         # Walk back up the tree and hide things that have no value
         self.backwardCalc()
-
-    def createDummyChild(self):
-        """
-        We create a dummy node with the text  "Loading..." so that it looks like
-        the item can be expanded, even if we don't know that
-        :return:
-        """
-        self.qTreeWItem.takeChildren()
-        dummy = QTreeWidgetItem()
-        dummy.setText(0, self.LOADING)
-        dummy.setIcon(0, QIcon(qTreeIconStates.GROUP))
-        self.qTreeWItem.addChild(dummy)
+        self.loaded = True
 
     def backwardCalc(self):
         """
@@ -208,6 +210,20 @@ class RepoTreeItem():
         # Now walk back up
         if self.rtParent:
             self.rtParent.backwardCalc()
+
+    def createDummyChild(self):
+        """
+        We create a dummy node with the text  "Loading..." so that it looks like
+        the item can be expanded, even if we don't know that
+        :return:
+        """
+        self.qTreeWItem.takeChildren()
+        self.dummychild = QTreeWidgetItem()
+        self.dummychild.setText(0, self.LOADING)
+        self.dummychild.setIcon(0, QIcon(qTreeIconStates.GROUP))
+        self.qTreeWItem.addChild(self.dummychild)
+        self.loaded = True
+
 
     def loadChildren(self, loadlevels=1, force=False):
         """
@@ -230,53 +246,57 @@ class RepoTreeItem():
                     self.qTreeWItem.child(i).data(0, Qt.UserRole).load()
         else:
             # Start by clearing out the previous children (this is a forced or first refresh)
-            self.qTreeWItem.takeChildren()
+            # Now add this onto a queue since it involves S3 operations
+            Qs.load_q.put(partial(self.loadchildrenworker, loadlevels));
+            Qs.startWorker()
 
-            for child in self.nItem['children']:
-                # Add the leaf to the tree
-                pathstr = '/'.join(self.pathArr) + '/' if len(self.pathArr) > 0 else ""
-                type = child['node']['type']
+    def loadchildrenworker(self, loadlevels):
+        self.qTreeWItem.takeChildren()
+        for child in self.nItem['children']:
+            # Add the leaf to the tree
+            pathstr = '/'.join(self.pathArr) + '/' if len(self.pathArr) > 0 else ""
+            type = child['node']['type']
 
-                if type == 'product':
-                    # End of the line
+            if type == 'product':
+                # End of the line
+                newpath = self.pathArr[:]
+                newpath.append(child['node']['folder'])
+                newpath.append(self.program.ProjectFile)
+                newTreeItem = RepoTreeItem(child, self, newpath, loadlevels=loadlevels)
+                self.qTreeWItem.addChild(newTreeItem.qTreeWItem)
+
+            elif type == 'group':
+                newpath = self.pathArr[:]
+                newpath.append(child['node']['folder'])
+                newTreeItem = RepoTreeItem(child, self, newpath, loadlevels=loadlevels)
+                self.qTreeWItem.addChild(newTreeItem.qTreeWItem)
+
+            elif type == 'collection':
+                # Unfortunately the only way to list collections is to go get them physically.
+                # TODO: THIS NEEDS TO INCORPORATE LOCAL AS WELL.
+                for levelname in s3GetFolderList(self.program.Bucket, pathstr):
                     newpath = self.pathArr[:]
-                    newpath.append(child['node']['folder'])
-                    newpath.append(self.program.ProjectFile)
+                    newpath.append(levelname)
                     newTreeItem = RepoTreeItem(child, self, newpath, loadlevels=loadlevels)
                     self.qTreeWItem.addChild(newTreeItem.qTreeWItem)
 
-                elif type == 'group':
-                    newpath = self.pathArr[:]
-                    newpath.append(child['node']['folder'])
-                    newTreeItem = RepoTreeItem(child, self, newpath, loadlevels=loadlevels)
-                    self.qTreeWItem.addChild(newTreeItem.qTreeWItem)
-
-                elif type == 'collection':
-                    # Unfortunately the only way to list collections is to go get them physically.
-                    # TODO: THIS NEEDS TO INCORPORATE LOCAL AS WELL.
-                    for levelname in s3GetFolderList(self.program.Bucket, pathstr):
-                        newpath = self.pathArr[:]
-                        newpath.append(levelname)
-                        newTreeItem = RepoTreeItem(child, self, newpath, loadlevels=loadlevels)
-                        self.qTreeWItem.addChild(newTreeItem.qTreeWItem)
-
-            self.childrenloaded = True
+        self.childrenloaded = True
 
 class qTreeIconStates:
     """
     Think of this like an enumeration for icons
     """
 
-    LOCAL_MISSING = ":/symbolizers/RiverscapesToolbar/monitor_grey.png"
-    LOCAL_OLDER = ":/symbolizers/RiverscapesToolbar/monitor_red.png"
-    LOCAL_PRESENT = ":/symbolizers/RiverscapesToolbar/monitor_black.png"
+    LOCAL_MISSING = ":/plugins/RiverscapesToolbar/monitor_grey.png"
+    LOCAL_OLDER = ":/plugins/RiverscapesToolbar/monitor_red.png"
+    LOCAL_PRESENT = ":/plugins/RiverscapesToolbar/monitor_black.png"
 
-    REMOTE_MISSING = ":/symbolizers/RiverscapesToolbar/cloud_grey.png"
-    REMOTE_OLDER = ":/symbolizers/RiverscapesToolbar/cloud_red.png"
-    REMOTE_PRESENT = ":/symbolizers/RiverscapesToolbar/cloud_black.png"
+    REMOTE_MISSING = ":/plugins/RiverscapesToolbar/cloud_grey.png"
+    REMOTE_OLDER = ":/plugins/RiverscapesToolbar/cloud_red.png"
+    REMOTE_PRESENT = ":/plugins/RiverscapesToolbar/cloud_black.png"
 
-    GROUP = ":/symbolizers/RiverscapesToolbar/folder_light.png"
-    COLLECTION = ":/symbolizers/RiverscapesToolbar/folder_medium.png"
-    PRODUCT = ":/symbolizers/RiverscapesToolbar/project.png"
+    GROUP = ":/plugins/RiverscapesToolbar/folder_light.png"
+    COLLECTION = ":/plugins/RiverscapesToolbar/folder_medium.png"
+    PRODUCT = ":/plugins/RiverscapesToolbar/project.png"
 
-    LOADING = ":/symbolizers/RiverscapesToolbar/loading.png"
+    LOADING = ":/plugins/RiverscapesToolbar/loading.png"

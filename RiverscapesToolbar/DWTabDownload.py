@@ -32,8 +32,7 @@ UI:
 """
 
 class DockWidgetTabDownload():
-    lstProjs = None
-    lstFiles = None
+    treectl = None
 
     def __init__(self, dockWidget):
         print "init DockWidgetTabDownload"
@@ -43,8 +42,7 @@ class DockWidgetTabDownload():
 
         self.dw = dockWidget
         self.Q = TreeLoadQueues()
-        self.dw.lstProjs = dockWidget.lstProject
-        self.dw.lstFiles = dockWidget.lstFiles
+        DockWidgetTabDownload.treectl = dockWidget.treeProjQueue
 
         self.dw.btnDownloadStart.clicked.connect(self.startWorker)
         self.dw.btnDownloadPause.clicked.connect(self.stopWorker)
@@ -54,15 +52,14 @@ class DockWidgetTabDownload():
 
         self.dw.btnProjectRemove.clicked.connect(self.removeItemFromQueue)
 
-        self.dw.lstProjs.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.dw.lstProjs.setColumnCount(3)
-        self.dw.lstProjs.setHeaderHidden(False)
-        self.dw.lstProjs.customContextMenuRequested.connect(self.openMenu)
+        self.dw.treeProjQueue.setColumnCount(3)
+        self.dw.treeProjQueue.setHeaderHidden(False)
 
-        self.dw.lstFiles.setColumnCount(3)
+        self.dw.treeProjQueue.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.dw.treeProjQueue.customContextMenuRequested.connect(self.openMenu)
+
         # Hookup slots to our signals
-
-        self.Qs.Qstatus.connect(self.updateProgress)
+        # self.Qs.Qstatus.connect(self.updateProgress)
 
 
     def updateProgBars(self, updateObj):
@@ -165,7 +162,7 @@ class QItem():
         self.conf = conf
         self.opstore = s3BuildOps(self.conf)
 
-        self.qTreeWItem = QListWidgetItem(DockWidgetTabDownload.lstProjs)
+        self.qTreeWItem = QListWidgetItem(DockWidgetTabDownload.treectl)
 
         # Set the data backwards so we can find this object later
         self.qTreeWItem.setData(0, Qt.UserRole, self)

@@ -31,7 +31,7 @@ class TreeLoadQueues(TreeLoadQueuesBorg):
             self._initdone = True
 
     def startWorker(self):
-        print "Attempting TreeLoadQueues Start:"
+        # print "Attempting TreeLoadQueues Start:"
         self.worker.killrequested = False
         self.worker.start.emit("start")
 
@@ -64,13 +64,12 @@ class TreeLoadQueues(TreeLoadQueuesBorg):
             InitDebug()
             Qs = TreeLoadQueues()
             try:
-                print "QUEUE STARTED"
+                # print "QUEUE STARTED"
                 while not self.killrequested and Qs.load_q.qsize() > 0:
                     if Qs.load_q.qsize() > 0:
-                        listItem = Qs.load_q.get()
-                        listItem["context"].loadChildren(listItem["loadlevels"])
-                        listItem.task_done()
-                print "QUEUE STOPPED"
+                        thePartial = Qs.load_q.get()
+                        thePartial()
+                # print "QUEUE STOPPED"
             except Exception, e:
                 print "TransferWorkerThread Exception: {}".format(str(e))
                 traceback.print_exc()

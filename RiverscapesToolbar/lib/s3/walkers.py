@@ -12,6 +12,7 @@ def s3BuildOps(self):
     s3 = FileTransfer(self.conf.bucket)
     opstore = {}
     log = logging.getLogger()
+    log.setLevel(logging.ERROR)
     prefix = "{0}/".format(self.conf.keyprefix).replace("//", "/")
 
     log.info('The following locations were found:')
@@ -62,6 +63,7 @@ def localProductWalker(projroot, filedict, currentdir=""):
     :return:
     """
     log = logging.getLogger()
+    log.setLevel(logging.ERROR)
     for pathseg in os.listdir(os.path.join(projroot, currentdir)):
         spaces = len(currentdir) * ' ' + '/'
         # Remember to sanitize for slash unity. We write unix separators
@@ -128,6 +130,7 @@ def s3GetFolderList(bucket, prefix):
     :return:
     """
     log = logging.getLogger()
+    log.setLevel(logging.ERROR)
     s3 = FileTransfer(bucket)
     results = []
     # list everything at this collection
@@ -147,6 +150,7 @@ def s3ProductWalker(bucket, patharr, currpath=[], currlevel=0):
     :return:
     """
     log = logging.getLogger()
+    log.setLevel(logging.ERROR)
     s3 = FileTransfer(bucket)
     if currlevel >= len(patharr):
         return
