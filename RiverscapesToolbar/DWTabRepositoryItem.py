@@ -75,6 +75,7 @@ class RepoTreeItem():
 
         self.reset()
 
+
     def getAbsProjRoot(self):
         return path.dirname(path.join(RepoTreeItem.localrootdir, path.sep.join(self.pathArr)))
 

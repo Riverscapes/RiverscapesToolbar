@@ -1,11 +1,14 @@
 from os import path
 from lib.s3.walkers import s3BuildOps
 from lib.async import ToolbarQueues
-from PyQt4.QtGui import QMenu, QDesktopServices, QListWidgetItem
-from PyQt4.QtCore import Qt, QUrl, QObject, SIGNAL, SLOT
+from PyQt4.QtGui import QMenu, QTreeWidgetItem, QIcon
+from PyQt4.QtCore import Qt, SIGNAL, SLOT
 from settings import Settings
 from program import Program
 from lib.async import TreeLoadQueues
+
+from lib.s3.operations import S3Operation
+
 
 """
 Ok, so here's the hierarchy
@@ -22,7 +25,7 @@ DockWidgetTabDownload
                     self.op = DELETE_REMOTE, DELETE_LOCAL, UPLOAD, DOWNLOAD, IGNORE
                     self.s3size = 0                    
 
-        # Columns: Projects:   Name, Progress  (--, 54%, DONE)
+        # Columns: Projects:   Direction, Name, Progress  (--, 54%, DONE)
 
         # files: Op, localpath, size, progress (--, 54%, DONE)    
 
@@ -31,8 +34,13 @@ UI:
 
 """
 
+Qs = ToolbarQueues()
+settings = Settings()
+
+
 class DockWidgetTabDownload():
     treectl = None
+    dockwidget = None
 
     def __init__(self, dockWidget):
         print "init DockWidgetTabDownload"
@@ -40,32 +48,32 @@ class DockWidgetTabDownload():
         self.settings = Settings()
         self.program = Program()
 
-        self.dw = dockWidget
+        DockWidgetTabDownload.dockwidget = dockWidget
         self.Q = TreeLoadQueues()
-        DockWidgetTabDownload.treectl = self.dw.treeProjQueue
+        DockWidgetTabDownload.treectl = self.dockwidget.treeProjQueue
 
-        self.dw.btnDownloadStart.clicked.connect(self.startWorker)
-        self.dw.btnDownloadPause.clicked.connect(self.stopWorker)
+        self.dockwidget.btnDownloadStart.clicked.connect(self.startWorker)
+        self.dockwidget.btnDownloadPause.clicked.connect(self.stopWorker)
 
-        self.dw.btnDownloadEmpty.clicked.connect(self.emptyQueue)
-        self.dw.btnDownloadClearCompleted.clicked.connect(self.clearCompleted)
+        self.dockwidget.btnDownloadEmpty.clicked.connect(self.emptyQueue)
+        self.dockwidget.btnDownloadClearCompleted.clicked.connect(self.clearCompleted)
 
-        self.dw.btnProjectRemove.clicked.connect(self.removeItemFromQueue)
+        self.dockwidget.btnProjectRemove.clicked.connect(self.removeItemFromQueue)
 
-        self.dw.treeProjQueue.setColumnCount(3)
-        self.dw.treeProjQueue.setHeaderHidden(False)
+        self.dockwidget.treeProjQueue.setColumnCount(3)
+        self.dockwidget.treeProjQueue.setHeaderHidden(False)
 
-        self.dw.treeProjQueue.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.dw.treeProjQueue.customContextMenuRequested.connect(self.openMenu)
+        self.dockwidget.treeProjQueue.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.dockwidget.treeProjQueue.customContextMenuRequested.connect(self.openMenu)
 
         # Hookup slots to our signals
         # self.Qs.Qstatus.connect(self.updateProgress)
 
 
     def updateProgBars(self, updateObj):
-        self.dw.progProject = 3
-        self.dw.progFile = 3
-        self.dw.progOverall = 3
+        self.dockwidget.progProject = 3
+        self.dockwidget.progFile = 3
+        self.dockwidget.progOverall = 3
         print "whoa"
 
 
@@ -86,7 +94,6 @@ class DockWidgetTabDownload():
             openReceiver = lambda item=theData: self.openProject(item)
             openReceiverAction = menu.addAction("Add projects to Download Queue", openReceiver)
             openReceiverAction.setEnabled(theData.local)
-
             openReceiverAction.setEnabled(True)
 
         menu.exec_(self.treectl.mapToGlobal(pt))
@@ -109,11 +116,32 @@ class DockWidgetTabDownload():
     def clearCompleted(self):
         print "clear completed"
 
-
-    def addItemToQueue(self, QueueItem):
+    @staticmethod
+    def addItemToQueue(QueueItem):
         """
         :return: 
         """
+
+        # Create a tree Item for this and then push it onto the Queue
+        newProjItem = QTreeWidgetItem(DockWidgetTabDownload.treectl)
+
+        if QueueItem.conf.direction == S3Operation.Direction.DOWN:
+            icon = QIcon(qTreeIconStates.DOWNLOAD)
+        else:
+            icon = QIcon(qTreeIconStates.UPLOAD)
+
+        newProjItem.setText(0, QueueItem.rtItem.getRemoteS3Prefix())
+        newProjItem.setText(1, "Queued")
+        newProjItem.setIcon(1, icon)
+
+        for key, op in QueueItem.opstore.iteritems():
+            newTransferItem = QTreeWidgetItem(newProjItem)
+            newTransferItem.setText(0, op.key)
+            newTransferItem.setText(1, "Queued")
+            newProjItem.setIcon(1, icon)
+
+        Qs.queuePush(QueueItem)
+
         print "Now What?!?"
         # self.qTreeWItem = QListWidgetItem(DockWidgetTabDownload.treectl)
         #
@@ -174,3 +202,17 @@ class QueueItem():
 
     def progress(self):
         self.progress = 100
+
+
+class qTreeIconStates:
+    """
+    Think of this like an enumeration for icons
+    """
+    """
+            <file alias="caret_down_green.png">images/icons/font-awesome_4-7-0_caret-down_12_0_27ae60_none.png</file>
+            <file alias="caret_up_blue.png">images/icons/font-awesome_4-7-0_caret-up_12_0_2980b9_none.png</file>
+    
+    """
+    DOWNLOAD = ":/plugins/RiverscapesToolbar/caret_down_green.png"
+    UPLOAD = ":/plugins/RiverscapesToolbar/caret_up_blue.png"
+

@@ -112,6 +112,9 @@ class ToolbarQueues(ToolbarQueuesBorg):
             # Must be the last thing we do in init
             self._initdone = True
 
+    def queuePush(self, item):
+        self.project_q.put(item)
+
     def updateStatus(self, fileStatus):
         statusObj = {
             "file": fileStatus,
@@ -180,6 +183,7 @@ class TransferWorker(QObject):
                     transferitem = Qs.transfer_q.get()
                     self.status.emit({'status': 'Processing', 'item': transferitem})
                     transferitem.execute()
+                    self.status.emit({'status': 'Completed', 'item': transferitem})
                     # Put it into the complete queue
                     transferitem.task_done()
 

@@ -1,12 +1,11 @@
 from os import path
-from lib.s3.walkers import s3BuildOps
 from PyQt4 import QtGui
 from PyQt4.QtCore import pyqtSignal
 import PyQt4.uic as uic
 from settings import Settings
 from program import Program
 from lib.s3.operations import S3Operation
-from PyQt4.QtGui import QTreeWidgetItem, QIcon
+from PyQt4.QtGui import QTreeWidgetItem
 from PyQt4.QtCore import Qt
 
 from DWTabDownload import DockWidgetTabDownload, QueueItem
@@ -57,11 +56,8 @@ class AddQueueDialog(QtGui.QDialog, FORM_CLASS):
         """
         Save all settings and close
         """
-        # self.buttonBox.button(QtGui.QDialogButtonBox.Ok).setEnabled(True)
-        # self.buttonBox.button(QtGui.QDialogButtonBox.Apply).setEnabled(False)
-
-        DockWidgetTabDownload.addItemToQueue(self.qItem)
         DockWidgetTabDownload.dockwidget.tabWidget.setCurrentIndex(DockWidgetTabDownload.dockwidget.DOWNLOAD_TAB)
+        DockWidgetTabDownload.addItemToQueue(self.qItem)
 
 
     def populateList(self):
