@@ -6,6 +6,7 @@ from debug import InitDebug
 class TreeLoadQueuesBorg(object):
     _shared_state = {}
     _initdone = False
+    _alive = False
 
     def __init__(self):
         self.__dict__ = self._shared_state
@@ -30,10 +31,15 @@ class TreeLoadQueues(TreeLoadQueuesBorg):
             # Must be the last thing we do in init
             self._initdone = True
 
+    def queuePush(self, item):
+        self.load_q.put(item)
+        self.startWorker()
+
     def startWorker(self):
         # print "Attempting TreeLoadQueues Start:"
-        self.worker.killrequested = False
-        self.worker.start.emit("start")
+        if not self._alive:
+            self.worker.killrequested = False
+            self.worker.start.emit("start")
 
     def stopWorker(self):
         print "Attempting TreeLoadQueues Stop:"
@@ -64,12 +70,12 @@ class TreeLoadQueues(TreeLoadQueuesBorg):
             InitDebug()
             Qs = TreeLoadQueues()
             try:
-                # print "QUEUE STARTED"
                 while not self.killrequested and Qs.load_q.qsize() > 0:
+                    Qs._alive = True
                     if Qs.load_q.qsize() > 0:
                         thePartial = Qs.load_q.get()
                         thePartial()
-                # print "QUEUE STOPPED"
+                Qs._alive = False
             except Exception, e:
                 print "TransferWorkerThread Exception: {}".format(str(e))
                 traceback.print_exc()

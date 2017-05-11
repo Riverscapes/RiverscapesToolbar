@@ -11,13 +11,21 @@ from lib.treeitem import *
 from lib.async import TreeLoadQueues
 
 Qs = TreeLoadQueues()
-Qs.startWorker()
 settings = Settings()
+
+# Do we have the program XML yet? If not, go get it.
+program = Program()
 
 class RepoTreeItem():
 
     # Some statics...
     LOADING = 'Loading...'
+
+    class NState():
+        INITIALIZED = 0
+        LOADING = 1
+        LOADED = 2
+        LOAD_REQ = 3
 
     def __init__(self, nItem=None, rtParent=None, pathArr=[], loadlevels=1, treectl=None):
         """
@@ -29,35 +37,30 @@ class RepoTreeItem():
         """
 
         # Initial setup
-        self.name = ""
-        self.loaded = False
-        self.childrenloaded = False
+        self.name = None
+        self.state = self.NState.INITIALIZED
+        self.childrenstate = self.NState.INITIALIZED
 
+        self.icon = None
         self.loadtime = None
+        self.dummyChild = None
 
         self.local = None
-        self.localDateTime = None
         self.remote = None
-        self.queued = None
-
-        # Do we have the program XML yet? If not, go get it.
-        self.program = Program()
-        self.localdir = settings.getSetting('DataDir')
+        self.localDateTime = None
+        self.nowhere = False
 
         self.nItem = nItem
         self.rtParent = rtParent
 
         # RootNode Stuff
         if not self.nItem:
-            self.nItem = self.program.Hierarchy
+            self.nItem = program.Hierarchy
 
         if not self.rtParent:
             self.qTreeWItem = QTreeWidgetItem(treectl)
         else:
             self.qTreeWItem = QTreeWidgetItem(self.rtParent.qTreeWItem)
-
-        self.qTreeWItem.setText(0, self.LOADING)
-        self.qTreeWItem.setHidden(True)
 
         # Set the data backwards so we can find this object later
         self.qTreeWItem.setData(0, Qt.UserRole, self)
@@ -65,12 +68,12 @@ class RepoTreeItem():
         self.type = self.nItem['node']['type']
         self.depth = self._getDepth()
         self.pathArr = pathArr
-        self.reset()
 
         # TODO: This is a hack for now but it gets us over the hump
         if len(self.pathArr) == 0:
             self.pathArr = ["CRB"]
 
+        self.reset()
         self.load(loadlevels)
 
     def refreshAction(self):
@@ -78,10 +81,8 @@ class RepoTreeItem():
         When we right click and choose refresh
         :return:
         """
-        print "refreshing"
-        self.loaded = False
-        self.childrenloaded = False
-        self.qTreeWItem.takeChildren()
+        print "Refreshing"
+        self.reset()
         self.load()
 
     def reset(self):
@@ -89,19 +90,23 @@ class RepoTreeItem():
         Reset the node state
         :return:
         """
+        self.state = self.NState.INITIALIZED
+        self.childrenstate = self.NState.INITIALIZED
         self.name = ""
-        self.loaded = False
-        self.childrenloaded = False
-
         self.loadtime = None
-
+        self.nowhere = False
         self.local = None
         self.localDateTime = None
         self.remote = None
-        self.queued = None
+        self.icon = QIcon()
+        self.color = "#000000"
+        self.style = "regular"
 
-        # if self.type != "product":
-        #     self.createDummyChild()
+        # Set some initial conditions to show we're doing something
+        self.qTreeWItem.setText(0, self.LOADING)
+        self.qTreeWItem.setHidden(self.nowhere)
+
+        self.qTreeWItem.takeChildren()
 
     def _getDepth(self):
         """
@@ -122,16 +127,31 @@ class RepoTreeItem():
         :param loadlevels:
         :return:
         """
-
-        if not self.loaded:
+        if self.state == self.NState.INITIALIZED:
+            # There's no asynchronous loading for nodes so we jump straight to loaded
+            self.state = self.NState.LOADED
             if self.type == 'product':
                 self.name = self.nItem['node']['name']
+                self.icon = QIcon(qTreeIconStates.PRODUCT)
+                if self.local:
+                    self.style = "bold"
+                    self.color = "#444444"
+                else:
+                    self.color = "#cccccc"
+
             elif self.type == "group":
                 self.name = self.nItem['node']['name']
-                self.createDummyChild()
+                self.icon = QIcon(qTreeIconStates.GROUP)
+                self.dummyChild = self.createDummyChild()
+                self.color = "#999999"
+
             elif self.type == 'collection':
                 self.name = self.pathArr[-1]
-                self.createDummyChild()
+                self.icon = QIcon()
+                self.dummyChild = self.createDummyChild()
+                # With collections we've already done our checking with a directory list
+                # So we assume the remote exists
+                self.color = "#666666"
                 try:
                     # try and find a better name than just the folder name (not always possible)
                     folderItem = next(
@@ -142,70 +162,40 @@ class RepoTreeItem():
                 except Exception, e:
                     pass
 
-        # Now add this onto a queue since it involves S3 operations
-        self.qTreeWItem.setIcon(0, QIcon(qTreeIconStates.LOADING))
-        Qs.load_q.put(self.recalcState);
-        Qs.startWorker()
+            self.formatNode()
 
-        self.loadChildren((loadlevels - 1))
-
-    def recalcState(self):
-        """
-        All-important state function. This tells us a lot about what's new, what's old and what exists
-        :return:
-        """
-        s3path = '/'.join(self.pathArr)
-        localpath = path.join(self.localdir, path.sep.join(self.pathArr))
-
-        if self.type == "product":
-            self.qTreeWItem.setIcon(0, QIcon(qTreeIconStates.PRODUCT))
-            head = s3HeadData(self.program.Bucket, s3path)
-            self.local = path.isfile(localpath)
-            self.remote = head is not None
-
-            if self.local:
-                setFontBold(self.qTreeWItem, column=0)
-                setFontColor(self.qTreeWItem, "#444444", column=0)
-            else:
-                setFontColor(self.qTreeWItem, "#cccccc", column=0)
-
-        elif self.type == 'group':
-            self.qTreeWItem.setIcon(0, QIcon(qTreeIconStates.GROUP))
-            # self.remote = s3Exists(self.program.Bucket, s3path)
-            self.remote = True
-            self.local = path.isdir(localpath)
-            setFontColor(self.qTreeWItem, "#999999", column=0)
+        if self.childrenstate == self.NState.INITIALIZED and self.type != 'product':
+            self.childrenstate = self.NState.LOAD_REQ
+            Qs.queuePush(partial(self.loadChildren, (loadlevels - 1)));
+            # self.loadChildren(loadlevels=(loadlevels-1))
 
 
-        elif self.type == 'collection':
-            # With collections we've already done our checking with a directory list
-            # So we assume the remote
-            self.remote = True
-            self.local = path.isdir(localpath)
-            self.qTreeWItem.setIcon(0, QIcon())
-            setFontColor(self.qTreeWItem, "#666666", column=0)
-
-        self.qTreeWItem.setText(0, self.name)
-        self.loadtime = datetime.datetime.now()
-
-        # Walk back up the tree and hide things that have no value
-        self.backwardCalc()
-        self.loaded = True
 
     def backwardCalc(self):
         """
         This function traverses the list back up to the top hiding items that have visible children
         :return:
         """
-        hide = False
-        if self.type == "product":
-            hide = not self.local and not self.remote
-        else:
-            hide = not self.local and not self.remote
-            # TODO: DECIDE IF THIS IS REALLY OK
-            # allchildrenhidden = all([self.qTreeWItem.child(i).isHidden() for i in range(self.qTreeWItem.childCount())])
-            # hide = self.qTreeWItem.childCount() == 0 or allchildrenhidden
-        self.qTreeWItem.setHidden(hide)
+        self.nowhere = not self.local and not self.remote
+
+        if self.rtParent is None:
+            self.nowhere = False
+
+        # if self.type == "product":
+        #     hide = True
+        # else:
+        # self.nowhere = not self.local and not self.remote
+        # TODO: DECIDE IF THIS IS REALLY OK
+        # if (self.qTreeWItem.childCount() > 0):
+        #     print "hello"
+        # allchildrenhidden = all([self.qTreeWItem.child(0).data(0, Qt.UserRole).nowhere for i in range(self.qTreeWItem.childCount())])
+        # hide = allchildrenhidden
+
+        if self.nowhere:
+            setFontColor(self.qTreeWItem, "#FF0000", column=0)
+            setFontItalic(self.qTreeWItem, column=0)
+
+        self.qTreeWItem.setHidden(False)
 
         # Now walk back up
         if self.rtParent:
@@ -217,41 +207,27 @@ class RepoTreeItem():
         the item can be expanded, even if we don't know that
         :return:
         """
-        self.qTreeWItem.takeChildren()
-        self.dummychild = QTreeWidgetItem()
-        self.dummychild.setText(0, self.LOADING)
-        self.dummychild.setIcon(0, QIcon(qTreeIconStates.GROUP))
-        self.qTreeWItem.addChild(self.dummychild)
-        self.loaded = True
+        dummychild = QTreeWidgetItem()
+        dummychild.setText(0, self.LOADING)
+        dummychild.setIcon(0, QIcon(qTreeIconStates.GROUP))
+        self.qTreeWItem.addChild(dummychild)
+        return dummychild
 
 
-    def loadChildren(self, loadlevels=1, force=False):
+    def loadChildren(self, loadlevels=1):
         """
-        Here's where we recurse down the tree to the end nodes.
-        :param loadlevels:
-        :param force:
-        :return:
+        Since this involves s3 lookup we have split it into its own method
+        :param loadlevels: 
+        :return: 
         """
-        # This is a hard rule. Children have no products.
-        if self.type == 'product':
-            return
-        # Stop loading past a certain level
-        if loadlevels < 0:
+
+        # Load levels is a very quick operation if there can't be children
+        # or if we've reached the end of our load request chain
+        if self.childrenstate != self.NState.LOAD_REQ or loadlevels < 0:
             return
 
-        if self.childrenloaded and not force:
-            # Just recalculate the children. Don't reload anything
-            for i in range(self.qTreeWItem.childCount()):
-                if self.qTreeWItem.isExpanded():
-                    self.qTreeWItem.child(i).data(0, Qt.UserRole).load()
-        else:
-            # Start by clearing out the previous children (this is a forced or first refresh)
-            # Now add this onto a queue since it involves S3 operations
-            Qs.load_q.put(partial(self.loadchildrenworker, loadlevels));
-            Qs.startWorker()
-
-    def loadchildrenworker(self, loadlevels):
-        self.qTreeWItem.takeChildren()
+        self.childrenstate = self.NState.LOADING
+        kids = []
         for child in self.nItem['children']:
             # Add the leaf to the tree
             pathstr = '/'.join(self.pathArr) + '/' if len(self.pathArr) > 0 else ""
@@ -261,26 +237,67 @@ class RepoTreeItem():
                 # End of the line
                 newpath = self.pathArr[:]
                 newpath.append(child['node']['folder'])
-                newpath.append(self.program.ProjectFile)
-                newTreeItem = RepoTreeItem(child, self, newpath, loadlevels=loadlevels)
-                self.qTreeWItem.addChild(newTreeItem.qTreeWItem)
+                newpath.append(program.ProjectFile)
+
+                s3path = '/'.join(newpath)
+                localpath = path.join(settings.getSetting('DataDir'), path.sep.join(newpath))
+
+                # Is it there?
+                head = s3HeadData(program.Bucket, s3path)
+
+                newItem = RepoTreeItem(child, self, newpath, loadlevels)
+                newItem.local = path.isfile(localpath)
+                newItem.remote = head is not None
+                kids.append(newItem)
 
             elif type == 'group':
                 newpath = self.pathArr[:]
                 newpath.append(child['node']['folder'])
-                newTreeItem = RepoTreeItem(child, self, newpath, loadlevels=loadlevels)
-                self.qTreeWItem.addChild(newTreeItem.qTreeWItem)
+                DEBUG = child['node']['folder']
+                newItem = RepoTreeItem(child, self, newpath, loadlevels)
+                print "======== {} ===== {}".format(self.name, newItem.name)
+
+                # self.remote = s3Exists(program.Bucket, s3path)
+                newItem.remote = True
+                localpath = path.join(settings.getSetting('DataDir'), path.sep.join(newpath))
+                newItem.local = path.isdir(localpath)
+                kids.append(newItem)
 
             elif type == 'collection':
                 # Unfortunately the only way to list collections is to go get them physically.
-                # TODO: THIS NEEDS TO INCORPORATE LOCAL AS WELL.
-                for levelname in s3GetFolderList(self.program.Bucket, pathstr):
+                for levelname in s3GetFolderList(program.Bucket, pathstr):
                     newpath = self.pathArr[:]
                     newpath.append(levelname)
-                    newTreeItem = RepoTreeItem(child, self, newpath, loadlevels=loadlevels)
-                    self.qTreeWItem.addChild(newTreeItem.qTreeWItem)
 
-        self.childrenloaded = True
+                    newItem = RepoTreeItem(child, self, newpath, loadlevels)
+                    newItem.remote = True
+                    localpath = path.join(settings.getSetting('DataDir'), path.sep.join(newpath))
+                    newItem.local = path.isdir(localpath)
+                    kids.append(newItem)
+
+        # Do all the state recalc together so they all get visible at the same time
+        [c.backwardCalc() for c in kids]
+        self.qTreeWItem.sortChildren(0, Qt.AscendingOrder)
+        if self.dummyChild is not None:
+            dummyind = self.qTreeWItem.indexOfChild(self.dummyChild)
+            self.qTreeWItem.takeChild(dummyind)
+
+        # Critical state check
+        self.childrenstate = self.NState.LOADED
+
+
+    def formatNode(self):
+        # All nodes need a name and a datetime loaded
+        self.loadtime = datetime.datetime.now()
+        self.qTreeWItem.setIcon(0, self.icon)
+        setFontColor(self.qTreeWItem, self.color, column=0)
+        if self.style == "bold":
+            setFontBold(self.qTreeWItem, column=0)
+        elif self.style == "italic":
+            setFontItalic(self.qTreeWItem, column=0)
+        else:
+            setFontRegular(self.qTreeWItem, column=0)
+        self.qTreeWItem.setText(0, self.name)
 
 class qTreeIconStates:
     """
