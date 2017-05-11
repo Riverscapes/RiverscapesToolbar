@@ -42,7 +42,7 @@ class DockWidgetTabDownload():
 
         self.dw = dockWidget
         self.Q = TreeLoadQueues()
-        DockWidgetTabDownload.treectl = dockWidget.treeProjQueue
+        DockWidgetTabDownload.treectl = self.dw.treeProjQueue
 
         self.dw.btnDownloadStart.clicked.connect(self.startWorker)
         self.dw.btnDownloadPause.clicked.connect(self.stopWorker)
@@ -109,18 +109,27 @@ class DockWidgetTabDownload():
     def clearCompleted(self):
         print "clear completed"
 
-    def addItemToQueue(self, direction, item):
+
+    def addItemToQueue(self, QueueItem):
         """
         :return: 
         """
-        localroot = path.join(self.settings.getSetting('DataDir'), item.localroot)
-        keyprefix = ""
-        conf = QItem.TransferConf(self.program.Bucket, localroot, keyprefix, direction,
-                            self.settings.getSetting("force"),
-                            self.settings.getSetting("delete"))
-        # TODO: Delete and force should probably come from the dialog, not settings.
+        print "Now What?!?"
+        # self.qTreeWItem = QListWidgetItem(DockWidgetTabDownload.treectl)
+        #
+        # # Set the data backwards so we can find this object later
+        # self.qTreeWItem.setData(0, Qt.UserRole, self)
+        # self.qTreeWItem.setText(0, "NAME")
+        #
+        # # Add yourself to the queue please
+        # ToolbarQueues.project_q.put(self)
 
-        transfer = QItem(item.name, conf)
+        # disconnect everything connected to myReadTimer's timeout
+        # QObject.disconnect(myReadTimer, SIGNAL("setValue(int)"), 0, 0);
+
+        # for key in self.opstore:
+        #     self.opstore[key].execute()
+
 
     def removeItemFromQueue(self, item):
         """
@@ -144,40 +153,24 @@ class DockWidgetTabDownload():
         print "here"
 
 
-class QItem():
+class QueueItem():
 
     class TransferConf():
         # This object gets passed around a lot so we package it up
         def __init__(self, bucket, localroot, keyprefix, direction, force=False, delete=False):
             self.delete = delete
-            self.force = force,
-            self.direction = direction,
-            self.localroot = localroot,
-            self.keyprefix = keyprefix,
+            self.force = force
+            self.direction = direction
+            self.localroot = localroot
+            self.keyprefix = keyprefix
             self.bucket = bucket
 
-    def __init__(self, name, conf):
+    def __init__(self, rtItem, conf):
         # This object gets passed around a lot so we package it up
-        self.name = name
+        self.name = rtItem.name
+        self.rtItem = rtItem
         self.conf = conf
         self.opstore = s3BuildOps(self.conf)
-
-        self.qTreeWItem = QListWidgetItem(DockWidgetTabDownload.treectl)
-
-        # Set the data backwards so we can find this object later
-        self.qTreeWItem.setData(0, Qt.UserRole, self)
-        self.qTreeWItem.setText(0, "NAME")
-
-        # Add yourself to the queue please
-        ToolbarQueues.project_q.put(self)
-
-
-
-        # disconnect everything connected to myReadTimer's timeout
-        # QObject.disconnect(myReadTimer, SIGNAL("setValue(int)"), 0, 0);
-
-        # for key in self.opstore:
-        #     self.opstore[key].execute()
 
     def progress(self):
         self.progress = 100

@@ -4,36 +4,35 @@ from operations import S3Operation
 from transfers import FileTransfer
 
 
-def s3BuildOps(self):
+def s3BuildOps(conf):
     """
     Compare a source folder with what's already in S3 and given
     the direction you specify it should figure out what to do.
     """
-    s3 = FileTransfer(self.conf.bucket)
+    s3 = FileTransfer(conf.bucket)
     opstore = {}
-    log = logging.getLogger()
-    log.setLevel(logging.ERROR)
-    prefix = "{0}/".format(self.conf.keyprefix).replace("//", "/")
 
-    log.info('The following locations were found:')
-    if self.conf.direction == S3Operation.Direction.UP:
-        tostr = 's3://{0}/{1}'.format(self.conf.bucket, self.conf.keyprefix)
-        fromstr = self.conf.localroot
+    prefix = "{0}/".format(conf.keyprefix).replace("//", "/")
+
+    print 'The following locations were found:'
+    if conf.direction == S3Operation.Direction.UP:
+        tostr = 's3://{0}/{1}'.format(conf.bucket, conf.keyprefix)
+        fromstr = conf.localroot
     else:
-        fromstr = 's3://{0}/{1}'.format(self.conf.bucket, self.conf.keyprefix)
-        tostr = self.conf.localroot
-    log.info('FROM: {0}'.format(fromstr))
-    log.info('TO  : {0}'.format(tostr))
+        fromstr = 's3://{0}/{1}'.format(conf.bucket, conf.keyprefix)
+        tostr = conf.localroot
+    print 'FROM: {0}'.format(fromstr)
+    print 'TO  : {0}'.format(tostr)
 
-    log.info('The following operations are queued:')
+    print 'The following operations are queued:'
 
     response = s3.list(prefix)
 
     # Get all the files we have locally
     files = {}
-    if os.path.isdir(self.conf.localroot):
+    if os.path.isdir(conf.localroot):
         files = {}
-        localProductWalker(self.conf.localroot, files)
+        localProductWalker(conf.localroot, files)
 
     # Fill in any files we find on the remote
     if 'Contents' in response:
@@ -46,10 +45,10 @@ def s3BuildOps(self):
 
     for relname in files:
         fileobj = files[relname]
-        opstore[relname] = S3Operation(relname, fileobj, self.conf)
+        opstore[relname] = S3Operation(relname, fileobj, conf)
 
     if len(opstore) == 0:
-        log.info("-- NO Operations Queued --")
+        print "-- NO Operations Queued --"
 
     return opstore
 
@@ -62,8 +61,6 @@ def localProductWalker(projroot, filedict, currentdir=""):
     :param first:
     :return:
     """
-    log = logging.getLogger()
-    log.setLevel(logging.ERROR)
     for pathseg in os.listdir(os.path.join(projroot, currentdir)):
         spaces = len(currentdir) * ' ' + '/'
         # Remember to sanitize for slash unity. We write unix separators
@@ -71,10 +68,10 @@ def localProductWalker(projroot, filedict, currentdir=""):
         relpath = os.path.join(currentdir, pathseg).replace('\\', '/')
         abspath = os.path.join(projroot, relpath).replace('\\', '/')
         if os.path.isfile(abspath):
-            log.debug(spaces + relpath)
+            print spaces + relpath
             filedict[relpath] = {'src': abspath}
         elif os.path.isdir(abspath):
-            log.debug(spaces + pathseg + '/')
+            print spaces + pathseg + '/'
             localProductWalker(projroot, filedict, relpath)
 
 
@@ -178,7 +175,7 @@ def s3ProductWalker(bucket, patharr, currpath=[], currlevel=0):
         if 'Contents' in result:
             for c in result['Contents']:
                 if os.path.splitext(c['Key'])[1] == '.xml':
-                    log.info('Project: {0} (Modified: {1})'.format(c['Key'], c['LastModified']))
+                    print 'Project: {0} (Modified: {1})'.format(c['Key'], c['LastModified'])
         return
 
 # def menuwalk(program, nodes=None, currpath=[]):
@@ -210,7 +207,7 @@ def s3ProductWalker(bucket, patharr, currpath=[], currlevel=0):
 #
 #     if node['type'] == 'product':
 #         pathstr = '/'.join(currpath) + '/' if len(currpath) > 0 else ""
-#         log.info("\nProduct Found: {0}".format(pathstr))
+#         print "\nProduct Found: {0}".format(pathstr))
 #         return currpath
 #
 #     # No we've made out choice. We need to move on.

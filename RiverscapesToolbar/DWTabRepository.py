@@ -4,19 +4,20 @@ from os import path
 
 from DWTabProject import DockWidgetTabProject
 from DWTabRepositoryItem import RepoTreeItem
-from DWTabDownload import DockWidgetTabDownload
 from lib.s3.operations import S3Operation
+from AddQueueDialog import AddQueueDialog
 
 class DockWidgetTabRepository():
 
     treectl = None
     START_LEVELS = 2
+    dockwidget = None
 
     def __init__(self, dockWidget):
         # used to be:
         # def __init__(self, xmlPath, treeControl, parent=None):
         # Connect up our buttons to functions
-        self.dockwidget = dockWidget
+        DockWidgetTabRepository.dockwidget = dockWidget
 
         # Set as static so we can find it.
         DockWidgetTabRepository.treectl = dockWidget.treeRepository
@@ -93,8 +94,8 @@ class DockWidgetTabRepository():
 
             # The actions are available if the projects are available locally or otherwise
             openAction.setEnabled(theData.local)
-            downAction.setEnabled(theData.remote)
-            uploAction.setEnabled(theData.local)
+            downAction.setEnabled(theData.remote and not theData.local)
+            uploAction.setEnabled(theData.local and not theData.remote)
             findAction.setEnabled(theData.local)
 
         else:
@@ -107,20 +108,22 @@ class DockWidgetTabRepository():
         menu.exec_(self.treectl.mapToGlobal(pt))
 
     def addProjectToDownloadQueue(self, rtItem):
-        print "Adding to download Queue: " + '/'.join(rtItem.pathArr)
-        DockWidgetTabDownload.addItemToQueue(S3Operation.Direction.DOWN, rtItem)
+        print "Adding to download Queue: " + '/'.join(  rtItem.pathArr)
+        dialog = AddQueueDialog(S3Operation.Direction.DOWN, rtItem)
+        dialog.exec_()
 
     def addProjectToUploadQueue(self, rtItem):
         print "Adding to Upload Queue: " + '/'.join(rtItem.pathArr)
-        DockWidgetTabDownload.addItemToQueue(S3Operation.Direction.UP, rtItem)
+        dialog = AddQueueDialog(S3Operation.Direction.UP, rtItem)
+        dialog.exec_()
 
     def findFolder(self, rtItem):
-        qurl = QUrl.fromLocalFile(path.join(RepoTreeItem.localdir, path.sep.join(rtItem.pathArr[:-1])))
+        qurl = QUrl.fromLocalFile(path.join(RepoTreeItem.localrootdir, path.sep.join(rtItem.pathArr[:-1])))
         QDesktopServices.openUrl(qurl)
 
     def openProject(self, rtItem):
         print "OPEN THE PROJECT"
-        localpath = path.join(RepoTreeItem.localdir, path.sep.join(rtItem.pathArr))
+        localpath = path.join(RepoTreeItem.localrootdir, path.sep.join(rtItem.pathArr))
         # Switch to the project tab
         self.dockwidget.tabWidget.setCurrentIndex(self.dockwidget.PROJECT_TAB)
         DockWidgetTabProject.projectLoad(localpath)

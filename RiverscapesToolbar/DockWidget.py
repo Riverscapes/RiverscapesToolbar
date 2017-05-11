@@ -38,12 +38,14 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 class RiverscapesToolbarDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
     closingPlugin = pyqtSignal()
+
     REPO_TAB = 0
     PROJECT_TAB = 1
     DOWNLOAD_TAB = 2
 
     def __init__(self, parent=None):
         """Constructor."""
+
         super(RiverscapesToolbarDockWidget, self).__init__(parent)
         # Set up the user interface from Designer.
         # After setupUI you can access any designer object by doing

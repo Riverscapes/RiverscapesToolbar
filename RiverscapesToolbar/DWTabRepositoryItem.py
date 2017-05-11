@@ -20,7 +20,7 @@ class RepoTreeItem():
 
     # Some statics...
     LOADING = 'Loading...'
-    localdir = settings.getSetting('DataDir')
+    localrootdir = settings.getSetting('DataDir')
 
     class NState():
         INITIALIZED = 0
@@ -74,6 +74,16 @@ class RepoTreeItem():
             self.pathArr = ["CRB"]
 
         self.reset()
+
+    def getAbsProjRoot(self):
+        return path.dirname(path.join(RepoTreeItem.localrootdir, path.sep.join(self.pathArr)))
+
+    def getAbsProjFile(self):
+        return path.dirname(path.join(RepoTreeItem.localrootdir, path.sep.join(self.pathArr)))
+
+    def getRemoteS3Prefix(self):
+        return path.dirname('/'.join(self.pathArr))
+
 
     def refreshAction(self):
         """
@@ -246,7 +256,7 @@ class RepoTreeItem():
                 newpath.append(program.ProjectFile)
 
                 s3path = '/'.join(newpath)
-                localpath = path.join(RepoTreeItem.localdir, path.sep.join(newpath))
+                localpath = path.join(RepoTreeItem.localrootdir, path.sep.join(newpath))
 
                 # Is it there?
                 head = s3HeadData(program.Bucket, s3path)
@@ -265,7 +275,7 @@ class RepoTreeItem():
 
                 # self.remote = s3Exists(program.Bucket, s3path)
                 newItem.remote = True
-                localpath = path.join(RepoTreeItem.localdir, path.sep.join(newpath))
+                localpath = path.join(RepoTreeItem.localrootdir, path.sep.join(newpath))
                 newItem.local = path.isdir(localpath)
                 kids.append(newItem)
 
@@ -277,7 +287,7 @@ class RepoTreeItem():
 
                     newItem = RepoTreeItem(child, self, newpath)
                     newItem.remote = True
-                    localpath = path.join(RepoTreeItem.localdir, path.sep.join(newpath))
+                    localpath = path.join(RepoTreeItem.localrootdir, path.sep.join(newpath))
                     newItem.local = path.isdir(localpath)
                     kids.append(newItem)
 
