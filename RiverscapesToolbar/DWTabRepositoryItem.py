@@ -20,6 +20,7 @@ class RepoTreeItem():
 
     # Some statics...
     LOADING = 'Loading...'
+    localdir = settings.getSetting('DataDir')
 
     class NState():
         INITIALIZED = 0
@@ -27,13 +28,12 @@ class RepoTreeItem():
         LOADED = 2
         LOAD_REQ = 3
 
-    def __init__(self, nItem=None, rtParent=None, pathArr=[], loadlevels=1, treectl=None):
+    def __init__(self, nItem=None, rtParent=None, pathArr=[], treectl=None):
         """
         Initialize a new RepoTreeItem
         :param nItem: nItem is the pseudo-json nested dictionary we get from program.py
         :param rtParent: rtParent is the RepoTreeItem (or root node) that owns this
         :param path: path is actually a list so we don't have to deal with slashes
-        :param loadlevels:
         """
 
         # Initial setup
@@ -48,7 +48,7 @@ class RepoTreeItem():
         self.local = None
         self.remote = None
         self.localDateTime = None
-        self.nowhere = False
+        self.nowhere = True
 
         self.nItem = nItem
         self.rtParent = rtParent
@@ -74,7 +74,6 @@ class RepoTreeItem():
             self.pathArr = ["CRB"]
 
         self.reset()
-        self.load(loadlevels)
 
     def refreshAction(self):
         """
@@ -94,7 +93,7 @@ class RepoTreeItem():
         self.childrenstate = self.NState.INITIALIZED
         self.name = ""
         self.loadtime = None
-        self.nowhere = False
+        self.nowhere = True
         self.local = None
         self.localDateTime = None
         self.remote = None
@@ -137,6 +136,7 @@ class RepoTreeItem():
                     self.style = "bold"
                     self.color = "#444444"
                 else:
+                    self.style = "regular"
                     self.color = "#cccccc"
 
             elif self.type == "group":
@@ -163,12 +163,13 @@ class RepoTreeItem():
                     pass
 
             self.formatNode()
+            self.backwardCalc()
 
-        if self.childrenstate == self.NState.INITIALIZED and self.type != 'product':
+        if self.childrenstate == self.NState.INITIALIZED:
             self.childrenstate = self.NState.LOAD_REQ
-            Qs.queuePush(partial(self.loadChildren, (loadlevels - 1)));
-            # self.loadChildren(loadlevels=(loadlevels-1))
 
+        if self.type != 'product':
+            Qs.queuePush(partial(self.loadChildren, (loadlevels - 1)));
 
 
     def backwardCalc(self):
@@ -195,7 +196,7 @@ class RepoTreeItem():
             setFontColor(self.qTreeWItem, "#FF0000", column=0)
             setFontItalic(self.qTreeWItem, column=0)
 
-        self.qTreeWItem.setHidden(False)
+        self.qTreeWItem.setHidden(self.nowhere)
 
         # Now walk back up
         if self.rtParent:
@@ -209,7 +210,7 @@ class RepoTreeItem():
         """
         dummychild = QTreeWidgetItem()
         dummychild.setText(0, self.LOADING)
-        dummychild.setIcon(0, QIcon(qTreeIconStates.GROUP))
+        dummychild.setIcon(0, QIcon(qTreeIconStates.LOADING))
         self.qTreeWItem.addChild(dummychild)
         return dummychild
 
@@ -221,9 +222,14 @@ class RepoTreeItem():
         :return: 
         """
 
+        if loadlevels < 0:
+            if self.childrenstate == self.NState.LOAD_REQ:
+                self.childrenstate == self.NState.INITIALIZED
+            return
+
         # Load levels is a very quick operation if there can't be children
         # or if we've reached the end of our load request chain
-        if self.childrenstate != self.NState.LOAD_REQ or loadlevels < 0:
+        if self.childrenstate != self.NState.LOAD_REQ:
             return
 
         self.childrenstate = self.NState.LOADING
@@ -240,12 +246,12 @@ class RepoTreeItem():
                 newpath.append(program.ProjectFile)
 
                 s3path = '/'.join(newpath)
-                localpath = path.join(settings.getSetting('DataDir'), path.sep.join(newpath))
+                localpath = path.join(RepoTreeItem.localdir, path.sep.join(newpath))
 
                 # Is it there?
                 head = s3HeadData(program.Bucket, s3path)
 
-                newItem = RepoTreeItem(child, self, newpath, loadlevels)
+                newItem = RepoTreeItem(child, self, newpath)
                 newItem.local = path.isfile(localpath)
                 newItem.remote = head is not None
                 kids.append(newItem)
@@ -254,12 +260,12 @@ class RepoTreeItem():
                 newpath = self.pathArr[:]
                 newpath.append(child['node']['folder'])
                 DEBUG = child['node']['folder']
-                newItem = RepoTreeItem(child, self, newpath, loadlevels)
+                newItem = RepoTreeItem(child, self, newpath)
                 print "======== {} ===== {}".format(self.name, newItem.name)
 
                 # self.remote = s3Exists(program.Bucket, s3path)
                 newItem.remote = True
-                localpath = path.join(settings.getSetting('DataDir'), path.sep.join(newpath))
+                localpath = path.join(RepoTreeItem.localdir, path.sep.join(newpath))
                 newItem.local = path.isdir(localpath)
                 kids.append(newItem)
 
@@ -269,15 +275,17 @@ class RepoTreeItem():
                     newpath = self.pathArr[:]
                     newpath.append(levelname)
 
-                    newItem = RepoTreeItem(child, self, newpath, loadlevels)
+                    newItem = RepoTreeItem(child, self, newpath)
                     newItem.remote = True
-                    localpath = path.join(settings.getSetting('DataDir'), path.sep.join(newpath))
+                    localpath = path.join(RepoTreeItem.localdir, path.sep.join(newpath))
                     newItem.local = path.isdir(localpath)
                     kids.append(newItem)
 
         # Do all the state recalc together so they all get visible at the same time
-        [c.backwardCalc() for c in kids]
+        [c.load(loadlevels) for c in kids]
+
         self.qTreeWItem.sortChildren(0, Qt.AscendingOrder)
+
         if self.dummyChild is not None:
             dummyind = self.qTreeWItem.indexOfChild(self.dummyChild)
             self.qTreeWItem.takeChild(dummyind)
@@ -291,10 +299,13 @@ class RepoTreeItem():
         self.loadtime = datetime.datetime.now()
         self.qTreeWItem.setIcon(0, self.icon)
         setFontColor(self.qTreeWItem, self.color, column=0)
+
         if self.style == "bold":
             setFontBold(self.qTreeWItem, column=0)
+
         elif self.style == "italic":
             setFontItalic(self.qTreeWItem, column=0)
+
         else:
             setFontRegular(self.qTreeWItem, column=0)
         self.qTreeWItem.setText(0, self.name)

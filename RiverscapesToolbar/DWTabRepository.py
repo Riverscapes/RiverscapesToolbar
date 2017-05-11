@@ -39,7 +39,7 @@ class DockWidgetTabRepository():
         :param item:
         :return:
         """
-        item.data(0, Qt.UserRole).loadChildren()
+        item.data(0, Qt.UserRole).load()
 
     def refreshRoot(self):
         """
@@ -50,7 +50,8 @@ class DockWidgetTabRepository():
         self.dockwidget.btnRefresh.setEnabled(False)
 
         DockWidgetTabRepository.treectl.takeTopLevelItem(0)
-        rootItem = RepoTreeItem(loadlevels = self.START_LEVELS, treectl=self.treectl)
+        rootItem = RepoTreeItem(treectl=self.treectl)
+        rootItem.load(self.START_LEVELS)
         self.treectl.expandToDepth(self.START_LEVELS - 2)
 
         self.dockwidget.btnRefresh.setEnabled(True)
