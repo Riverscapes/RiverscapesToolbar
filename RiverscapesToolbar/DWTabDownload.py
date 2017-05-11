@@ -6,7 +6,7 @@ from PyQt4.QtCore import Qt, SIGNAL, SLOT
 from settings import Settings
 from program import Program
 from lib.async import TreeLoadQueues
-
+from lib.treeitem import *
 from lib.s3.operations import S3Operation
 
 
@@ -60,7 +60,7 @@ class DockWidgetTabDownload():
 
         self.dockwidget.btnProjectRemove.clicked.connect(self.removeItemFromQueue)
 
-        self.dockwidget.treeProjQueue.setColumnCount(3)
+        self.dockwidget.treeProjQueue.setColumnCount(2)
         self.dockwidget.treeProjQueue.setHeaderHidden(False)
 
         self.dockwidget.treeProjQueue.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -71,9 +71,7 @@ class DockWidgetTabDownload():
 
 
     def updateProgBars(self, updateObj):
-        self.dockwidget.progProject = 3
-        self.dockwidget.progFile = 3
-        self.dockwidget.progOverall = 3
+
         print "whoa"
 
 
@@ -119,6 +117,8 @@ class DockWidgetTabDownload():
     @staticmethod
     def addItemToQueue(QueueItem):
         """
+        
+        :param QueueItem: 
         :return: 
         """
 
@@ -134,29 +134,18 @@ class DockWidgetTabDownload():
         newProjItem.setText(1, "Queued")
         newProjItem.setIcon(1, icon)
 
+        # Set the data backwards so we can find this object later
+        newProjItem.setData(0, Qt.UserRole, QueueItem.rtItem)
+        setFontBold(newProjItem,0)
         for key, op in QueueItem.opstore.iteritems():
             newTransferItem = QTreeWidgetItem(newProjItem)
             newTransferItem.setText(0, op.key)
             newTransferItem.setText(1, "Queued")
-            newProjItem.setIcon(1, icon)
-
+            newTransferItem.setIcon(1, icon)
+            setFontColor(newTransferItem, "#666666", 0)
         Qs.queuePush(QueueItem)
 
-        print "Now What?!?"
-        # self.qTreeWItem = QListWidgetItem(DockWidgetTabDownload.treectl)
-        #
-        # # Set the data backwards so we can find this object later
-        # self.qTreeWItem.setData(0, Qt.UserRole, self)
-        # self.qTreeWItem.setText(0, "NAME")
-        #
-        # # Add yourself to the queue please
-        # ToolbarQueues.project_q.put(self)
-
-        # disconnect everything connected to myReadTimer's timeout
-        # QObject.disconnect(myReadTimer, SIGNAL("setValue(int)"), 0, 0);
-
-        # for key in self.opstore:
-        #     self.opstore[key].execute()
+        DockWidgetTabDownload.treectl.sortItems(0, Qt.AscendingOrder)
 
 
     def removeItemFromQueue(self, item):
