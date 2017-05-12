@@ -35,10 +35,9 @@ class S3Operation():
         :param conf: the configuration dictionary
         """
 
-
         self.log = logging.getLogger()
         self.log.setLevel(logging.ERROR)
-        self.s3 = FileTransfer(conf.bucket, self.updateProgress)
+        self.s3 = FileTransfer(conf.bucket)
         self.key = key
         self.progress = 0
 
@@ -147,10 +146,10 @@ class S3Operation():
         opstr = "{0:12s} ={2}=> {1:10s}".format(self.filestate, self.op, forcestr)
         return "./{1:60s} [ {0:21s} ]".format(opstr.strip(), self.key)
 
-
-    def updateProgress(self, prog):
-        self.progress = prog
-        print "PROGRESS: {}".format(prog)
+    @pyqtSlot(object)
+    def updateProgress(self, progtuple):
+        self.progress = progtuple[1]
+        print "OPERATIONS: {} -- {}".format(progtuple[0], progtuple[1])
 
     def delete_remote(self):
         """

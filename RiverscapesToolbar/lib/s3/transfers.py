@@ -4,6 +4,7 @@ import sys
 import math
 import boto3
 from boto3.s3.transfer import TransferConfig
+from PyQt4.QtCore import pyqtSignal, QObject, pyqtSlot
 
 class FileTransfer:
     # Max size in bytes before uploading in parts.
@@ -13,12 +14,11 @@ class FileTransfer:
     # Size of parts when uploading in parts
     AWS_UPLOAD_PART_SIZE = 6 * 1024 * 1024
 
-    def __init__(self, bucket, progCallback=None):
+    def __init__(self, bucket):
 
         # Get the service client
         self.s3 = boto3.client('s3')
         self.bucket = bucket
-        self.progCallback = progCallback
         self.S3Config = boto3.s3.transfer.TransferConfig(
             multipart_threshold=self.AWS_UPLOAD_MAX_SIZE,
             max_concurrency=10,
@@ -28,10 +28,10 @@ class FileTransfer:
         )
 
     def download(self, key, filepath, **kwargs):
-        self.s3.download_file(self.bucket, key, filepath, Config=self.S3Config, Callback=Progress(filepath, self.progCallback, **kwargs))
+        self.s3.download_file(self.bucket, key, filepath, Config=self.S3Config, Callback=Progress(filepath, **kwargs))
 
     def upload(self, filepath, key):
-        self.s3.upload_file(filepath, self.bucket, key, Config=self.S3Config, Callback=Progress(filepath, self.progCallback))
+        self.s3.upload_file(filepath, self.bucket, key, Config=self.S3Config, Callback=Progress(filepath))
 
     def delete(self, key):
         self.s3.delete_object(Bucket=self.bucket, Key=key)
@@ -42,13 +42,16 @@ class FileTransfer:
     def head(self, key, **kwargs):
         return self.s3.head_object(Bucket=self.bucket, Key=key, **kwargs)
 
-class Progress(object):
+class Progress(QObject):
     """
     A Little helper class to display the up/download percentage
     """
-    def __init__(self, filename, progCallback, **kwargs):
+
+    progsignal = pyqtSignal(tuple)
+
+    def __init__(self, filename, **kwargs):
+        super(Progress, self).__init__()
         self._filename = filename
-        self._progCallback = progCallback
         self._basename = os.path.basename(self._filename)
 
         if 'size' in kwargs:
@@ -75,4 +78,5 @@ class Progress(object):
                 self.percentdone = math.floor(float(self._seen_so_far) / float(self._filesize) * 100)
             else:
                 self.getSize()
-            self._progCallback(self.percentdone)
+            print "Progress: {} -- {}".format(self.percentdone, self._filename)
+            self.progsignal.emit((self.percentdone, self._filename))

@@ -121,6 +121,9 @@ class QueueItem(QObject):
         self.qTreeWItem = None
         self.opstore = s3BuildOps(self.conf)
 
+        # for key,op in self.opstore.iteritems():
+        #     op.s3.progsignal.connect(self.updateTransferProgress)
+
     def updateProjectStatus(self, statusInt = None):
         if statusInt is not None:
             self.qTreeWItem.setText(1, "{}%".format(statusInt))
@@ -133,13 +136,13 @@ class QueueItem(QObject):
             self.qTreeWItem.setText(1, "{}%".format(totalprog / (counter * 100)))
 
     @pyqtSlot()
-    def updateTransferProgress(self, prog, key):
+    def updateTransferProgress(self, progtuple):
+        print "DWTabDownload: {} -- {}".format(progtuple[0], progtuple[1])
         for idx in range(self.qTreeWItem.childCount()):
             child = self.qTreeWItem.child(idx)
-            if child.data(0, Qt.UserRole) == key:
-                child.setText(1, "{}%".format(prog))
+            if child.data(0, Qt.UserRole) == progtuple[0]:
+                child.setText(1, "{}%".format(progtuple[1]))
         self.updateProjectStatus()
-
 
     def addItemToQueue(self):
 
@@ -165,7 +168,7 @@ class QueueItem(QObject):
             newTransferItem.setIcon(1, icon)
             setFontColor(newTransferItem, "#666666", 0)
             newTransferItem.setData(0, Qt.UserRole, op)
-            op.progressSignal.connect(self.updateTransferProgress)
+
         Qs.queuePush(self)
 
         DockWidgetTabDownload.treectl.sortItems(0, Qt.AscendingOrder)
