@@ -14,6 +14,7 @@ class ProjectTreeItem():
 
     projectRootDir = None
     projectFilePath = None
+    defaultParserPath = None
 
     parserRootDir = None
     parserFilepath = None
@@ -31,6 +32,7 @@ class ProjectTreeItem():
         """
 
         ProjectTreeItem.parserRootDir = path.join(path.dirname(__file__), "../XML/")
+        ProjectTreeItem.defaultParserPath = path.join(ProjectTreeItem.parserRootDir, 'default.xml')
         ProjectTreeItem.projectFilePath = projectXMLfile
         ProjectTreeItem.projectRootDir = path.dirname(projectXMLfile)
 
@@ -255,13 +257,17 @@ class ProjectTreeItem():
             xmlfiles = [filename for filename in files if filename.endswith(".xml")]
             for xmlfile in xmlfiles:
                 filePath = path.join(subdir, xmlfile)
+                if filePath == ProjectTreeItem.defaultParserPath:
+                    continue
                 candidate = ProjectTreeItem._loadXMLFile(filePath)
                 testNode = candidate.find('ProjectType')
                 projType = ProjectTreeItem.projectDOM.find("ProjectType")
 
                 if testNode is not None and projType is not None and testNode.text == projType.text:
                     treeParser = candidate
-                    continue
+                    break
+            if treeParser is None:
+                treeParser = ProjectTreeItem._loadXMLFile(ProjectTreeItem.defaultParserPath)
         return treeParser
 
     def getTreeAncestry(self):

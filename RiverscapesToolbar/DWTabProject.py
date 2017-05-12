@@ -33,7 +33,6 @@ class DockWidgetTabProject():
         self.treectl.customContextMenuRequested.connect(self.openMenu)
 
         dockWidget.btnLoadProject.clicked.connect(self.projectBrowserDlg)
-        dockWidget.btnDEBUG.clicked.connect(self.loadDebug)
 
 
     def projectBrowserDlg(self):
@@ -45,13 +44,6 @@ class DockWidgetTabProject():
         filename = QtGui.QFileDialog.getExistingDirectory(self.widget, "Open a project folder", settings.getSetting('DataDir'))
         self.projectLoad(path.join(filename, "project.rs.xml"))
 
-    def loadDebug(self):
-        """
-        Quick and dirty hardcoded project loader so I can start work
-        :return:
-        """
-        # Start by clearing out the previous children (this is a forced or first refresh)
-        self.projectLoad('/Users/work/Projects/Riverscapes/Data/CRB/MiddleForkJohnDay/Network/VBET/project.rs.xml')
 
     def doubleClicked(self, index):
         """

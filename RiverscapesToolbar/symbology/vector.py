@@ -29,12 +29,14 @@ class VectorPlugin():
         # https://snorfalorpagus.net/blog/2014/03/04/symbology-of-vector-layers-in-qgis-python-plugins/
         # create a new single symbol renderer
 
+        # create a new single symbol renderer
         symbol = QgsSymbolV2.defaultSymbol(self.layer.geometryType())
         self.renderer = QgsSingleSymbolRendererV2(symbol)
 
         # create a new simple marker symbol layer, a green circle with a black border
-        properties = {'color': '#FF0000', 'color_border': '#000000'}
+        properties = {'color': '#00FF00', 'color_border': '#000000'}
         symbol_layer = QgsSimpleFillSymbolLayerV2.create(properties)
 
         # assign the symbol layer to the symbol
-        self.renderer.symbols()[0].changeSymbolLayer(0, symbol_layer)
+        if self.renderer.symbols()[0] is not None:
+            self.renderer.symbols()[0].changeSymbolLayer(0, symbol_layer)
