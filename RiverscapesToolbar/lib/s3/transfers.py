@@ -6,7 +6,7 @@ import boto3
 from boto3.s3.transfer import TransferConfig
 from PyQt4.QtCore import pyqtSignal, QObject, pyqtSlot
 
-class FileTransfer:
+class FileTransfer(QObject):
     # Max size in bytes before uploading in parts.
     # Specifying this is important as it affects
     # How the MD5 and Etag is calculated
@@ -14,11 +14,17 @@ class FileTransfer:
     # Size of parts when uploading in parts
     AWS_UPLOAD_PART_SIZE = 6 * 1024 * 1024
 
+    progsignal = pyqtSignal(tuple)
+
     def __init__(self, bucket):
 
+        super(FileTransfer, self).__init__()
         # Get the service client
         self.s3 = boto3.client('s3')
         self.bucket = bucket
+        self.filepath = None
+        self.filesize = 0
+        self.percentdone = 0
         self.S3Config = boto3.s3.transfer.TransferConfig(
             multipart_threshold=self.AWS_UPLOAD_MAX_SIZE,
             max_concurrency=10,
@@ -28,10 +34,17 @@ class FileTransfer:
         )
 
     def download(self, key, filepath, **kwargs):
-        self.s3.download_file(self.bucket, key, filepath, Config=self.S3Config, Callback=Progress(filepath, **kwargs))
+        self.filepath = filepath
+        if 'size' in kwargs:
+            self.filesize = kwargs['size']
+        else:
+            self.filesize = self.getDiskSize(filepath)
+        self.s3.download_file(self.bucket, key, filepath, Config=self.S3Config, Callback=Progress(self.progCallback))
 
     def upload(self, filepath, key):
-        self.s3.upload_file(filepath, self.bucket, key, Config=self.S3Config, Callback=Progress(filepath))
+        self.filepath = filepath
+        self.filesize = self.getDiskSize(filepath)
+        self.s3.upload_file(filepath, self.bucket, key, Config=self.S3Config, Callback=Progress(self.progCallback))
 
     def delete(self, key):
         self.s3.delete_object(Bucket=self.bucket, Key=key)
@@ -42,41 +55,34 @@ class FileTransfer:
     def head(self, key, **kwargs):
         return self.s3.head_object(Bucket=self.bucket, Key=key, **kwargs)
 
-class Progress(QObject):
+    def progCallback(self, bytessofar):
+        if self.filesize > 0:
+            self.percentdone = math.floor(float(bytessofar) / float(self.filesize) * 100)
+
+        # print "Progress: {} -- {}".format(self.percentdone, self.filepath)
+        self.progsignal.emit((self.filepath, self.percentdone, bytessofar, self.filesize))
+
+    @staticmethod
+    def getDiskSize(filepath):
+        if os.path.isfile(filepath):
+            return os.stat(filepath).st_size
+        else:
+            return 0
+
+class Progress():
     """
     A Little helper class to display the up/download percentage
     """
 
-    progsignal = pyqtSignal(tuple)
-
-    def __init__(self, filename, **kwargs):
-        super(Progress, self).__init__()
-        self._filename = filename
-        self._basename = os.path.basename(self._filename)
-
-        if 'size' in kwargs:
-            self._filesize = kwargs['size']
-        else:
-            self._filesize = self.getSize()
-
+    def __init__(self, progcb):
         self._seen_so_far = 0
+        self.progcb = progcb
         self._lock = threading.Lock()
-
-    def getSize(self):
-        if os.path.isfile(self._filename):
-            return os.stat(self._filename).st_size
-        else:
-            return 0
 
     def __call__(self, bytes_amount):
         # To simplify we'll assume this is hooked up
         # to a single filename.
         with self._lock:
             self._seen_so_far += bytes_amount
-            self.percentdone = 0
-            if self._filesize > 0:
-                self.percentdone = math.floor(float(self._seen_so_far) / float(self._filesize) * 100)
-            else:
-                self.getSize()
-            print "Progress: {} -- {}".format(self.percentdone, self._filename)
-            self.progsignal.emit((self.percentdone, self._filename))
+            self.progcb(self._seen_so_far)
+

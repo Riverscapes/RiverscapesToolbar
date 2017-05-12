@@ -28,7 +28,7 @@ class S3Operation():
         UPDATENEEDED = "Update Needed"
         SAME = "Files Match"
 
-    def __init__(self, key, fileobj, conf):
+    def __init__(self, key, fileobj, conf, progcb):
         """
         :param key: The relative key/path of the file in question
         :param fileobj: the file object with 'src' and 'dst'
@@ -38,6 +38,8 @@ class S3Operation():
         self.log = logging.getLogger()
         self.log.setLevel(logging.ERROR)
         self.s3 = FileTransfer(conf.bucket)
+        self.progcb = progcb
+        self.s3.progsignal.connect(self.updateProgress)
         self.key = key
         self.progress = 0
 
@@ -146,10 +148,12 @@ class S3Operation():
         opstr = "{0:12s} ={2}=> {1:10s}".format(self.filestate, self.op, forcestr)
         return "./{1:60s} [ {0:21s} ]".format(opstr.strip(), self.key)
 
-    @pyqtSlot(object)
+    @pyqtSlot(tuple)
     def updateProgress(self, progtuple):
         self.progress = progtuple[1]
-        print "OPERATIONS: {} -- {}".format(progtuple[0], progtuple[1])
+        # print "OPERATIONS: {} -- {} -- {} -- {}".format(*progtuple)
+        if self.progcb is not None:
+            self.progcb(progtuple)
 
     def delete_remote(self):
         """
@@ -197,7 +201,6 @@ class S3Operation():
         self.log.info("Downloading: {0} ==> ".format(self.fullkey))
         # This step prints straight to stdout and does not log
         self.s3.download(self.fullkey, self.abspath, size=self.s3size)
-        print ""
         self.log.debug("Download Completed: {0}".format(self.abspath))
 
     def upload(self):

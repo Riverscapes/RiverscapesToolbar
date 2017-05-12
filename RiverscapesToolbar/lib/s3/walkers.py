@@ -4,7 +4,7 @@ from operations import S3Operation
 from transfers import FileTransfer
 
 
-def s3BuildOps(conf):
+def s3BuildOps(conf, progcb=None):
     """
     Compare a source folder with what's already in S3 and given
     the direction you specify it should figure out what to do.
@@ -45,7 +45,7 @@ def s3BuildOps(conf):
 
     for relname in files:
         fileobj = files[relname]
-        opstore[relname] = S3Operation(relname, fileobj, conf)
+        opstore[relname] = S3Operation(relname, fileobj, conf, progcb)
 
     if len(opstore) == 0:
         print "-- NO Operations Queued --"

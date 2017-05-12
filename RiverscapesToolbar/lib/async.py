@@ -173,9 +173,9 @@ class TransferWorker(QObject):
                 if Qs.transfer_q.qsize() > 0:
                     # If there's a file to download then download it.
                     transferitem = Qs.transfer_q.get()
-                    # self.currentProject.updateTransferProgress((transferitem['op'].abspath, 0))
+                    self.currentProject.updateTransferProgress((transferitem['op'].abspath, 0, 0, 0))
                     transferitem['op'].execute()
-                    # self.currentProject.updateTransferProgress((transferitem['op'].abspath, 100))
+                    self.currentProject.updateTransferProgress((transferitem['op'].abspath, 100, 0, 0))
 
                 else:
                     if self.currentProject is not None:

@@ -119,29 +119,35 @@ class QueueItem(QObject):
         self.rtItem = rtItem
         self.conf = conf
         self.qTreeWItem = None
-        self.opstore = s3BuildOps(self.conf)
-
-        # for key,op in self.opstore.iteritems():
-        #     op.s3.progsignal.connect(self.updateTransferProgress)
+        self.opstore = s3BuildOps(self.conf, self.updateTransferProgress)
 
     def updateProjectStatus(self, statusInt = None):
         if statusInt is not None:
             self.qTreeWItem.setText(1, "{}%".format(statusInt))
         else:
             totalprog = 0
-            counter = 0
+            totaljobs = self.qTreeWItem.childCount()
+            totaldone = totaljobs - len(self.opstore)
             for key, op in self.opstore.iteritems():
-                totalprog += op.progress
-                counter += 1
-            self.qTreeWItem.setText(1, "{}%".format(totalprog / (counter * 100)))
+                totalprog += float(op.progress) / 100
 
-    @pyqtSlot()
+            totalprogpercent = 100 * (totalprog + totaldone) / totaljobs
+            if totalprogpercent < 100:
+                progstr = "{:.2f}%".format(totalprogpercent)
+            else:
+                progstr = "Done"
+            self.qTreeWItem.setText(1, progstr)
+
     def updateTransferProgress(self, progtuple):
-        print "DWTabDownload: {} -- {}".format(progtuple[0], progtuple[1])
+        # print "DWTabDownload: {} -- {} -- {} -- {}".format(*progtuple)
         for idx in range(self.qTreeWItem.childCount()):
             child = self.qTreeWItem.child(idx)
-            if child.data(0, Qt.UserRole) == progtuple[0]:
-                child.setText(1, "{}%".format(progtuple[1]))
+            if child.data(0, Qt.UserRole).abspath == progtuple[0]:
+                if progtuple[1] < 100:
+                    progstr = "{}%".format(progtuple[1])
+                else:
+                    progstr = "Done"
+                child.setText(1, progstr)
         self.updateProjectStatus()
 
     def addItemToQueue(self):
@@ -164,7 +170,7 @@ class QueueItem(QObject):
         for key, op in self.opstore.iteritems():
             newTransferItem = QTreeWidgetItem(self.qTreeWItem)
             newTransferItem.setText(0, op.key)
-            newTransferItem.setText(1, "Queued")
+            newTransferItem.setText(1, "--")
             newTransferItem.setIcon(1, icon)
             setFontColor(newTransferItem, "#666666", 0)
             newTransferItem.setData(0, Qt.UserRole, op)
