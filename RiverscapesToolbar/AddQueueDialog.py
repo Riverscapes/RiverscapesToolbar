@@ -56,9 +56,8 @@ class AddQueueDialog(QtGui.QDialog, FORM_CLASS):
         """
         Save all settings and close
         """
-        DockWidgetTabDownload.dockwidget.tabWidget.setCurrentIndex(DockWidgetTabDownload.dockwidget.DOWNLOAD_TAB)
-        DockWidgetTabDownload.addItemToQueue(self.qItem)
-
+        # Switch to the download tab
+        DockWidgetTabDownload.addToQueue(self.qItem)
 
     def populateList(self):
         for key,op in self.qItem.opstore.iteritems():

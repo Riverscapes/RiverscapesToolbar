@@ -90,7 +90,6 @@ class ToolbarQueuesBorg(object):
 
 class ToolbarQueues(ToolbarQueuesBorg):
 
-    Qstatus = pyqtSignal(object)
 
     def __init__(self):
         super(ToolbarQueues, self).__init__()
@@ -106,7 +105,7 @@ class ToolbarQueues(ToolbarQueuesBorg):
             self.worker.moveToThread(self.worker_thread)
 
             self.worker.start.connect(self.worker.run)
-            self.worker.status.connect(self.updateStatus)
+            # self.worker.status.connect(self.updateStatus)
 
             self.killrequested = False
             # Must be the last thing we do in init
@@ -115,21 +114,14 @@ class ToolbarQueues(ToolbarQueuesBorg):
     def queuePush(self, item):
         self.project_q.put(item)
 
-    def updateStatus(self, fileStatus):
-        statusObj = {
-            "file": fileStatus,
-            "project": self.transfer_q.qsize(),
-            "overall": self.project_q.qsize()
-        }
-        self.Qstatus.emit(statusObj)
 
     def popProject(self):
         """When we pop a project we push all its files on to the file transfer queue"""
         project = self.project_q.get()
 
         # opstore is a dict with { s3key: S3Operation }
-        for key, val in project.opstore.iteritems():
-            self.transfer_q.put((key, val))
+        for key, op in project.opstore.iteritems():
+            self.transfer_q.put({"key": key, "op": op })
         return project
 
     def startWorker(self):
@@ -181,24 +173,21 @@ class TransferWorker(QObject):
                 if Qs.transfer_q.qsize() > 0:
                     # If there's a file to download then download it.
                     transferitem = Qs.transfer_q.get()
-                    self.status.emit({'status': 'Processing', 'item': transferitem})
-                    transferitem.execute()
-                    self.status.emit({'status': 'Completed', 'item': transferitem})
-                    # Put it into the complete queue
-                    transferitem.task_done()
+                    self.currentProject.updateTransferProgress(0, transferitem['key'])
+                    transferitem['op'].execute()
+                    self.currentProject.updateTransferProgress(100, transferitem['key'])
 
                 else:
-                    # Transfer queue is empty. Find something else to do:
-                    if self.currentProject:
-                        self.currentProject.task_done()
+                    if self.currentProject is not None:
+                        self.currentProject.updateProjectStatus(100)
                         self.currentProject = None
+                    # Transfer queue is empty. Find something else to do:
                     # Anything in the project Queue?
+
                     if Qs.project_q.qsize() > 0:
-                        if Qs.project_q.qsize() == 0:
-                            # Pop a project (if possible) into the download Queue
-                            self.currentProject = Qs.popProject()
-                    else:
-                        self.status.emit({'status': 'Idle'})
+                        # Pop a project (if possible) into the download Queue
+                        self.currentProject = Qs.popProject()
+                        self.currentProject.updateProjectStatus(0)
             print "QUEUE STOPPED"
         except Exception, e:
             print "TransferWorkerThread Exception: {}".format(str(e))

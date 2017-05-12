@@ -1,11 +1,10 @@
 from os import path
 from lib.s3.walkers import s3BuildOps
-from lib.async import ToolbarQueues
 from PyQt4.QtGui import QMenu, QTreeWidgetItem, QIcon
 from PyQt4.QtCore import Qt, SIGNAL, SLOT
 from settings import Settings
 from program import Program
-from lib.async import TreeLoadQueues
+from lib.async import ToolbarQueues
 from lib.treeitem import *
 from lib.s3.operations import S3Operation
 
@@ -44,16 +43,14 @@ class DockWidgetTabDownload():
 
     def __init__(self, dockWidget):
         print "init DockWidgetTabDownload"
-        self.Qs = ToolbarQueues()
         self.settings = Settings()
         self.program = Program()
 
         DockWidgetTabDownload.dockwidget = dockWidget
-        self.Q = TreeLoadQueues()
         DockWidgetTabDownload.treectl = self.dockwidget.treeProjQueue
 
-        self.dockwidget.btnDownloadStart.clicked.connect(self.startWorker)
-        self.dockwidget.btnDownloadPause.clicked.connect(self.stopWorker)
+        self.dockwidget.btnDownloadStart.clicked.connect(Qs.startWorker)
+        self.dockwidget.btnDownloadPause.clicked.connect(Qs.stopWorker)
 
         self.dockwidget.btnDownloadEmpty.clicked.connect(self.emptyQueue)
         self.dockwidget.btnDownloadClearCompleted.clicked.connect(self.clearCompleted)
@@ -66,14 +63,11 @@ class DockWidgetTabDownload():
         self.dockwidget.treeProjQueue.setContextMenuPolicy(Qt.CustomContextMenu)
         self.dockwidget.treeProjQueue.customContextMenuRequested.connect(self.openMenu)
 
-        # Hookup slots to our signals
-        # self.Qs.Qstatus.connect(self.updateProgress)
 
-
-    def updateProgBars(self, updateObj):
-
-        print "whoa"
-
+    @staticmethod
+    def addToQueue(QueueItem):
+        DockWidgetTabDownload.dockwidget.tabWidget.setCurrentIndex(DockWidgetTabDownload.dockwidget.DOWNLOAD_TAB)
+        QueueItem.addItemToQueue()
 
     def openMenu(self, pt):
         """
@@ -102,50 +96,11 @@ class DockWidgetTabDownload():
     def clearQueue(self):
         print "empty queue"
 
-    def startWorker(self):
-        self.Qs.startWorker()
-
-    def stopWorker(self):
-        self.Qs.stopWorker()
-
     def emptyQueue(self):
         print "empty queue"
 
     def clearCompleted(self):
         print "clear completed"
-
-    @staticmethod
-    def addItemToQueue(QueueItem):
-        """
-        
-        :param QueueItem: 
-        :return: 
-        """
-
-        # Create a tree Item for this and then push it onto the Queue
-        newProjItem = QTreeWidgetItem(DockWidgetTabDownload.treectl)
-
-        if QueueItem.conf.direction == S3Operation.Direction.DOWN:
-            icon = QIcon(qTreeIconStates.DOWNLOAD)
-        else:
-            icon = QIcon(qTreeIconStates.UPLOAD)
-
-        newProjItem.setText(0, QueueItem.rtItem.getRemoteS3Prefix())
-        newProjItem.setText(1, "Queued")
-        newProjItem.setIcon(1, icon)
-
-        # Set the data backwards so we can find this object later
-        newProjItem.setData(0, Qt.UserRole, QueueItem.rtItem)
-        setFontBold(newProjItem,0)
-        for key, op in QueueItem.opstore.iteritems():
-            newTransferItem = QTreeWidgetItem(newProjItem)
-            newTransferItem.setText(0, op.key)
-            newTransferItem.setText(1, "Queued")
-            newTransferItem.setIcon(1, icon)
-            setFontColor(newTransferItem, "#666666", 0)
-        Qs.queuePush(QueueItem)
-
-        DockWidgetTabDownload.treectl.sortItems(0, Qt.AscendingOrder)
 
 
     def removeItemFromQueue(self, item):
@@ -187,10 +142,55 @@ class QueueItem():
         self.name = rtItem.name
         self.rtItem = rtItem
         self.conf = conf
+        self.qTreeWItem = None
         self.opstore = s3BuildOps(self.conf)
 
-    def progress(self):
-        self.progress = 100
+    def updateProjectStatus(self, statusInt = None):
+        if statusInt is not None:
+            self.qTreeWItem.setText(1, "{}%".format(statusInt))
+        else:
+            totalprog = 0
+            counter = 0
+            for key, op in self.opstore.iteritems():
+                totalprog += op.progress
+                counter += 1
+            self.qTreeWItem.setText(1, "{}%".format(totalprog / (counter * 100)))
+
+    def updateTransferProgress(self, prog, key):
+        for idx in range(self.qTreeWItem.childCount()):
+            child = self.qTreeWItem.child(idx)
+            if child.data(0, Qt.UserRole) == key:
+                child.setText(1, "{}%".format(prog))
+        self.updateProjectStatus()
+
+
+    def addItemToQueue(self):
+
+        # Create a tree Item for this and then push it onto the Queue
+        self.qTreeWItem = QTreeWidgetItem(DockWidgetTabDownload.treectl)
+
+        if self.conf.direction == S3Operation.Direction.DOWN:
+            icon = QIcon(qTreeIconStates.DOWNLOAD)
+        else:
+            icon = QIcon(qTreeIconStates.UPLOAD)
+
+        self.qTreeWItem.setText(0, self.rtItem.getRemoteS3Prefix())
+        self.qTreeWItem.setText(1, "Queued")
+        self.qTreeWItem.setIcon(1, icon)
+
+        # Set the data backwards so we can find this object later
+        self.qTreeWItem.setData(0, Qt.UserRole, self.rtItem)
+        setFontBold(self.qTreeWItem, 0)
+        for key, op in self.opstore.iteritems():
+            newTransferItem = QTreeWidgetItem(self.qTreeWItem)
+            newTransferItem.setText(0, op.key)
+            newTransferItem.setText(1, "Queued")
+            newTransferItem.setIcon(1, icon)
+            setFontColor(newTransferItem, "#666666", 0)
+            newTransferItem.setData(0, Qt.UserRole, key)
+        Qs.queuePush(self)
+
+        DockWidgetTabDownload.treectl.sortItems(0, Qt.AscendingOrder)
 
 
 class qTreeIconStates:

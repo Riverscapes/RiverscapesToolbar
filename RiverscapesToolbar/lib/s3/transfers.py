@@ -4,7 +4,6 @@ import sys
 import math
 import boto3
 from boto3.s3.transfer import TransferConfig
-from progressbar import ProgressBar
 
 class FileTransfer:
     # Max size in bytes before uploading in parts.
@@ -14,11 +13,12 @@ class FileTransfer:
     # Size of parts when uploading in parts
     AWS_UPLOAD_PART_SIZE = 6 * 1024 * 1024
 
-    def __init__(self, bucket):
+    def __init__(self, bucket, progCallback=None):
 
         # Get the service client
         self.s3 = boto3.client('s3')
         self.bucket = bucket
+        self.progCallback = progCallback
         self.S3Config = boto3.s3.transfer.TransferConfig(
             multipart_threshold=self.AWS_UPLOAD_MAX_SIZE,
             max_concurrency=10,
@@ -28,10 +28,10 @@ class FileTransfer:
         )
 
     def download(self, key, filepath, **kwargs):
-        self.s3.download_file(self.bucket, key, filepath, Config=self.S3Config, Callback=Progress(filepath, **kwargs))
+        self.s3.download_file(self.bucket, key, filepath, Config=self.S3Config, Callback=Progress(filepath, self.progCallback, **kwargs))
 
     def upload(self, filepath, key):
-        self.s3.upload_file(filepath, self.bucket, key, Config=self.S3Config, Callback=Progress(filepath))
+        self.s3.upload_file(filepath, self.bucket, key, Config=self.S3Config, Callback=Progress(filepath, self.progCallback))
 
     def delete(self, key):
         self.s3.delete_object(Bucket=self.bucket, Key=key)
@@ -46,8 +46,9 @@ class Progress(object):
     """
     A Little helper class to display the up/download percentage
     """
-    def __init__(self, filename, **kwargs):
+    def __init__(self, filename, progCallback, **kwargs):
         self._filename = filename
+        self._progCallback = progCallback
         self._basename = os.path.basename(self._filename)
 
         if 'size' in kwargs:
@@ -57,15 +58,6 @@ class Progress(object):
 
         self._seen_so_far = 0
         self._lock = threading.Lock()
-        custom_options = {
-            'start': 0,
-            'end': 100,
-            'width': 40,
-            'blank': '_',
-            'fill': '#',
-            'format': '%(progress)s%% [%(fill)s%(blank)s]'
-        }
-        self.p = ProgressBar(**custom_options)
 
     def getSize(self):
         if os.path.isfile(self._filename):
@@ -83,15 +75,4 @@ class Progress(object):
                 self.percentdone = math.floor(float(self._seen_so_far) / float(self._filesize) * 100)
             else:
                 self.getSize()
-            # p.set(self.percentdone)
-            self.p.progress = self.percentdone
-            if (self.percentdone < 100):
-                sys.stdout.write(
-                    "\r       {0} --> {3} {1} bytes of {2} transferred".format(
-                        self._basename, format(self._seen_so_far, ",d"), format(self._filesize, ",d"), str(self.p)) )
-            else:
-                self.percentdone = 100
-                sys.stdout.write(
-                    "\r       100% Complete".format(
-                        self._basename, format(self._seen_so_far, ",d"), format(self._filesize, ",d"), str(self.p)) )
-            sys.stdout.flush()
+            self._progCallback(self.percentdone)

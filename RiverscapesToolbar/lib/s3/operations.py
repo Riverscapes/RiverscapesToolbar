@@ -2,6 +2,7 @@ import os
 import logging
 from comparison import s3issame
 from transfers import FileTransfer
+from PyQt4.QtCore import QThread, pyqtSignal, QObject, pyqtSlot
 
 class S3Operation:
     """
@@ -27,16 +28,21 @@ class S3Operation:
         UPDATENEEDED = "Update Needed"
         SAME = "Files Match"
 
+    progressSignal = pyqtSignal(object)
+
     def __init__(self, key, fileobj, conf):
         """
         :param key: The relative key/path of the file in question
         :param fileobj: the file object with 'src' and 'dst'
         :param conf: the configuration dictionary
         """
+
+
         self.log = logging.getLogger()
         self.log.setLevel(logging.ERROR)
-        self.s3 = FileTransfer(conf.bucket)
+        self.s3 = FileTransfer(conf.bucket, self.updateProgress)
         self.key = key
+        self.progress = 0
 
         # Set some sensible defaults
         self.filestate = self.FileState.SAME
@@ -117,7 +123,7 @@ class S3Operation:
         Actually run the command to upload/download/delete the file
         :return:
         """
-
+        self.progress = 0
         if self.op == self.FileOps.IGNORE:
             self.log.info(" [{0}] {1}: Nothing to do. Continuing.".format(self.op, self.key))
 
@@ -133,6 +139,8 @@ class S3Operation:
         elif self.op == self.FileOps.DELETE_REMOTE:
             self.delete_remote()
 
+        self.progress = 100
+
     def __repr__(self):
         """
         When we print this class as a string this is what we output
@@ -140,6 +148,10 @@ class S3Operation:
         forcestr = "(FORCE)" if self.force else ""
         opstr = "{0:12s} ={2}=> {1:10s}".format(self.filestate, self.op, forcestr)
         return "./{1:60s} [ {0:21s} ]".format(opstr.strip(), self.key)
+
+
+    def updateProgress(self, prog):
+        self.progress = prog
 
 
     def delete_remote(self):
