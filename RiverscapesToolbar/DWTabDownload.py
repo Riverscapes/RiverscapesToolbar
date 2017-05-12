@@ -1,13 +1,13 @@
 from os import path
 from lib.s3.walkers import s3BuildOps
-from PyQt4.QtGui import QMenu, QTreeWidgetItem, QIcon
-from PyQt4.QtCore import Qt, QObject, pyqtSlot
+from PyQt4.QtGui import QMenu, QTreeWidgetItem, QIcon, QDesktopServices
+from PyQt4.QtCore import Qt, QObject, pyqtSlot, QUrl
 from settings import Settings
 from program import Program
-from lib.async import ToolbarQueues
+from lib.async import ToolbarQueues, QueueStatus
 from lib.treeitem import *
 from lib.s3.operations import S3Operation
-
+from DWTabProject import DockWidgetTabProject
 
 Qs = ToolbarQueues()
 settings = Settings()
@@ -28,7 +28,7 @@ class DockWidgetTabDownload():
         self.dockwidget.btnDownloadStart.clicked.connect(Qs.startWorker)
         self.dockwidget.btnDownloadPause.clicked.connect(Qs.stopWorker)
 
-        self.dockwidget.btnDownloadEmpty.clicked.connect(self.emptyQueue)
+        self.dockwidget.btnDownloadEmpty.clicked.connect(self.emptyQueueRequest)
         self.dockwidget.btnDownloadClearCompleted.clicked.connect(self.clearCompleted)
 
         self.dockwidget.btnProjectRemove.clicked.connect(self.removeItemFromQueue)
@@ -56,28 +56,60 @@ class DockWidgetTabDownload():
 
         menu = QMenu()
 
+
+        locateReceiver = lambda item=theData: self.findFolder(item)
+        openReceiver = lambda item=theData: self.findFolder(item)
+
         # Remove/Clear completed
         # goto Folder
-        if (theData.type=="product"):
-            openReceiver = lambda item=theData: self.openProject(item)
-            openReceiverAction = menu.addAction("Add projects to Download Queue", openReceiver)
-            openReceiverAction.setEnabled(theData.local)
-            openReceiverAction.setEnabled(True)
+        if isinstance(theData, S3Operation):
+            findReceiver = lambda item=theData: self.findFolder(theData.abspath)
+            findReceiverAction = menu.addAction("Find file", findReceiver)
+            findReceiverAction.setEnabled(path.isfile(theData.abspath))
+        else:
+            rootDir = theData.getAbsProjRoot()
+            projFile = theData.getAbsProjFile()
+            findReceiver = lambda item=theData: self.findFolder(rootDir)
+
+            findReceiverAction = menu.addAction("Find project folder", findReceiver)
+            locateReceiverAction = menu.addAction("Locate in Repository", locateReceiver)
+            openReceiverAction = menu.addAction("Open Project", openReceiver)
+            progress = 100
+            done = progress == 100
+
+            findReceiverAction.setEnabled(path.isdir(rootDir))
+            locateReceiverAction.setEnabled(theData.local or theData.remote)
+            openReceiverAction.setEnabled(path.isfile(projFile))
+
 
         menu.exec_(self.treectl.mapToGlobal(pt))
 
-    def loadProject(dlg):
-        print "Download loaded"
+    def findFolder(self, filepath):
+        qurl = QUrl.fromLocalFile(path.dirname(filepath))
+        QDesktopServices.openUrl(qurl)
 
-    def clearQueue(self):
-        print "empty queue"
+    def openProject(self, rtItem):
+        print "OPEN THE PROJECT"
+        localpath = path.join(rtItem.localrootdir, path.sep.join(rtItem.pathArr))
+        # Switch to the project tab
+        self.dockwidget.tabWidget.setCurrentIndex(self.dockwidget.PROJECT_TAB)
+        DockWidgetTabProject.projectLoad(localpath)
 
-    def emptyQueue(self):
+
+    def emptyQueueRequest(self):
         print "empty queue"
+        Qs.stopWorker()
+        Qs.resetQueue()
+
+        for idx in range(self.treectl.topLevelItemCount()):
+            self.treectl.takeTopLevelItem(idx)
 
     def clearCompleted(self):
         print "clear completed"
-
+        for child in self.treectl.children():
+            if child.progress == 100:
+                idx = child.getindex
+                taken = self.treectl.takeChild(idx)
 
     def removeItemFromQueue(self, item):
         """
@@ -85,20 +117,9 @@ class DockWidgetTabDownload():
         """
         print "hello"
 
+
     def recalcState(self):
-        """
-        Here's where we update all the progress bars and the title card
-        with "Queue (15%)"
-        :return:
-        """
-
-        # lbl_QueueStatus
-        # lbl_ProjectStatus
-        # lbl_FileStatus
-
-
-        # if project selected then removebtn enabled
-        print "here"
+        print "do it"
 
 
 class QueueItem(QObject):
@@ -118,11 +139,13 @@ class QueueItem(QObject):
         self.name = rtItem.name
         self.rtItem = rtItem
         self.conf = conf
+        self.progress = 0
         self.qTreeWItem = None
         self.opstore = s3BuildOps(self.conf, self.updateTransferProgress)
 
     def updateProjectStatus(self, statusInt = None):
         if statusInt is not None:
+            self.progress = statusInt
             self.qTreeWItem.setText(1, "{}%".format(statusInt))
         else:
             totalprog = 0
@@ -136,6 +159,7 @@ class QueueItem(QObject):
                 progstr = "{:.2f}%".format(totalprogpercent)
             else:
                 progstr = "Done"
+            self.progress = totalprogpercent
             self.qTreeWItem.setText(1, progstr)
 
     def updateTransferProgress(self, progtuple):

@@ -1,6 +1,6 @@
 from PyQt4.QtGui import QMenu, QDesktopServices
 from PyQt4.QtCore import Qt, QUrl
-from os import path
+from os import path, makedirs
 
 from DWTabProject import DockWidgetTabProject
 from DWTabRepositoryItem import RepoTreeItem
@@ -25,14 +25,29 @@ class DockWidgetTabRepository():
         self.treectl.setContextMenuPolicy(Qt.CustomContextMenu)
 
         self.treectl.setColumnCount(1)
-        self.treectl.setHeaderHidden(True)
+        self.treectl.setHeaderHidden(True        )
+
+        RepoTreeItem.showNon = dockWidget.btnShowNon.isChecked()
 
         self.treectl.customContextMenuRequested.connect(self.openMenu)
         self.treectl.doubleClicked.connect(self.treedoubleclick)
         self.treectl.itemExpanded.connect(self.expandItem)
 
-        dockWidget.btnRefresh.clicked.connect(self.refreshRoot)
-        self.refreshRoot()
+        dockWidget.btnShowNon.clicked.connect(self.showNonexistent)
+        dockWidget.btnReload.clicked.connect(self.reloadRoot)
+
+        dockWidget.btnLocalOnly.clicked.connect(self.localOnly)
+
+        self.reloadRoot()
+
+    def localOnly(self, value):
+        # If we're turning this on we can refresh but if we're turning it off we have to reload
+        RepoTreeItem.localOnly = value
+        if value:
+            self.refreshRoot()
+        else:
+            self.reloadRoot()
+
 
     def expandItem(self, item):
         """
@@ -42,21 +57,36 @@ class DockWidgetTabRepository():
         """
         item.data(0, Qt.UserRole).load()
 
-    def refreshRoot(self):
+    def showNonexistent(self, value):
+        RepoTreeItem.showNon = value
+        self.refreshRoot()
+
+    def reloadRoot(self):
         """
-        Refresh the root of the main tree
+        Reloads the root of the main tree
+        This will cause all the network lookups to happen again
         :return:
         """
-        self.dockwidget.btnRefresh.setText("Loading...")
-        self.dockwidget.btnRefresh.setEnabled(False)
+        self.dockwidget.btnReload.setText("Loading...")
+        self.dockwidget.btnReload.setEnabled(False)
 
         DockWidgetTabRepository.treectl.takeTopLevelItem(0)
         rootItem = RepoTreeItem(treectl=self.treectl)
         rootItem.load(self.START_LEVELS)
         self.treectl.expandToDepth(self.START_LEVELS - 2)
 
-        self.dockwidget.btnRefresh.setEnabled(True)
-        self.dockwidget.btnRefresh.setText("Refresh")
+        self.dockwidget.btnReload.setEnabled(True)
+        self.dockwidget.btnReload.setText("Reload")
+
+    def refreshRoot(self):
+        """
+        Refresh the root of the main tree
+        :return:
+        """
+        rootItem = DockWidgetTabRepository.treectl.topLevelItem(0)
+        rootItemData = rootItem.data(0, Qt.UserRole)
+        rootItemData.forwardRefresh()
+
 
     def treedoubleclick(self, index):
         item = self.treectl.selectedIndexes()[0]
@@ -77,35 +107,68 @@ class DockWidgetTabRepository():
 
         menu = QMenu()
         refreshReceiver = lambda item=theData: item.refreshAction()
+        findFolderReceiver = lambda item=theData: self.findFolder(item)
+        createFolderReceiver = lambda item=theData: self.createFolder(item)
 
         if (theData.type=="product"):
+
             openReceiver = lambda item=theData: self.openProject(item)
             downloadReceiver = lambda item=theData: self.addProjectToDownloadQueue(item)
             uploadReceiver = lambda item=theData: self.addProjectToUploadQueue(item)
-            findFolderReceiver = lambda item=theData: self.findFolder(item)
 
             openAction = menu.addAction("Open Project", openReceiver)
+            if not RepoTreeItem.localOnly:
+                menu.addSeparator()
+                downAction = menu.addAction("Download Project", downloadReceiver)
+                uploAction = menu.addAction("Upload Project", uploadReceiver)
+                downAction.setEnabled(theData.remote)
+                uploAction.setEnabled(theData.local)
+
             menu.addSeparator()
-            downAction = menu.addAction("Download Project", downloadReceiver)
-            uploAction = menu.addAction("Upload Project", uploadReceiver)
-            menu.addSeparator()
-            refreshAction = menu.addAction("Refresh", refreshReceiver)
-            findAction = menu.addAction("Find Folder", findFolderReceiver)
+
+            if theData.remote or theData.local:
+                if not RepoTreeItem.localOnly:
+                    refreshAction = menu.addAction("Reload", refreshReceiver)
+                findAction = menu.addAction("Find Folder", findFolderReceiver)
+                findAction.setEnabled(theData.local)
+
+            if (not theData.local):
+                createFolderAction = menu.addAction("Create Folder", createFolderReceiver)
 
             # The actions are available if the projects are available locally or otherwise
             openAction.setEnabled(theData.local)
-            downAction.setEnabled(theData.remote and not theData.local)
-            uploAction.setEnabled(theData.local and not theData.remote)
-            findAction.setEnabled(theData.local)
 
+        # Groups and containers
         else:
             dwnQueueReceiver = lambda item=theData: self.openProject(item)
-            queueContainerAction = menu.addAction("Add projects to Download Queue", dwnQueueReceiver)
-            refreshAction = menu.addAction("Refresh", refreshReceiver)
+            refreshAction = menu.addAction("Reload", refreshReceiver)
+            menu.addSeparator()
+            # queueContainerAction = menu.addAction("Add projects to Download Queue", dwnQueueReceiver)
+            # queueContainerAction.setEnabled(True)
+            findAction = menu.addAction("Find Folder", findFolderReceiver)
+            findAction.setEnabled(theData.local)
 
-            queueContainerAction.setEnabled(True)
+            if (not theData.local):
+                createFolderAction = menu.addAction("Create Folder", createFolderReceiver)
 
         menu.exec_(self.treectl.mapToGlobal(pt))
+
+    def createFolder(self, rtItem):
+        print "createfolder"
+        if rtItem.type == "product":
+            localpath = path.join(RepoTreeItem.localrootdir, path.sep.join(rtItem.pathArr[:-1]))
+        else:
+            localpath = path.join(RepoTreeItem.localrootdir, path.sep.join(rtItem.pathArr))
+
+        if not path.isdir(localpath):
+            try:
+                makedirs(localpath)
+            except Exception, e:
+                pass
+
+        qurl = QUrl.fromLocalFile(localpath)
+        QDesktopServices.openUrl(qurl)
+        self.refreshRoot()
 
     def addProjectToDownloadQueue(self, rtItem):
         print "Adding to download Queue: " + '/'.join(  rtItem.pathArr)
@@ -118,7 +181,11 @@ class DockWidgetTabRepository():
         dialog.exec_()
 
     def findFolder(self, rtItem):
-        qurl = QUrl.fromLocalFile(path.join(RepoTreeItem.localrootdir, path.sep.join(rtItem.pathArr[:-1])))
+        if rtItem.type == "product":
+            localpath = path.join(RepoTreeItem.localrootdir, path.sep.join(rtItem.pathArr[:-1]))
+        else:
+            localpath = path.join(RepoTreeItem.localrootdir, path.sep.join(rtItem.pathArr))
+        qurl = QUrl.fromLocalFile(localpath)
         QDesktopServices.openUrl(qurl)
 
     def openProject(self, rtItem):

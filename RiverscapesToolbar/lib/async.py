@@ -3,6 +3,10 @@ from PyQt4.QtCore import QThread, pyqtSignal, QObject, pyqtSlot
 import traceback
 from debug import InitDebug
 
+class QueueStatus():
+    STARTED = 1
+    STOPPED = 0
+
 class TreeLoadQueuesBorg(object):
     _shared_state = {}
     _initdone = False
@@ -105,9 +109,9 @@ class ToolbarQueues(ToolbarQueuesBorg):
             self.worker.moveToThread(self.worker_thread)
 
             self.worker.start.connect(self.worker.run)
-            # self.worker.status.connect(self.updateStatus)
 
             self.killrequested = False
+            self.running = False
             # Must be the last thing we do in init
             self._initdone = True
 
@@ -153,8 +157,8 @@ class TransferWorker(QObject):
     killrequested = False
 
     # Signals we will hook our progress bars to
+    statusSignal = pyqtSignal(int)
     start = pyqtSignal(str)
-    status = pyqtSignal(object)
 
     def __init__(self):
         super(TransferWorker, self).__init__()
@@ -169,6 +173,8 @@ class TransferWorker(QObject):
         Qs = ToolbarQueues()
         try:
             print "QUEUE STARTED"
+            Qs.running = True
+            self.statusSignal.emit(QueueStatus.STARTED)
             while not self.killrequested:
                 if Qs.transfer_q.qsize() > 0:
                     # If there's a file to download then download it.
@@ -189,6 +195,8 @@ class TransferWorker(QObject):
                         self.currentProject = Qs.popProject()
                         self.currentProject.updateProjectStatus(0)
             print "QUEUE STOPPED"
+            Qs.running = False
+            self.statusSignal.emit(QueueStatus.STOPPED)
         except Exception, e:
             print "TransferWorkerThread Exception: {}".format(str(e))
             traceback.print_exc()

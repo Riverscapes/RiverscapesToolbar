@@ -111,9 +111,9 @@ class ProjectTreeItem():
         self.qTreeWItem.setText(0, self.name)
 
         # Walk back up the tree and hide things that have no value
-        self.backwardCalc()
+        self.backwardRefresh()
 
-    def backwardCalc(self):
+    def backwardRefresh(self):
         """
         This function traverses the list back up to the top hiding items that have visible children
         :return:
@@ -122,7 +122,7 @@ class ProjectTreeItem():
 
         # Now walk back up
         if self.rtParent:
-            self.rtParent.backwardCalc()
+            self.rtParent.backwardRefresh()
 
     @staticmethod
     def getAttr(node, lookupstr):

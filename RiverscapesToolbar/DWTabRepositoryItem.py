@@ -1,4 +1,4 @@
-from os import path
+from os import path, listdir
 from functools import partial
 import datetime
 
@@ -21,6 +21,8 @@ class RepoTreeItem():
     # Some statics...
     LOADING = 'Loading...'
     localrootdir = settings.getSetting('DataDir')
+    showNon = False
+    localOnly = False
 
     class NState():
         INITIALIZED = 0
@@ -137,6 +139,7 @@ class RepoTreeItem():
         :param loadlevels:
         :return:
         """
+
         if self.state == self.NState.INITIALIZED:
             # There's no asynchronous loading for nodes so we jump straight to loaded
             self.state = self.NState.LOADED
@@ -145,24 +148,35 @@ class RepoTreeItem():
                 self.icon = QIcon(qTreeIconStates.PRODUCT)
                 if self.local:
                     self.style = "bold"
-                    self.color = "#444444"
+                    self.color = "#000000"
                 else:
                     self.style = "regular"
-                    self.color = "#cccccc"
+                    self.color = "#444444"
 
             elif self.type == "group":
                 self.name = self.nItem['node']['name']
                 self.icon = QIcon(qTreeIconStates.GROUP)
                 self.dummyChild = self.createDummyChild()
-                self.color = "#999999"
+                if self.local:
+                    self.color = "#666666"
+                    self.style = "bold"
+                else:
+                    self.color = "#999999"
+                    self.style = "regular"
 
             elif self.type == 'collection':
                 self.name = self.pathArr[-1]
                 self.icon = QIcon()
                 self.dummyChild = self.createDummyChild()
+
                 # With collections we've already done our checking with a directory list
                 # So we assume the remote exists
-                self.color = "#666666"
+                if self.local:
+                    self.color = "#444444"
+                    self.style = "bold"
+                else:
+                    self.color = "#666666"
+                    self.style = "regular"
                 try:
                     # try and find a better name than just the folder name (not always possible)
                     folderItem = next(
@@ -173,8 +187,14 @@ class RepoTreeItem():
                 except Exception, e:
                     pass
 
+            # Top level node never gets a status check so we fudge it a bit
+            if self.depth == 1:
+                self.local = True
+                self.remote = True
+
             self.formatNode()
-            self.backwardCalc()
+            self.backwardRefresh()
+
 
         if self.childrenstate == self.NState.INITIALIZED:
             self.childrenstate = self.NState.LOAD_REQ
@@ -183,35 +203,65 @@ class RepoTreeItem():
             Qs.queuePush(partial(self.loadChildren, (loadlevels - 1)));
 
 
-    def backwardCalc(self):
+    def setToolTip(self):
         """
-        This function traverses the list back up to the top hiding items that have visible children
-        :return:
+         The tooltip is a little fiddly but I think it will be worth it.
+        :return: 
         """
+        tt = "{} "
+
+        if self.local:
+            tt += " IS available locally"
+        else:
+            tt += " does NOT exist locally"
+
+        if not self.localOnly:
+            if self.local != self.remote:
+                tt += " but "
+            else:
+                tt += " and "
+            if self.remote:
+                tt += " IS available remotely."
+            else:
+                tt += " does NOT exist remotely."
+
+        self.qTreeWItem.setToolTip(0, tt.format(self.name))
+
+    def nodeRefresh(self):
         self.nowhere = not self.local and not self.remote
 
         if self.rtParent is None:
             self.nowhere = False
 
-        # if self.type == "product":
-        #     hide = True
-        # else:
-        # self.nowhere = not self.local and not self.remote
-        # TODO: DECIDE IF THIS IS REALLY OK
-        # if (self.qTreeWItem.childCount() > 0):
-        #     print "hello"
-        # allchildrenhidden = all([self.qTreeWItem.child(0).data(0, Qt.UserRole).nowhere for i in range(self.qTreeWItem.childCount())])
-        # hide = allchildrenhidden
-
         if self.nowhere:
-            setFontColor(self.qTreeWItem, "#FF0000", column=0)
+            setFontColor(self.qTreeWItem, "#AAAADD", column=0)
             setFontItalic(self.qTreeWItem, column=0)
 
-        self.qTreeWItem.setHidden(self.nowhere)
+        hidden = True
+        if self.showNon or self.local or (self.remote and not self.localOnly):
+            hidden = False
+
+        self.setToolTip()
+        self.qTreeWItem.setHidden(hidden)
+
+    def forwardRefresh(self):
+        self.nodeRefresh()
+
+        for idx in range(self.qTreeWItem.childCount()):
+            childData = self.qTreeWItem.child(idx).data(0, Qt.UserRole)
+            if childData is not None:
+                childData.forwardRefresh()
+
+    def backwardRefresh(self):
+        """
+        This function traverses the list back up to the top hiding items that have visible children
+        :return:
+        """
+        self.nodeRefresh()
 
         # Now walk back up
         if self.rtParent:
-            self.rtParent.backwardCalc()
+            self.rtParent.backwardRefresh()
 
     def createDummyChild(self):
         """
@@ -247,7 +297,7 @@ class RepoTreeItem():
         kids = []
         for child in self.nItem['children']:
             # Add the leaf to the tree
-            pathstr = '/'.join(self.pathArr) + '/' if len(self.pathArr) > 0 else ""
+            s3pathstr = '/'.join(self.pathArr) + '/' if len(self.pathArr) > 0 else ""
             type = child['node']['type']
 
             if type == 'product':
@@ -260,11 +310,15 @@ class RepoTreeItem():
                 localpath = path.join(RepoTreeItem.localrootdir, path.sep.join(newpath))
 
                 # Is it there?
-                head = s3HeadData(program.Bucket, s3path)
-
                 newItem = RepoTreeItem(child, self, newpath)
+                if RepoTreeItem.localOnly:
+                    newItem.remote = False
+                else:
+                    head = s3HeadData(program.Bucket, s3path)
+                    newItem.remote = head is not None
+
                 newItem.local = path.isfile(localpath)
-                newItem.remote = head is not None
+
                 kids.append(newItem)
 
             elif type == 'group':
@@ -272,7 +326,7 @@ class RepoTreeItem():
                 newpath.append(child['node']['folder'])
                 DEBUG = child['node']['folder']
                 newItem = RepoTreeItem(child, self, newpath)
-                print "======== {} ===== {}".format(self.name, newItem.name)
+                # print "======== {} ===== {}".format(self.name, newItem.name)
 
                 # self.remote = s3Exists(program.Bucket, s3path)
                 newItem.remote = True
@@ -282,14 +336,25 @@ class RepoTreeItem():
 
             elif type == 'collection':
                 # Unfortunately the only way to list collections is to go get them physically.
-                for levelname in s3GetFolderList(program.Bucket, pathstr):
+                localfolders = []
+                remotefolders = []
+
+                localpath = path.join(RepoTreeItem.localrootdir, path.sep.join(self.pathArr))
+
+                if path.isdir(localpath):
+                    localfolders = [levelname for levelname in listdir(localpath) if path.isdir(path.join(localpath, levelname))]
+
+                if not RepoTreeItem.localOnly:
+                    remotefolders = [levelname for levelname in s3GetFolderList(program.Bucket, s3pathstr)]
+
+                # Remove duplicates and continue
+                for levelname in list(set(localfolders + remotefolders)):
                     newpath = self.pathArr[:]
                     newpath.append(levelname)
 
                     newItem = RepoTreeItem(child, self, newpath)
-                    newItem.remote = True
-                    localpath = path.join(RepoTreeItem.localrootdir, path.sep.join(newpath))
-                    newItem.local = path.isdir(localpath)
+                    newItem.remote = levelname in remotefolders
+                    newItem.local = levelname in localfolders
                     kids.append(newItem)
 
         # Do all the state recalc together so they all get visible at the same time

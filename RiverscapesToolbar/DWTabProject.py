@@ -33,6 +33,7 @@ class DockWidgetTabProject():
         self.treectl.customContextMenuRequested.connect(self.openMenu)
 
         dockWidget.btnLoadProject.clicked.connect(self.projectBrowserDlg)
+        dockWidget.btnProjectUpload.clicked.connect(self.projectUpload)
 
 
     def projectBrowserDlg(self):
@@ -43,6 +44,9 @@ class DockWidgetTabProject():
         settings = Settings()
         filename = QtGui.QFileDialog.getExistingDirectory(self.widget, "Open a project folder", settings.getSetting('DataDir'))
         self.projectLoad(path.join(filename, "project.rs.xml"))
+
+    def projectUpload(self):
+        print "upload"
 
 
     def doubleClicked(self, index):
