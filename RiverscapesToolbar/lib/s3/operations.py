@@ -2,9 +2,9 @@ import os
 import logging
 from comparison import s3issame
 from transfers import FileTransfer
-from PyQt4.QtCore import QThread, pyqtSignal, QObject, pyqtSlot
+from PyQt4.QtCore import pyqtSignal, QObject, pyqtSlot
 
-class S3Operation:
+class S3Operation():
     """
     A Simple class for storing src/dst file information and the operation we need to perform
     """
@@ -27,8 +27,6 @@ class S3Operation:
         REMOTEONLY = "Remote-Only"
         UPDATENEEDED = "Update Needed"
         SAME = "Files Match"
-
-    progressSignal = pyqtSignal(object)
 
     def __init__(self, key, fileobj, conf):
         """
@@ -152,7 +150,7 @@ class S3Operation:
 
     def updateProgress(self, prog):
         self.progress = prog
-
+        print "PROGRESS: {}".format(prog)
 
     def delete_remote(self):
         """

@@ -1,37 +1,13 @@
 from os import path
 from lib.s3.walkers import s3BuildOps
 from PyQt4.QtGui import QMenu, QTreeWidgetItem, QIcon
-from PyQt4.QtCore import Qt, SIGNAL, SLOT
+from PyQt4.QtCore import Qt, QObject, pyqtSlot
 from settings import Settings
 from program import Program
 from lib.async import ToolbarQueues
 from lib.treeitem import *
 from lib.s3.operations import S3Operation
 
-
-"""
-Ok, so here's the hierarchy
-
-DockWidgetTabDownload
-    lstProjs
-        Rows
-            data ==> ProjectTransfer()
-                opstore = {filepath: S3Operation}
-                    self.s3 = FileTransfer(conf.bucket)
-                        Progress                        
-                    self.key = key            
-                    self.filestate = LOCALONLY,REMOTEONLY,UPDATENEEDED,SAME                      
-                    self.op = DELETE_REMOTE, DELETE_LOCAL, UPLOAD, DOWNLOAD, IGNORE
-                    self.s3size = 0                    
-
-        # Columns: Projects:   Direction, Name, Progress  (--, 54%, DONE)
-
-        # files: Op, localpath, size, progress (--, 54%, DONE)    
-
-UI:
-    - lstFiles rebuild on Project Change
-
-"""
 
 Qs = ToolbarQueues()
 settings = Settings()
@@ -125,7 +101,7 @@ class DockWidgetTabDownload():
         print "here"
 
 
-class QueueItem():
+class QueueItem(QObject):
 
     class TransferConf():
         # This object gets passed around a lot so we package it up
@@ -156,6 +132,7 @@ class QueueItem():
                 counter += 1
             self.qTreeWItem.setText(1, "{}%".format(totalprog / (counter * 100)))
 
+    @pyqtSlot()
     def updateTransferProgress(self, prog, key):
         for idx in range(self.qTreeWItem.childCount()):
             child = self.qTreeWItem.child(idx)
@@ -187,7 +164,8 @@ class QueueItem():
             newTransferItem.setText(1, "Queued")
             newTransferItem.setIcon(1, icon)
             setFontColor(newTransferItem, "#666666", 0)
-            newTransferItem.setData(0, Qt.UserRole, key)
+            newTransferItem.setData(0, Qt.UserRole, op)
+            op.progressSignal.connect(self.updateTransferProgress)
         Qs.queuePush(self)
 
         DockWidgetTabDownload.treectl.sortItems(0, Qt.AscendingOrder)
