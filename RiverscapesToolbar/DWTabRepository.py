@@ -1,4 +1,4 @@
-from PyQt4.QtGui import QMenu, QDesktopServices
+from PyQt4.QtGui import QMenu, QDesktopServices, QIcon
 from PyQt4.QtCore import Qt, QUrl
 from os import path, makedirs
 
@@ -6,6 +6,7 @@ from DWTabProject import DockWidgetTabProject
 from DWTabRepositoryItem import RepoTreeItem
 from lib.s3.operations import S3Operation
 from AddQueueDialog import AddQueueDialog
+from resources import qTreeIconStates
 
 class DockWidgetTabRepository():
 
@@ -14,8 +15,7 @@ class DockWidgetTabRepository():
     dockwidget = None
 
     def __init__(self, dockWidget):
-        # used to be:
-        # def __init__(self, xmlPath, treeControl, parent=None):
+
         # Connect up our buttons to functions
         DockWidgetTabRepository.dockwidget = dockWidget
 
@@ -25,7 +25,7 @@ class DockWidgetTabRepository():
         self.treectl.setContextMenuPolicy(Qt.CustomContextMenu)
 
         self.treectl.setColumnCount(1)
-        self.treectl.setHeaderHidden(True        )
+        self.treectl.setHeaderHidden(True)
 
         RepoTreeItem.showNon = dockWidget.btnShowNon.isChecked()
 
@@ -34,9 +34,14 @@ class DockWidgetTabRepository():
         self.treectl.itemExpanded.connect(self.expandItem)
 
         dockWidget.btnShowNon.clicked.connect(self.showNonexistent)
+        dockWidget.btnShowNon.setIcon(QIcon(qTreeIconStates.HIDDEN))
+
         dockWidget.btnReload.clicked.connect(self.reloadRoot)
+        dockWidget.btnReload.setIcon(QIcon(qTreeIconStates.RELOAD))
 
         dockWidget.btnLocalOnly.clicked.connect(self.localOnly)
+        dockWidget.btnLocalOnly.setIcon(QIcon(qTreeIconStates.UNPLUG))
+
 
         self.reloadRoot()
 
@@ -117,18 +122,19 @@ class DockWidgetTabRepository():
             uploadReceiver = lambda item=theData: self.addProjectToUploadQueue(item)
 
             openAction = menu.addAction("Open Project", openReceiver)
-            if not RepoTreeItem.localOnly:
-                menu.addSeparator()
-                downAction = menu.addAction("Download Project", downloadReceiver)
-                uploAction = menu.addAction("Upload Project", uploadReceiver)
-                downAction.setEnabled(theData.remote)
-                uploAction.setEnabled(theData.local)
 
+            # If we're restricting things to local only there's no need for uploading or downloading
             menu.addSeparator()
+            downAction = menu.addAction("Download Project", downloadReceiver)
+            uploAction = menu.addAction("Upload Project", uploadReceiver)
+            downAction.setEnabled(theData.remote and not RepoTreeItem.localOnly)
+            uploAction.setEnabled(theData.local and not RepoTreeItem.localOnly)
 
             if theData.remote or theData.local:
-                if not RepoTreeItem.localOnly:
-                    refreshAction = menu.addAction("Reload", refreshReceiver)
+                menu.addSeparator()
+
+                refreshAction = menu.addAction("Reload", refreshReceiver)
+                refreshAction.setEnabled(RepoTreeItem.localOnly)
                 findAction = menu.addAction("Find Folder", findFolderReceiver)
                 findAction.setEnabled(theData.local)
 
@@ -142,6 +148,7 @@ class DockWidgetTabRepository():
         else:
             dwnQueueReceiver = lambda item=theData: self.openProject(item)
             refreshAction = menu.addAction("Reload", refreshReceiver)
+            refreshAction.setEnabled(RepoTreeItem.localOnly)
             menu.addSeparator()
             # queueContainerAction = menu.addAction("Add projects to Download Queue", dwnQueueReceiver)
             # queueContainerAction.setEnabled(True)

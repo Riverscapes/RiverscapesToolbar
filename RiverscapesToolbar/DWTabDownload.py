@@ -8,6 +8,7 @@ from lib.async import ToolbarQueues, QueueStatus
 from lib.treeitem import *
 from lib.s3.operations import S3Operation
 from DWTabProject import DockWidgetTabProject
+from resources import qTreeIconStates
 
 Qs = ToolbarQueues()
 settings = Settings()
@@ -26,12 +27,15 @@ class DockWidgetTabDownload():
         DockWidgetTabDownload.treectl = self.dockwidget.treeProjQueue
 
         self.dockwidget.btnDownloadStart.clicked.connect(Qs.startWorker)
+        self.dockwidget.btnDownloadStart.setIcon(QIcon(qTreeIconStates.PLAY))
         self.dockwidget.btnDownloadPause.clicked.connect(Qs.stopWorker)
+        self.dockwidget.btnDownloadPause.setIcon(QIcon(qTreeIconStates.PAUSE))
 
         self.dockwidget.btnDownloadEmpty.clicked.connect(self.emptyQueueRequest)
         self.dockwidget.btnDownloadClearCompleted.clicked.connect(self.clearCompleted)
 
         self.dockwidget.btnProjectRemove.clicked.connect(self.removeItemFromQueue)
+
 
         self.dockwidget.treeProjQueue.setColumnCount(2)
         self.dockwidget.treeProjQueue.setHeaderHidden(False)
@@ -202,17 +206,3 @@ class QueueItem(QObject):
         Qs.queuePush(self)
 
         DockWidgetTabDownload.treectl.sortItems(0, Qt.AscendingOrder)
-
-
-class qTreeIconStates:
-    """
-    Think of this like an enumeration for icons
-    """
-    """
-            <file alias="caret_down_green.png">images/icons/font-awesome_4-7-0_caret-down_12_0_27ae60_none.png</file>
-            <file alias="caret_up_blue.png">images/icons/font-awesome_4-7-0_caret-up_12_0_2980b9_none.png</file>
-    
-    """
-    DOWNLOAD = ":/plugins/RiverscapesToolbar/caret_down_green.png"
-    UPLOAD = ":/plugins/RiverscapesToolbar/caret_up_blue.png"
-

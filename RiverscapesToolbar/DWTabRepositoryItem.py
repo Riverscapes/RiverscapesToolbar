@@ -9,6 +9,7 @@ from PyQt4.QtGui import QTreeWidgetItem, QIcon
 from PyQt4.QtCore import Qt
 from lib.treeitem import *
 from lib.async import TreeLoadQueues
+from resources import qTreeIconStates
 
 Qs = TreeLoadQueues()
 settings = Settings()
@@ -386,21 +387,3 @@ class RepoTreeItem():
             setFontRegular(self.qTreeWItem, column=0)
         self.qTreeWItem.setText(0, self.name)
 
-class qTreeIconStates:
-    """
-    Think of this like an enumeration for icons
-    """
-
-    LOCAL_MISSING = ":/plugins/RiverscapesToolbar/monitor_grey.png"
-    LOCAL_OLDER = ":/plugins/RiverscapesToolbar/monitor_red.png"
-    LOCAL_PRESENT = ":/plugins/RiverscapesToolbar/monitor_black.png"
-
-    REMOTE_MISSING = ":/plugins/RiverscapesToolbar/cloud_grey.png"
-    REMOTE_OLDER = ":/plugins/RiverscapesToolbar/cloud_red.png"
-    REMOTE_PRESENT = ":/plugins/RiverscapesToolbar/cloud_black.png"
-
-    GROUP = ":/plugins/RiverscapesToolbar/folder_light.png"
-    COLLECTION = ":/plugins/RiverscapesToolbar/folder_medium.png"
-    PRODUCT = ":/plugins/RiverscapesToolbar/project.png"
-
-    LOADING = ":/plugins/RiverscapesToolbar/loading.png"

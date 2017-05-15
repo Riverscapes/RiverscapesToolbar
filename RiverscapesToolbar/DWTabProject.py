@@ -9,7 +9,7 @@ from symbology.symbology import Symbology
 from qgis.utils import iface
 from qgis.core import QgsProject, QgsMapLayerRegistry, QgsRasterLayer, QgsVectorLayer
 from DWTabProjectsItem import ProjectTreeItem
-
+from resources import qTreeIconStates
 
 class DockWidgetTabProject():
 
@@ -33,7 +33,11 @@ class DockWidgetTabProject():
         self.treectl.customContextMenuRequested.connect(self.openMenu)
 
         dockWidget.btnLoadProject.clicked.connect(self.projectBrowserDlg)
+        dockWidget.btnLoadProject.setIcon(QIcon(qTreeIconStates.OPEN))
+
+
         dockWidget.btnProjectUpload.clicked.connect(self.projectUpload)
+        dockWidget.btnProjectUpload.setIcon(QIcon(qTreeIconStates.UPLOAD))
 
 
     def projectBrowserDlg(self):

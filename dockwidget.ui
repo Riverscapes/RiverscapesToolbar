@@ -24,7 +24,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tabRepository">
        <attribute name="title">
@@ -44,7 +44,23 @@
            </widget>
           </item>
           <item>
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
            <widget class="QToolButton" name="btnLocalOnly">
+            <property name="toolTip">
+             <string>Local only (no network calls)</string>
+            </property>
             <property name="text">
              <string>Local</string>
             </property>
@@ -58,6 +74,9 @@
           </item>
           <item>
            <widget class="QToolButton" name="btnShowNon">
+            <property name="toolTip">
+             <string>Show non-existent projects</string>
+            </property>
             <property name="text">
              <string>Show Nonexistent</string>
             </property>
@@ -65,19 +84,6 @@
              <bool>true</bool>
             </property>
            </widget>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
           </item>
          </layout>
         </item>
@@ -203,6 +209,19 @@
            </widget>
           </item>
           <item>
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
            <widget class="QToolButton" name="btnDownloadEmpty">
             <property name="toolTip">
              <string>Empty the Queue</string>
@@ -221,19 +240,6 @@
              <string>Clear Completed</string>
             </property>
            </widget>
-          </item>
-          <item>
-           <spacer name="horizontalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
           </item>
          </layout>
         </item>
