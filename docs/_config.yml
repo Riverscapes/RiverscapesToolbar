@@ -4,7 +4,7 @@ description: > # this means to ignore newlines until "baseurl:"
   Online help and documentation site for the CHaMP Workbench
 url: https://riverscapes.github.io/RiverscapesToolbar/
 baseurl: ""
-
+port: 4001
 # Build settings
 markdown: kramdown
 highlighter: rouge
