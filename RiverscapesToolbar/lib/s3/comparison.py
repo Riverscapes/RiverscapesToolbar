@@ -3,6 +3,8 @@ import binascii
 import hashlib
 import os
 from transfers import FileTransfer
+import boto3
+import json
 
 def s3issame(filepath, s3obj):
     """
@@ -28,6 +30,13 @@ def s3issame(filepath, s3obj):
         same = True if etag == md5 else False
     return same
 
+
+def getS3getFileContents(bucket, s3Key):
+    s3 = boto3.client('s3')
+
+    obj = s3.get_object(Bucket=bucket, Key=s3Key)
+    txt = obj['Body'].read()
+    return txt
 
 def md5sum(sourcePath):
     """

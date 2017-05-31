@@ -229,7 +229,7 @@ class ProjectTreeItem():
         elif labellit is not None:
             label = labellit
         # return "{0} - ({1})".format(label, self.type)
-        return label
+        return label.strip()
 
 
     def _getDepth(self):

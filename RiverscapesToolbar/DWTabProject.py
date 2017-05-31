@@ -5,11 +5,16 @@ from PyQt4.QtGui import  QMenu, QTreeWidgetItem, QMessageBox, QIcon, QPixmap, QD
 from PyQt4.QtCore import Qt, QUrl
 
 from symbology.symbology import Symbology
-
+from program import Program
 from qgis.utils import iface
 from qgis.core import QgsProject, QgsMapLayerRegistry, QgsRasterLayer, QgsVectorLayer
 from DWTabProjectsItem import ProjectTreeItem
 from resources import qTreeIconStates
+from lib.s3.operations import S3Operation
+from AddQueueDialog import AddQueueDialog
+
+
+program = Program()
 
 class DockWidgetTabProject():
 
@@ -47,7 +52,7 @@ class DockWidgetTabProject():
         """
         settings = Settings()
         filename = QtGui.QFileDialog.getExistingDirectory(self.widget, "Open a project folder", settings.getSetting('DataDir'))
-        self.projectLoad(path.join(filename, "project.rs.xml"))
+        self.projectLoad(path.join(filename, program.ProjectFile))
 
     def projectUpload(self):
         print "upload"
@@ -115,6 +120,17 @@ class DockWidgetTabProject():
         """
         qurl = QUrl.fromLocalFile(path.dirname(rtItem.filepath))
         QDesktopServices.openUrl(qurl)
+
+
+    def addProjectToUploadQueue(self, rtItem):
+        """
+
+        :param rtItem:
+        :return:
+        """
+        print "Adding to upload Queue: " + '/'.join(  rtItem.pathArr)
+        dialog = AddQueueDialog(S3Operation.Direction.UP, rtItem)
+        dialog.exec_()
 
 
     @staticmethod

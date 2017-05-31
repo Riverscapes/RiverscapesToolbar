@@ -15,16 +15,36 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
-    <widget class="QLabel" name="label">
+    <widget class="QLabel" name="label_2">
      <property name="text">
-      <string>The following operation will be added to the queue</string>
+      <string>The Project with the following parameters will be queued:</string>
      </property>
     </widget>
    </item>
    <item>
-    <widget class="QLabel" name="lblState">
+    <widget class="QTreeWidget" name="treeMeta">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <column>
+      <property name="text">
+       <string>Param Name</string>
+      </property>
+     </column>
+     <column>
+      <property name="text">
+       <string>Value</string>
+      </property>
+     </column>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label">
      <property name="text">
-      <string>...</string>
+      <string>The following operation will be added to the queue:</string>
      </property>
     </widget>
    </item>
@@ -43,6 +63,13 @@
        <string>File</string>
       </property>
      </column>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="lblState">
+     <property name="text">
+      <string>...</string>
+     </property>
     </widget>
    </item>
    <item>

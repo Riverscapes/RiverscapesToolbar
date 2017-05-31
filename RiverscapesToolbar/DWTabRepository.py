@@ -4,6 +4,7 @@ from os import path, makedirs
 
 from DWTabProject import DockWidgetTabProject
 from DWTabRepositoryItem import RepoTreeItem
+from DWTabDownload import DockWidgetTabDownload
 from lib.s3.operations import S3Operation
 from AddQueueDialog import AddQueueDialog
 from resources import qTreeIconStates
@@ -180,12 +181,14 @@ class DockWidgetTabRepository():
     def addProjectToDownloadQueue(self, rtItem):
         print "Adding to download Queue: " + '/'.join(  rtItem.pathArr)
         dialog = AddQueueDialog(S3Operation.Direction.DOWN, rtItem)
-        dialog.exec_()
+        if dialog.exec_():
+            DockWidgetTabDownload.addToQueue(dialog.qItem)
 
     def addProjectToUploadQueue(self, rtItem):
         print "Adding to Upload Queue: " + '/'.join(rtItem.pathArr)
         dialog = AddQueueDialog(S3Operation.Direction.UP, rtItem)
-        dialog.exec_()
+        if dialog.exec_():
+            DockWidgetTabDownload.addToQueue(dialog.qItem)
 
     def findFolder(self, rtItem):
         if rtItem.type == "product":

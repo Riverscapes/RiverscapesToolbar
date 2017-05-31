@@ -7,7 +7,6 @@ from program import Program
 from lib.async import ToolbarQueues, QueueStatus
 from lib.treeitem import *
 from lib.s3.operations import S3Operation
-from DWTabProject import DockWidgetTabProject
 from resources import qTreeIconStates
 
 Qs = ToolbarQueues()

@@ -183,7 +183,7 @@ class S3Operation():
 
     def download(self):
         """
-        Just upload one file using Boto3
+        Just download one file using Boto3
         :param bucket:
         :param key:
         :param filepath:
