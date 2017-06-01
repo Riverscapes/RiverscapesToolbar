@@ -59,10 +59,6 @@ class DockWidgetTabDownload():
 
         menu = QMenu()
 
-
-        locateReceiver = lambda item=theData: self.findFolder(item)
-        openReceiver = lambda item=theData: self.findFolder(item)
-
         # Remove/Clear completed
         # goto Folder
         if isinstance(theData, S3Operation):
@@ -74,15 +70,18 @@ class DockWidgetTabDownload():
             projFile = theData.getAbsProjFile()
             findReceiver = lambda item=theData: self.findFolder(rootDir)
 
-            findReceiverAction = menu.addAction("Find project folder", findReceiver)
-            locateReceiverAction = menu.addAction("Locate in Repository", locateReceiver)
-            openReceiverAction = menu.addAction("Open Project", openReceiver)
+            findinrepoReceiver = lambda item=theData: self.findInRepo(item)
+            openProjectReceiver = lambda item=theData: self.openProject(item)
+
+            findinrepoReceiverAction = menu.addAction("Find project folder", findReceiver)
+            locateReceiverAction = menu.addAction("Locate in Repository", findinrepoReceiver)
+            openProjectReceiverAction = menu.addAction("Open Project", openProjectReceiver)
             progress = 100
             done = progress == 100
 
-            findReceiverAction.setEnabled(path.isdir(rootDir))
+            findinrepoReceiverAction.setEnabled(path.isdir(rootDir))
             locateReceiverAction.setEnabled(theData.local or theData.remote)
-            openReceiverAction.setEnabled(path.isfile(projFile))
+            openProjectReceiverAction.setEnabled(path.isfile(projFile))
 
 
         menu.exec_(self.treectl.mapToGlobal(pt))
@@ -91,12 +90,17 @@ class DockWidgetTabDownload():
         qurl = QUrl.fromLocalFile(path.dirname(filepath))
         QDesktopServices.openUrl(qurl)
 
+    def findInRepo(self, rtItem):
+        print "OPEN THE PROJECT"
+        self.dockwidget.TabRepo.expandToProject(rtItem)
+        self.dockwidget.tabWidget.setCurrentIndex(self.dockwidget.REPO_TAB)
+
+
     def openProject(self, rtItem):
         print "OPEN THE PROJECT"
-        localpath = path.join(rtItem.localrootdir, path.sep.join(rtItem.pathArr))
-        # Switch to the project tab
+        self.dockwidget.TabRepo.openProject(rtItem)
         self.dockwidget.tabWidget.setCurrentIndex(self.dockwidget.PROJECT_TAB)
-        DockWidgetTabProject.projectLoad(localpath)
+
 
 
     def emptyQueueRequest(self):
@@ -109,16 +113,19 @@ class DockWidgetTabDownload():
 
     def clearCompleted(self):
         print "clear completed"
-        for child in self.treectl.children():
-            if child.progress == 100:
-                idx = child.getindex
-                taken = self.treectl.takeChild(idx)
+        for idx in range(0, self.treectl.topLevelItemCount()):
+            child = self.treectl.topLevelItem(idx)
+            theData = child.data(0, Qt.UserRole)
+            if theData.qItem.progress == 100:
+                taken = self.treectl.takeTopLevelItem(idx)
 
-    def removeItemFromQueue(self, item):
+    def removeItemFromQueue(self):
         """
         :return: 
         """
-        print "hello"
+        for item in self.treectl.selectedItems():
+            idx = self.treectl.indexOfTopLevelItem(item)
+            taken = self.treectl.takeTopLevelItem(idx)
 
 
     def recalcState(self):
@@ -192,6 +199,7 @@ class QueueItem(QObject):
         self.qTreeWItem.setIcon(1, icon)
 
         # Set the data backwards so we can find this object later
+        self.rtItem.qItem = self
         self.qTreeWItem.setData(0, Qt.UserRole, self.rtItem)
         setFontBold(self.qTreeWItem, 0)
         for key, op in self.opstore.iteritems():

@@ -2,9 +2,8 @@ from PyQt4.QtGui import QMenu, QDesktopServices, QIcon
 from PyQt4.QtCore import Qt, QUrl
 from os import path, makedirs
 
-from DWTabProject import DockWidgetTabProject
 from DWTabRepositoryItem import RepoTreeItem
-from DWTabDownload import DockWidgetTabDownload
+
 from lib.s3.operations import S3Operation
 from AddQueueDialog import AddQueueDialog
 from resources import qTreeIconStates
@@ -42,7 +41,6 @@ class DockWidgetTabRepository():
 
         dockWidget.btnLocalOnly.clicked.connect(self.localOnly)
         dockWidget.btnLocalOnly.setIcon(QIcon(qTreeIconStates.UNPLUG))
-
 
         self.reloadRoot()
 
@@ -182,13 +180,13 @@ class DockWidgetTabRepository():
         print "Adding to download Queue: " + '/'.join(  rtItem.pathArr)
         dialog = AddQueueDialog(S3Operation.Direction.DOWN, rtItem)
         if dialog.exec_():
-            DockWidgetTabDownload.addToQueue(dialog.qItem)
+            self.dockwidget.TabDownload.addToQueue(dialog.qItem)
 
     def addProjectToUploadQueue(self, rtItem):
         print "Adding to Upload Queue: " + '/'.join(rtItem.pathArr)
         dialog = AddQueueDialog(S3Operation.Direction.UP, rtItem)
         if dialog.exec_():
-            DockWidgetTabDownload.addToQueue(dialog.qItem)
+            self.dockwidget.TabDownload.addToQueue(dialog.qItem)
 
     def findFolder(self, rtItem):
         if rtItem.type == "product":
@@ -198,9 +196,13 @@ class DockWidgetTabRepository():
         qurl = QUrl.fromLocalFile(localpath)
         QDesktopServices.openUrl(qurl)
 
+    @staticmethod
+    def expandToProject(rtItem):
+        DockWidgetTabRepository.treectl.setCurrentItem(rtItem.qTreeWItem)
+
     def openProject(self, rtItem):
         print "OPEN THE PROJECT"
         localpath = path.join(RepoTreeItem.localrootdir, path.sep.join(rtItem.pathArr))
         # Switch to the project tab
         self.dockwidget.tabWidget.setCurrentIndex(self.dockwidget.PROJECT_TAB)
-        DockWidgetTabProject.projectLoad(localpath)
+        self.dockwidget.TabProject.projectLoad(localpath)

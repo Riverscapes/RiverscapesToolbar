@@ -52,7 +52,8 @@ class DockWidgetTabProject():
         """
         settings = Settings()
         filename = QtGui.QFileDialog.getExistingDirectory(self.widget, "Open a project folder", settings.getSetting('DataDir'))
-        self.projectLoad(path.join(filename, program.ProjectFile))
+        if filename is not None and filename != "":
+            self.projectLoad(path.join(filename, program.ProjectFile))
 
     def projectUpload(self):
         print "upload"
@@ -209,7 +210,7 @@ class DockWidgetTabProject():
         :return: 
         """
         if xmlPath is None or not path.isfile(xmlPath):
-            msg = "..."
+            msg = "Could not find a valid '{}' file at that location".format(program.ProjectFile)
             q = QMessageBox(QMessageBox.Warning, "Could not find the project XML file", msg)
             q.setStandardButtons(QMessageBox.Ok)
             i = QIcon()
