@@ -97,8 +97,25 @@ class DockWidgetTabRepository():
         theData = item.data(Qt.UserRole)
 
         if theData.type=="product" and theData.local:
-            self.openProject(theData)
+            self.dockwidget.TabProject.openProject(theData)
 
+
+    def createFolder(self, rtItem):
+        print "createfolder"
+        if rtItem.type == "product":
+            localpath = path.join(RepoTreeItem.localrootdir, path.sep.join(rtItem.pathArr[:-1]))
+        else:
+            localpath = path.join(RepoTreeItem.localrootdir, path.sep.join(rtItem.pathArr))
+
+        if not path.isdir(localpath):
+            try:
+                makedirs(localpath)
+            except Exception, e:
+                pass
+
+        qurl = QUrl.fromLocalFile(localpath)
+        QDesktopServices.openUrl(qurl)
+        self.refreshRoot()
 
     def openMenu(self, pt):
         """
@@ -110,15 +127,15 @@ class DockWidgetTabRepository():
         theData = item.data(Qt.UserRole)
 
         menu = QMenu()
-        refreshReceiver = lambda item=theData: item.refreshAction()
-        findFolderReceiver = lambda item=theData: self.findFolder(item)
-        createFolderReceiver = lambda item=theData: self.createFolder(item)
+        refreshReceiver = theData.refreshAction
+        findFolderReceiver = lambda theData: self.findFolder(item)
+        createFolderReceiver = lambda theData: self.createFolder(item)
 
         if (theData.type=="product"):
 
-            openReceiver = lambda item=theData: self.openProject(item)
-            downloadReceiver = lambda item=theData: self.addProjectToDownloadQueue(item)
-            uploadReceiver = lambda item=theData: self.addProjectToUploadQueue(item)
+            openReceiver = lambda theData: self.dockwidget.TabProject.openProject(theData)
+            downloadReceiver = lambda theData: self.addProjectToDownloadQueue(theData)
+            uploadReceiver = lambda theData: self.addProjectToUploadQueue(theData)
 
             openAction = menu.addAction("Open Project", openReceiver)
 
@@ -145,7 +162,7 @@ class DockWidgetTabRepository():
 
         # Groups and containers
         else:
-            dwnQueueReceiver = lambda item=theData: self.openProject(item)
+            dwnQueueReceiver = lambda theData: self.dockwidget.TabProject.openProject(theData)
             refreshAction = menu.addAction("Reload", refreshReceiver)
             refreshAction.setEnabled(RepoTreeItem.localOnly)
             menu.addSeparator()
@@ -158,23 +175,6 @@ class DockWidgetTabRepository():
                 createFolderAction = menu.addAction("Create Folder", createFolderReceiver)
 
         menu.exec_(self.treectl.mapToGlobal(pt))
-
-    def createFolder(self, rtItem):
-        print "createfolder"
-        if rtItem.type == "product":
-            localpath = path.join(RepoTreeItem.localrootdir, path.sep.join(rtItem.pathArr[:-1]))
-        else:
-            localpath = path.join(RepoTreeItem.localrootdir, path.sep.join(rtItem.pathArr))
-
-        if not path.isdir(localpath):
-            try:
-                makedirs(localpath)
-            except Exception, e:
-                pass
-
-        qurl = QUrl.fromLocalFile(localpath)
-        QDesktopServices.openUrl(qurl)
-        self.refreshRoot()
 
     def addProjectToDownloadQueue(self, rtItem):
         print "Adding to download Queue: " + '/'.join(  rtItem.pathArr)
@@ -200,9 +200,4 @@ class DockWidgetTabRepository():
     def expandToProject(rtItem):
         DockWidgetTabRepository.treectl.setCurrentItem(rtItem.qTreeWItem)
 
-    def openProject(self, rtItem):
-        print "OPEN THE PROJECT"
-        localpath = path.join(RepoTreeItem.localrootdir, path.sep.join(rtItem.pathArr))
-        # Switch to the project tab
-        self.dockwidget.tabWidget.setCurrentIndex(self.dockwidget.PROJECT_TAB)
-        self.dockwidget.TabProject.projectLoad(localpath)
+

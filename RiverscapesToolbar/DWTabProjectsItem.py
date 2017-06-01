@@ -1,9 +1,9 @@
 from os import path, walk
-from StringIO import StringIO
 from lib.treeitem import *
+from lib.xmlhandler import loadLocalXMLFile
 from PyQt4.QtGui import QTreeWidgetItem
 from PyQt4.QtCore import Qt
-import xml.etree.ElementTree as ET
+import re
 
 
 class ProjectTreeItem():
@@ -18,30 +18,27 @@ class ProjectTreeItem():
 
     parserRootDir = None
     parserFilepath = None
+    project = None
 
     namespace = "{http://tempuri.org/ProjectDS.xsd}"
 
-    projectDOM = None
     parserDOM = None
 
     @staticmethod
-    def fetchProgramContext(projectXMLfile):
+    def fetchProgramContext(project):
         """
         Get our program.xml and local Settings
         :return:
         """
-
+        ProjectTreeItem.project = project
         ProjectTreeItem.parserRootDir = path.join(path.dirname(__file__), "../XML/")
         ProjectTreeItem.defaultParserPath = path.join(ProjectTreeItem.parserRootDir, 'default.xml')
-        ProjectTreeItem.projectFilePath = projectXMLfile
-        ProjectTreeItem.projectRootDir = path.dirname(projectXMLfile)
-
-        ProjectTreeItem.projectDOM = ProjectTreeItem._loadXMLFile(projectXMLfile)
+        ProjectTreeItem.projectRootDir = path.dirname(project.absProjectFile)
         ProjectTreeItem.parserDOM = ProjectTreeItem._findTreeParser()
 
         # projectName = self.xmlProjectDoc.find("Project/name")
 
-    def __init__(self, parseNode=None, projNode=None, rtParent=None, projectXMLfile=None, treectl=None):
+    def __init__(self, parseNode=None, projNode=None, rtParent=None, dwtab=None):
         """        
         :param parseNode: The business logic to decide what to do with this
         :param projNode: The actual project node we're working with.
@@ -50,8 +47,9 @@ class ProjectTreeItem():
         """
 
         # Do we have the program XML yet?
-        if projectXMLfile:
-            self.fetchProgramContext(projectXMLfile)
+        if dwtab:
+            self.fetchProgramContext(dwtab.project)
+            self.treectl = dwtab.treectl
 
         self.name = ""
         self.parseNode = parseNode
@@ -65,10 +63,10 @@ class ProjectTreeItem():
         if self.parseNode is None:
             self.parseNode = self.parserDOM.find('Node')
         if self.projNode is None:
-            self.projNode = self.projectDOM
+            self.projNode = ProjectTreeItem.project.DOM
 
         if not self.rtParent:
-            self.qTreeWItem = QTreeWidgetItem(treectl)
+            self.qTreeWItem = QTreeWidgetItem(self.treectl)
         else:
             self.qTreeWItem = QTreeWidgetItem(self.rtParent.qTreeWItem)
 
@@ -150,7 +148,7 @@ class ProjectTreeItem():
         refID = ProjectTreeItem.getAttr(self.projNode, 'ref')
         if refID is not None:
             # We have a ref attribute. Go find it.
-            self.refNode = self.projectDOM.find(".//*[@id='{0}']".format(refID))
+            self.refNode = ProjectTreeItem.project.DOM.find(".//*[@id='{0}']".format(refID))
 
         # This node might be a leaf. If so we need to get some meta dat
         if nodeType is not None:
@@ -160,11 +158,12 @@ class ProjectTreeItem():
 
             filepathNode = self.refNode.find('Path')
             if filepathNode is not None:
-                # normalize the slashes
-                # filepath = re.sub('[\\\/]+', os.path.sep, filepathNode.text)
+                # normalize the slashes and trim whitespace
+                filepath = re.sub('[\\\/]+', path.sep, filepathNode.text.strip())
+
                 # make it an absolute path
-                filepath = path.join(ProjectTreeItem.projectRootDir, filepathNode.text)
-                self.filepath = filepath
+                absfilepath = path.join(ProjectTreeItem.projectRootDir, filepath)
+                self.filepath = absfilepath
 
             self.symbology = ProjectTreeItem.getAttr(self.parseNode, 'symbology')
 
@@ -183,7 +182,7 @@ class ProjectTreeItem():
 
             # Should we search from the root or not.
             if absoluteXPath:
-                xNewProjList = self.projectDOM.findall("." + xpath)
+                xNewProjList = ProjectTreeItem.project.DOM.findall("." + xpath)
             else:
                 xNewProjList = self.projNode.findall(xpath)
 
@@ -259,15 +258,15 @@ class ProjectTreeItem():
                 filePath = path.join(subdir, xmlfile)
                 if filePath == ProjectTreeItem.defaultParserPath:
                     continue
-                candidate = ProjectTreeItem._loadXMLFile(filePath)
+                candidate = loadLocalXMLFile(filePath)
                 testNode = candidate.find('ProjectType')
-                projType = ProjectTreeItem.projectDOM.find("ProjectType")
+                projType = ProjectTreeItem.project.projtype
 
-                if testNode is not None and projType is not None and testNode.text == projType.text:
+                if testNode is not None and projType is not None and testNode.text == projType:
                     treeParser = candidate
                     break
             if treeParser is None:
-                treeParser = ProjectTreeItem._loadXMLFile(ProjectTreeItem.defaultParserPath)
+                treeParser = loadLocalXMLFile(ProjectTreeItem.defaultParserPath)
         return treeParser
 
     def getTreeAncestry(self):
@@ -283,21 +282,4 @@ class ProjectTreeItem():
             parent = parent.rtParent
         ancestry.reverse()
         return ancestry
-
-    @staticmethod
-    def _loadXMLFile(file):
-        """
-        Convenience method parse a filepath into a dom node and return the root
-        :param file:
-        :return:
-        """
-        with open(file, 'r') as myfile:
-            data = myfile.read().replace('\n', '')
-            it = ET.iterparse(StringIO(data))
-            # strip all namespaces. This is an XML antipattern but it makes the project SOOOOO much
-            # easier to work with.
-            for _, el in it:
-                if '}' in el.tag:
-                    el.tag = el.tag.split('}', 1)[1]
-            return it.root
 

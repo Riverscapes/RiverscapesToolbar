@@ -1,17 +1,18 @@
 from os import path
 from PyQt4 import QtGui
 from settings import Settings
-from PyQt4.QtGui import  QMenu, QTreeWidgetItem, QMessageBox, QIcon, QPixmap, QDesktopServices
+from PyQt4.QtGui import  QMenu, QMessageBox, QIcon, QPixmap, QDesktopServices
 from PyQt4.QtCore import Qt, QUrl
 
 from symbology.symbology import Symbology
 from program import Program
-from qgis.utils import iface
 from qgis.core import QgsProject, QgsMapLayerRegistry, QgsRasterLayer, QgsVectorLayer
 from DWTabProjectsItem import ProjectTreeItem
+
 from resources import qTreeIconStates
 from lib.s3.operations import S3Operation
 from AddQueueDialog import AddQueueDialog
+from project import Project
 
 
 program = Program()
@@ -19,12 +20,13 @@ program = Program()
 class DockWidgetTabProject():
 
     treectl = None
-    widget = None
+    dockwidget = None
+    project = None
 
     def __init__(self, dockWidget):
 
         DockWidgetTabProject.treectl = dockWidget.treeProject
-        DockWidgetTabProject.widget = dockWidget
+        DockWidgetTabProject.dockwidget = dockWidget
         self.treectl.setColumnCount(1)
         self.treectl.setHeaderHidden(True)
 
@@ -40,7 +42,6 @@ class DockWidgetTabProject():
         dockWidget.btnLoadProject.clicked.connect(self.projectBrowserDlg)
         dockWidget.btnLoadProject.setIcon(QIcon(qTreeIconStates.OPEN))
 
-
         dockWidget.btnProjectUpload.clicked.connect(self.projectUpload)
         dockWidget.btnProjectUpload.setIcon(QIcon(qTreeIconStates.UPLOAD))
 
@@ -51,12 +52,14 @@ class DockWidgetTabProject():
         :return: 
         """
         settings = Settings()
-        filename = QtGui.QFileDialog.getExistingDirectory(self.widget, "Open a project folder", settings.getSetting('DataDir'))
+        filename = QtGui.QFileDialog.getExistingDirectory(self.dockwidget, "Open a project folder", settings.getSetting('DataDir'))
         if filename is not None and filename != "":
             self.projectLoad(path.join(filename, program.ProjectFile))
 
     def projectUpload(self):
-        print "upload"
+        dialog = AddQueueDialog(S3Operation.Direction.UP, rtItem)
+        if dialog.exec_():
+            self.dockwidget.TabDownload.addToQueue(dialog.qItem)
 
 
     def doubleClicked(self, index):
@@ -123,16 +126,11 @@ class DockWidgetTabProject():
         QDesktopServices.openUrl(qurl)
 
 
-    def addProjectToUploadQueue(self, rtItem):
-        """
-
-        :param rtItem:
-        :return:
-        """
-        print "Adding to upload Queue: " + '/'.join(  rtItem.pathArr)
-        dialog = AddQueueDialog(S3Operation.Direction.UP, rtItem)
-        dialog.exec_()
-
+    def openProject(self, rtItem):
+        localpath = path.join("/".join(rtItem.pathArr))
+        # Switch to the project tab
+        self.dockwidget.TabProject.projectLoad(localpath)
+        self.dockwidget.tabWidget.setCurrentIndex(self.dockwidget.PROJECT_TAB)
 
     @staticmethod
     def _addgrouptomap(sGroupName, parentGroup):
@@ -203,13 +201,16 @@ class DockWidgetTabProject():
             QgsMapLayerRegistry.instance().mapLayersByName(nodeData.name)[0].triggerRepaint()
 
     @staticmethod
-    def projectLoad(xmlPath):
+    def projectLoad(relProjPath):
         """
         Load the XML file into the tree
         :param xmlPath: 
         :return: 
         """
-        if xmlPath is None or not path.isfile(xmlPath):
+        DockWidgetTabProject.project = Project(relProjPath)
+        DockWidgetTabProject.project.load()
+
+        if DockWidgetTabProject.project is None or not path.isfile(DockWidgetTabProject.project.absProjectFile):
             msg = "Could not find a valid '{}' file at that location".format(program.ProjectFile)
             q = QMessageBox(QMessageBox.Warning, "Could not find the project XML file", msg)
             q.setStandardButtons(QMessageBox.Ok)
@@ -219,5 +220,5 @@ class DockWidgetTabProject():
             q.exec_()
         else:
             DockWidgetTabProject.treectl.takeTopLevelItem(0)
-            rootItem = ProjectTreeItem(projectXMLfile=xmlPath, treectl=DockWidgetTabProject.treectl)
+            rootItem = ProjectTreeItem(dwtab=DockWidgetTabProject)
             DockWidgetTabProject.treectl.expandToDepth(5)

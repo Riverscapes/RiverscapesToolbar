@@ -79,16 +79,6 @@ class RepoTreeItem():
         self.reset()
 
 
-    def getAbsProjRoot(self):
-        return path.dirname(path.join(RepoTreeItem.localrootdir, path.sep.join(self.pathArr)))
-
-    def getAbsProjFile(self):
-        return path.join(RepoTreeItem.localrootdir, path.sep.join(self.pathArr))
-
-    def getRemoteS3Prefix(self):
-        return path.dirname('/'.join(self.pathArr))
-
-
     def refreshAction(self):
         """
         When we right click and choose refresh

@@ -4,6 +4,7 @@ from PyQt4.QtGui import QMenu, QTreeWidgetItem, QIcon, QDesktopServices
 from PyQt4.QtCore import Qt, QObject, pyqtSlot, QUrl
 from settings import Settings
 from program import Program
+from project import Project
 from lib.async import ToolbarQueues, QueueStatus
 from lib.treeitem import *
 from lib.s3.operations import S3Operation
@@ -55,23 +56,23 @@ class DockWidgetTabDownload():
         :return: 
         """
         item = self.treectl.selectedIndexes()[0]
-        theData = item.data(Qt.UserRole)
-
+        theData = item.data(Qt.UserRole)[0]
+        theProject = item.data(Qt.UserRole)[1]
         menu = QMenu()
 
         # Remove/Clear completed
         # goto Folder
         if isinstance(theData, S3Operation):
-            findReceiver = lambda item=theData: self.findFolder(theData.abspath)
+            findReceiver = lambda theProject: self.findFolder(theProject.absProjectFile)
             findReceiverAction = menu.addAction("Find file", findReceiver)
-            findReceiverAction.setEnabled(path.isfile(theData.abspath))
+            findReceiverAction.setEnabled(path.isfile(theData.absProjectFile))
         else:
             rootDir = theData.getAbsProjRoot()
             projFile = theData.getAbsProjFile()
-            findReceiver = lambda item=theData: self.findFolder(rootDir)
+            findReceiver = lambda theProject: self.findFolder(theProject.absProjectFile)
 
-            findinrepoReceiver = lambda item=theData: self.findInRepo(item)
-            openProjectReceiver = lambda item=theData: self.openProject(item)
+            findinrepoReceiver = lambda theData: self.findInRepo(theData)
+            openProjectReceiver = lambda theData: self.openProject(theData)
 
             findinrepoReceiverAction = menu.addAction("Find project folder", findReceiver)
             locateReceiverAction = menu.addAction("Locate in Repository", findinrepoReceiver)
@@ -93,13 +94,6 @@ class DockWidgetTabDownload():
     def findInRepo(self, rtItem):
         self.dockwidget.TabRepo.expandToProject(rtItem)
         self.dockwidget.tabWidget.setCurrentIndex(self.dockwidget.REPO_TAB)
-
-
-    def openProject(self, rtItem):
-        print "OPEN THE PROJECT"
-        self.dockwidget.TabRepo.openProject(rtItem)
-        self.dockwidget.tabWidget.setCurrentIndex(self.dockwidget.PROJECT_TAB)
-
 
 
     def emptyQueueRequest(self):
@@ -151,6 +145,7 @@ class QueueItem(QObject):
         self.progress = 0
         self.qTreeWItem = None
         self.opstore = s3BuildOps(self.conf, self.updateTransferProgress)
+        self.project = None
 
     def updateProjectStatus(self, statusInt = None):
         if statusInt is not None:
@@ -193,13 +188,15 @@ class QueueItem(QObject):
         else:
             icon = QIcon(qTreeIconStates.UPLOAD)
 
-        self.qTreeWItem.setText(0, self.rtItem.getRemoteS3Prefix())
+        self.project = Project("/".join(self.rtItem.pathArr))
+
+        self.qTreeWItem.setText(0, self.project.getRemoteS3Prefix())
         self.qTreeWItem.setText(1, "Queued")
         self.qTreeWItem.setIcon(1, icon)
 
         # Set the data backwards so we can find this object later
         self.rtItem.qItem = self
-        self.qTreeWItem.setData(0, Qt.UserRole, self.rtItem)
+        self.qTreeWItem.setData(0, Qt.UserRole, [self.rtItem, self.project])
         setFontBold(self.qTreeWItem, 0)
         for key, op in self.opstore.iteritems():
             newTransferItem = QTreeWidgetItem(self.qTreeWItem)
