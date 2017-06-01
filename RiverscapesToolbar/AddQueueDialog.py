@@ -64,7 +64,7 @@ class AddQueueDialog(QtGui.QDialog, FORM_CLASS):
             xmlstr = getS3getFileContents(program.Bucket, projkey)
             self.DOM = ET.fromstring(xmlstr)
         else:
-            projfile = path.join(self.rtItem.getAbsProjFile(), program.ProjectFile)
+            projfile = path.join(self.rtItem.getAbsProjFile())
             self.DOM = ET.parse(projfile)
 
         # Set up name and type

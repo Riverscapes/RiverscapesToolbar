@@ -91,7 +91,6 @@ class DockWidgetTabDownload():
         QDesktopServices.openUrl(qurl)
 
     def findInRepo(self, rtItem):
-        print "OPEN THE PROJECT"
         self.dockwidget.TabRepo.expandToProject(rtItem)
         self.dockwidget.tabWidget.setCurrentIndex(self.dockwidget.REPO_TAB)
 

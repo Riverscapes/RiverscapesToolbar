@@ -83,7 +83,7 @@ class RepoTreeItem():
         return path.dirname(path.join(RepoTreeItem.localrootdir, path.sep.join(self.pathArr)))
 
     def getAbsProjFile(self):
-        return path.dirname(path.join(RepoTreeItem.localrootdir, path.sep.join(self.pathArr)))
+        return path.join(RepoTreeItem.localrootdir, path.sep.join(self.pathArr))
 
     def getRemoteS3Prefix(self):
         return path.dirname('/'.join(self.pathArr))
