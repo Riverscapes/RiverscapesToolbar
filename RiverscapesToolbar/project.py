@@ -1,5 +1,5 @@
 from program import Program
-from DWTabRepositoryItem import RepoTreeItem
+from settings import Settings
 from lib.xmlhandler import loadLocalXMLFile, loadS3XMLFile
 from os import path
 
@@ -12,9 +12,12 @@ class Project():
         self.projname = "NO_NAME"
         self.projtype = "NO_TYPE"
 
+        settings = Settings()
+        self.localrootdir = settings.getSetting('DataDir')
+
         self.relPath = relPath
         self.pathArr = relPath.split("/")
-
+        self.qItem = None
         self.remotePrefix = self.getRemoteS3Prefix()
         self.absProjectFile = self.getAbsProjFile()
         self.localprojroot = self.getAbsProjRoot()
@@ -47,10 +50,10 @@ class Project():
     # Here are different forms the path can take
 
     def getAbsProjRoot(self):
-        return path.dirname(path.join(RepoTreeItem.localrootdir, path.sep.join(self.pathArr)))
+        return path.dirname(path.join(self.localrootdir, path.sep.join(self.pathArr)))
 
     def getAbsProjFile(self):
-        return path.join(RepoTreeItem.localrootdir, path.sep.join(self.pathArr))
+        return path.join(self.localrootdir, path.sep.join(self.pathArr))
 
     def getRemoteS3Prefix(self):
         return path.dirname('/'.join(self.pathArr))

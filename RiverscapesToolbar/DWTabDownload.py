@@ -137,15 +137,14 @@ class QueueItem(QObject):
             self.keyprefix = keyprefix
             self.bucket = bucket
 
-    def __init__(self, rtItem, conf):
+    def __init__(self, project, conf):
         # This object gets passed around a lot so we package it up
-        self.name = rtItem.name
-        self.rtItem = rtItem
+        self.name = project.projname
+        self.project = project
         self.conf = conf
         self.progress = 0
         self.qTreeWItem = None
         self.opstore = s3BuildOps(self.conf, self.updateTransferProgress)
-        self.project = None
 
     def updateProjectStatus(self, statusInt = None):
         if statusInt is not None:
@@ -188,15 +187,13 @@ class QueueItem(QObject):
         else:
             icon = QIcon(qTreeIconStates.UPLOAD)
 
-        self.project = Project("/".join(self.rtItem.pathArr))
-
         self.qTreeWItem.setText(0, self.project.getRemoteS3Prefix())
         self.qTreeWItem.setText(1, "Queued")
         self.qTreeWItem.setIcon(1, icon)
 
         # Set the data backwards so we can find this object later
-        self.rtItem.qItem = self
-        self.qTreeWItem.setData(0, Qt.UserRole, [self.rtItem, self.project])
+        self.project.qItem = self
+        self.qTreeWItem.setData(0, Qt.UserRole, [self.project, self.project])
         setFontBold(self.qTreeWItem, 0)
         for key, op in self.opstore.iteritems():
             newTransferItem = QTreeWidgetItem(self.qTreeWItem)

@@ -178,13 +178,13 @@ class DockWidgetTabRepository():
 
     def addProjectToDownloadQueue(self, rtItem):
         print "Adding to download Queue: " + '/'.join(  rtItem.pathArr)
-        dialog = AddQueueDialog(S3Operation.Direction.DOWN, rtItem)
+        dialog = AddQueueDialog(S3Operation.Direction.DOWN, rtItem.project)
         if dialog.exec_():
             self.dockwidget.TabDownload.addToQueue(dialog.qItem)
 
     def addProjectToUploadQueue(self, rtItem):
         print "Adding to Upload Queue: " + '/'.join(rtItem.pathArr)
-        dialog = AddQueueDialog(S3Operation.Direction.UP, rtItem)
+        dialog = AddQueueDialog(S3Operation.Direction.UP, rtItem.project)
         if dialog.exec_():
             self.dockwidget.TabDownload.addToQueue(dialog.qItem)
 

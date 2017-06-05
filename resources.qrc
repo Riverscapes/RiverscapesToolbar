@@ -21,7 +21,7 @@
         <file alias="play.png">images/icons/font-awesome_4-7-0_play_32_0_000000_none.png</file>
         <file alias="unplug.png">images/icons/unplug.png</file>
         <file alias="reload.png">images/icons/iconic_1-1-1_reload_32_0_000000_none.png</file>
-        <file alias="upload.png">images/icons/iconic_1-1-1_data-transfer-upload_32_0_2980b9_none.png</file>
+        <file alias="uploadbtn.png">images/icons/iconic_1-1-1_data-transfer-upload_32_0_2980b9_none.png</file>
         <file alias="hidden.png">images/icons/hidden.png</file>
 
     </qresource>

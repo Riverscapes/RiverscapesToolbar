@@ -25,6 +25,6 @@ class qTreeIconStates:
     PLAY = ":/plugins/RiverscapesToolbar/play.png"
     UNPLUG = ":/plugins/RiverscapesToolbar/unplug.png"
     RELOAD = ":/plugins/RiverscapesToolbar/reload.png"
-    UPLOAD = ":/plugins/RiverscapesToolbar/upload.png"
+    UPLOADBTN = ":/plugins/RiverscapesToolbar/uploadbtn.png"
 
     HIDDEN = ":/plugins/RiverscapesToolbar/hidden.png"

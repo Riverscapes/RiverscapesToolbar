@@ -22,14 +22,14 @@ class AddQueueDialog(QtGui.QDialog, FORM_CLASS):
 
     closingPlugin = pyqtSignal()
 
-    def __init__(self, direction, rtItem):
+    def __init__(self, direction, project):
         """Constructor."""
         super(AddQueueDialog, self).__init__()
         # Set up the user interface from Designer.
         self.setupUi(self)
         self.loading = True
         self.direction = direction
-        self.rtItem = rtItem
+        self.project = project
 
         # Keep things on top
         self.setWindowTitle("Riverscapes Add to Down/Upload Queue")
@@ -41,7 +41,7 @@ class AddQueueDialog(QtGui.QDialog, FORM_CLASS):
         self.buttonBox.button(QtGui.QDialogButtonBox.Cancel).clicked.connect(self.close)
         self.buttonBox.button(QtGui.QDialogButtonBox.Ok).clicked.connect(self.close)
 
-        self.project = Project("/".join(self.rtItem.pathArr))
+        self.project = Project("/".join(self.project.pathArr))
         isRemote = self.direction == S3Operation.Direction.DOWN
         self.project.load(remote=isRemote)
 
@@ -50,7 +50,7 @@ class AddQueueDialog(QtGui.QDialog, FORM_CLASS):
                                       settings.getSetting("force"),
                                       settings.getSetting("delete"))
 
-        self.qItem = QueueItem(self.rtItem, conf)
+        self.qItem = QueueItem(self.project, conf)
         self.setMetaData()
         self.populateList()
 

@@ -3,6 +3,7 @@ from functools import partial
 import datetime
 
 from program import Program
+from project import Project
 from lib.s3.walkers import s3GetFolderList, s3HeadData, s3Exists
 from settings import Settings
 from PyQt4.QtGui import QTreeWidgetItem, QIcon
@@ -137,6 +138,7 @@ class RepoTreeItem():
             # There's no asynchronous loading for nodes so we jump straight to loaded
             self.state = self.NState.LOADED
             if self.type == 'product':
+                self.project = Project("/".join(self.pathArr))
                 self.name = self.nItem['node']['name']
                 self.icon = QIcon(qTreeIconStates.PRODUCT)
                 if self.local:

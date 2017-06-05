@@ -43,7 +43,7 @@ class DockWidgetTabProject():
         dockWidget.btnLoadProject.setIcon(QIcon(qTreeIconStates.OPEN))
 
         dockWidget.btnProjectUpload.clicked.connect(self.projectUpload)
-        dockWidget.btnProjectUpload.setIcon(QIcon(qTreeIconStates.UPLOAD))
+        dockWidget.btnProjectUpload.setIcon(QIcon(qTreeIconStates.UPLOADBTN))
 
 
     def projectBrowserDlg(self):
@@ -57,7 +57,7 @@ class DockWidgetTabProject():
             self.projectLoad(path.join(filename, program.ProjectFile))
 
     def projectUpload(self):
-        dialog = AddQueueDialog(S3Operation.Direction.UP, rtItem)
+        dialog = AddQueueDialog(S3Operation.Direction.UP, DockWidgetTabProject.project)
         if dialog.exec_():
             self.dockwidget.TabDownload.addToQueue(dialog.qItem)
 
