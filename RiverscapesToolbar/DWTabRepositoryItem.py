@@ -3,7 +3,7 @@ from functools import partial
 import datetime
 
 from program import Program
-from lib.s3.walkers import s3GetFolderList, s3HeadData
+from lib.s3.walkers import s3GetFolderList, s3HeadData, s3Exists
 from settings import Settings
 from PyQt4.QtGui import QTreeWidgetItem, QIcon
 from PyQt4.QtCore import Qt
@@ -86,7 +86,9 @@ class RepoTreeItem():
         """
         print "Refreshing"
         self.reset()
-        self.load()
+        self.calcPresent(force=True)
+        self.load(loadlevels=1)
+
 
     def reset(self):
         """
@@ -267,6 +269,35 @@ class RepoTreeItem():
         return dummychild
 
 
+    def calcPresent(self, force=False):
+        """
+        Do the actual isLocal or isRemote calculation
+        :return:
+        """
+        if self.type == 'product':
+
+            s3path = '/'.join(self.pathArr)
+            localpath = path.join(RepoTreeItem.localrootdir, path.sep.join(self.pathArr))
+
+            if RepoTreeItem.localOnly:
+                self.remote = False
+            else:
+                head = s3HeadData(program.Bucket, s3path)
+                self.remote = head is not None
+
+            self.local = path.isfile(localpath)
+
+        else:
+            # Just to assume something exists remotely is a much cheaper operation so we do it
+            if force:
+                s3path = '/'.join(self.pathArr)
+                self.remote = s3Exists(program.Bucket, s3path)
+            else:
+                self.remote = True
+            localpath = path.join(RepoTreeItem.localrootdir, path.sep.join(self.pathArr))
+            self.local = path.isdir(localpath)
+
+
     def loadChildren(self, loadlevels=1):
         """
         Since this involves s3 lookup we have split it into its own method
@@ -302,14 +333,7 @@ class RepoTreeItem():
 
                 # Is it there?
                 newItem = RepoTreeItem(child, self, newpath)
-                if RepoTreeItem.localOnly:
-                    newItem.remote = False
-                else:
-                    head = s3HeadData(program.Bucket, s3path)
-                    newItem.remote = head is not None
-
-                newItem.local = path.isfile(localpath)
-
+                newItem.calcPresent()
                 kids.append(newItem)
 
             elif type == 'group':
@@ -317,12 +341,7 @@ class RepoTreeItem():
                 newpath.append(child['node']['folder'])
                 DEBUG = child['node']['folder']
                 newItem = RepoTreeItem(child, self, newpath)
-                # print "======== {} ===== {}".format(self.name, newItem.name)
-
-                # self.remote = s3Exists(program.Bucket, s3path)
-                newItem.remote = True
-                localpath = path.join(RepoTreeItem.localrootdir, path.sep.join(newpath))
-                newItem.local = path.isdir(localpath)
+                newItem.calcPresent()
                 kids.append(newItem)
 
             elif type == 'collection':

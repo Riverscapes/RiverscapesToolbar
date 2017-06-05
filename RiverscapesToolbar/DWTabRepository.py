@@ -128,14 +128,14 @@ class DockWidgetTabRepository():
 
         menu = QMenu()
         refreshReceiver = theData.refreshAction
-        findFolderReceiver = lambda theData: self.findFolder(item)
-        createFolderReceiver = lambda theData: self.createFolder(item)
+        findFolderReceiver = lambda data=theData: self.findFolder(data)
+        createFolderReceiver = lambda data=theData: self.createFolder(data)
 
         if (theData.type=="product"):
 
-            openReceiver = lambda theData: self.dockwidget.TabProject.openProject(theData)
-            downloadReceiver = lambda theData: self.addProjectToDownloadQueue(theData)
-            uploadReceiver = lambda theData: self.addProjectToUploadQueue(theData)
+            openReceiver = lambda data=theData: self.dockwidget.TabProject.openProject(data)
+            downloadReceiver = lambda data=theData: self.addProjectToDownloadQueue(data)
+            uploadReceiver = lambda data=theData: self.addProjectToUploadQueue(data)
 
             openAction = menu.addAction("Open Project", openReceiver)
 
@@ -150,7 +150,7 @@ class DockWidgetTabRepository():
                 menu.addSeparator()
 
                 refreshAction = menu.addAction("Reload", refreshReceiver)
-                refreshAction.setEnabled(RepoTreeItem.localOnly)
+                refreshAction.setEnabled(True)
                 findAction = menu.addAction("Find Folder", findFolderReceiver)
                 findAction.setEnabled(theData.local)
 
@@ -162,9 +162,9 @@ class DockWidgetTabRepository():
 
         # Groups and containers
         else:
-            dwnQueueReceiver = lambda theData: self.dockwidget.TabProject.openProject(theData)
+            dwnQueueReceiver = lambda data=theData: self.dockwidget.TabProject.openProject(data)
             refreshAction = menu.addAction("Reload", refreshReceiver)
-            refreshAction.setEnabled(RepoTreeItem.localOnly)
+            refreshAction.setEnabled(True)
             menu.addSeparator()
             # queueContainerAction = menu.addAction("Add projects to Download Queue", dwnQueueReceiver)
             # queueContainerAction.setEnabled(True)

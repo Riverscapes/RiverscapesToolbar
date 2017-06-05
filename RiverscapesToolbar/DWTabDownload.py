@@ -108,7 +108,7 @@ class DockWidgetTabDownload():
         print "clear completed"
         for idx in range(0, self.treectl.topLevelItemCount()):
             child = self.treectl.topLevelItem(idx)
-            theData = child.data(0, Qt.UserRole)
+            theData = child.data(0, Qt.UserRole)[0]
             if theData.qItem.progress == 100:
                 taken = self.treectl.takeTopLevelItem(idx)
 
