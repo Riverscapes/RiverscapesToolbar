@@ -1,32 +1,51 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8" ?>
 <Project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="XSD/project_explorer.xsd">
-  <Name>VBET</Name>
-  <ProjectType>VBET</ProjectType>
-  <Node xpathlabel="Name">
-    <Children>
-      <Repeater label="Realizations" xpath="Realizations/VBET">
-        <!--This is a template for how each realization should render-->
-        <Node xpathlabel="Name">
-          <Children collapsed="false">
-            <Node label="Inputs" xpath="Inputs">
-              <Children>
-                <Node label="Topography" xpath="Topography">
-                  <Children>
-                    <Node xpathlabel="Name" xpath="DEM" type="raster" symbology="DEM"/>
-                    <Node xpathlabel="Name" xpath="Flow" type="raster" symbology="Flow"/>
-                    <Node xpathlabel="Name" xpath="Slope" type="raster" symbology="SlopePer"/>
-                  </Children>
+    <Name>VBET</Name>
+    <ProjectType>VBET</ProjectType>
+    <Node xpathlabel="Name">
+        <Children>
+            <Repeater label="Realizations" xpath="Realizations/VBET">
+                <!-- this is a template for how each realization should render-->
+                <Node xpathlabel="Name">
+                    <Children collapsed="false">
+                        <Node label="Inputs" xpath="Inputs">
+                            <Children>
+                                <Node label="Topography" xpath="Topography">
+                                    <Children>
+                                        <Node xpathlabel="Name" xpath="DEM" type="raster" symbology="raster_dem">
+                                            <Children>
+                                                <Node xpathlabel="Name" xpath="Flow" type="raster" symbology=""/>
+                                                <Node xpathlabel="Name" xpath="Slope" type="raster" symbology="raster_slopedeg"/>
+                                            </Children>
+                                        </Node>
+                                    </Children>
+                                </Node>
+                                <Node label="Drainage Network" xpath="DrainageNetworks">
+                                    <Children>
+                                        <Node xpathlabel="Name" xpath="Network" type="vector" symbology="">
+                                            <Children>
+                                                <Repeater label="Buffers" xpath="Buffers">
+                                                    <Node xpathlabel="Name" xpath="Buffer" type="vector" symbology=""/>
+                                                </Repeater>
+                                            </Children>
+                                        </Node>
+                                    </Children>
+                                </Node>
+                            </Children>
+                        </Node>
+                        <Node label="Analyses" xpath="Analyses">
+                            <Children>
+                                <Node label="Outputs" xpath="Analysis/Outputs">
+                                    <Children>
+                                        <Node xpathlabel="Name" xpath="Vector" type="vector" symbology="vector_VBET"/>
+                                    </Children>
+                                </Node>
+                            </Children>
+                        </Node>
+                    </Children>
                 </Node>
-                <Repeater label="Network Buffers" xpath="DrainageNetworks/Network/Buffers/Buffer">
-                  <Node xpathlabel="Name" type="vector" symbology="DEMO_singlefill"/>
-                </Repeater>
-              </Children>
-            </Node>
-            <Node label="Analyses"/>
-          </Children>
-        </Node>
-      </Repeater>
-    </Children>
-  </Node>
+            </Repeater>
+        </Children>
+    </Node>
 </Project>
