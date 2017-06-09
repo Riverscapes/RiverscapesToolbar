@@ -10,7 +10,7 @@
 name=Riverscapes Toolbar
 qgisMinimumVersion=2.0
 description=View Riverscapes Toolbar Files
-version=0.1
+version=0.2
 author=NorthArrowResearch
 email=info@northarrowresearch.com
 
