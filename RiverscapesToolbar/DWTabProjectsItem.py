@@ -141,7 +141,9 @@ class ProjectTreeItem():
         nodeXPath = ProjectTreeItem.getAttr(self.parseNode, 'xpath')
         if nodeXPath is not None:
             self.xpath = nodeXPath
-            self.projNode = self.projNode.find(nodeXPath)
+            foundNode = self.projNode.find(nodeXPath)
+            if foundNode is not None:
+                self.projNode = foundNode
             self.refNode = self.projNode
 
         # This node might be referring to another one. Go look that up

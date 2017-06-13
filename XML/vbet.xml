@@ -13,23 +13,17 @@
                             <Children>
                                 <Node label="Topography" xpath="Topography">
                                     <Children>
-                                        <Node xpathlabel="Name" xpath="DEM" type="raster" symbology="raster_dem">
-                                            <Children>
-                                                <Node xpathlabel="Name" xpath="Flow" type="raster" symbology=""/>
-                                                <Node xpathlabel="Name" xpath="Slope" type="raster" symbology="raster_slopedeg"/>
-                                            </Children>
-                                        </Node>
+                                        <Node xpathlabel="Name" xpath="DEM" type="raster" symbology="raster_dem"/>
+                                        <Node xpathlabel="Name" xpath="Flow" type="raster" symbology=""/>
+                                        <Node xpathlabel="Name" xpath="Slope" type="raster" symbology="raster_slopedeg"/>
                                     </Children>
                                 </Node>
                                 <Node label="Drainage Network" xpath="DrainageNetworks">
                                     <Children>
-                                        <Node xpathlabel="Name" xpath="Network" type="vector" symbology="">
-                                            <Children>
-                                                <Repeater label="Buffers" xpath="Buffers">
-                                                    <Node xpathlabel="Name" xpath="Buffer" type="vector" symbology=""/>
-                                                </Repeater>
-                                            </Children>
-                                        </Node>
+                                        <Node xpathlabel="Name" xpath="Network" type="vector" symbology=""/>
+                                        <Repeater label="Buffers" xpath="Network/Buffers">
+                                            <Node xpathlabel="Name" xpath="Buffer" type="vector" symbology=""/>
+                                        </Repeater>
                                     </Children>
                                 </Node>
                             </Children>
