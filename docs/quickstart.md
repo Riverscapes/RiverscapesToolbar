@@ -60,7 +60,7 @@ ImportError: No module named boto3
 
 ***NB: Currently there is a bug where plugins from the NAR are not found after clicking the install button. Closing and re-opening QGIS fixes this problem.***
 
-Once you have enabled the plugin you will see a blue "R" icon in the toolbar area of QGIS. ![icon](/images/toolbar_icon.png)
+Once you have enabled the plugin you will see a blue "R" icon in the toolbar area of QGIS. ![icon]({ site_url}/images/toolbar_icon.png)
 
 ----------
 
