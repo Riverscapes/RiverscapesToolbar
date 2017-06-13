@@ -15,7 +15,7 @@ Installing the AWS CLI will allow you to set up your AWS credentials in the syst
 
 1. Follow the online instructions for [installing the AWS CLI](http://docs.aws.amazon.com/cli/latest/userguide/installing.html)
 2. Open a command prompt and type `aws configure`
-3. Type your credentials as given to you. Contact North Arrow Research (info aT northarrowresearch.com) if you need keys.
+3. Type your credentials as given to you. Contact North Arrow Research (email info [`aT`] northarrowresearch.com) if you need keys.
 
 ## Step 2: Install `boto3`
 
@@ -60,11 +60,10 @@ ImportError: No module named boto3
 
 ***NB: Currently there is a bug where plugins from the NAR are not found after clicking the install button. Closing and re-opening QGIS fixes this problem.***
 
-Once you have enabled the plugin you will see a blue "R" icon in the toolbar area of QGIS.
+Once you have enabled the plugin you will see a blue "R" icon in the toolbar area of QGIS. ![icon](/images/toolbar_icon.png)
 
 ----------
 
 ## First time Setup
 
 If this is your first time using the RAVE toolbar you'll need to click the **settings** button and make sure it's pointing to a valid XML file for the remote and a valid, existing folder for the local data.
-
