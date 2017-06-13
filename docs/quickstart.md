@@ -21,16 +21,48 @@ Installing the AWS CLI will allow you to set up your AWS credentials in the syst
 
 Boto3 is the library that allows QGIS to communicate with AWS using python.
 
-1. Navigate to c:\OSGEO4W and double click NEED FILENAMEthe batch file. 
-2. type `easy_install pip` to install the python package manager
+1. Navigate to `c:\OSGEO4W64` (if that is where you isntalled QGIS) and double-click `OSGeo4W.bat`. This will give you a command shell with all appropriate python libraries and environment variables set.
+2. type `easy_install pip` to install the python package manager (this may already have been done but no harm in doing it again)
 3. type `pip install boto3` 
+
+If all goes well you should have boto3 installed. 
+
+to test it out run `python` command in your shell and try to import boto3. If it imports without any errors you're good:
+
+```
+GDAL 2.2.0, released 2017/04/28
+
+C:\OSGeo4W64>python
+Python 2.7.5 (default, May 15 2013, 22:44:16) [MSC v.1500 64 bit (AMD64)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import boto3
+>>>
+```
+
+here's what it looks like when it **doesn't** work:
+
+```bash
+GDAL 2.2.0, released 2017/04/28
+
+C:\OSGeo4W64>python
+Python 2.7.5 (default, May 15 2013, 22:44:16) [MSC v.1500 64 bit (AMD64)] on win32
+Type "help", "copyright", "credits" or "license" for more information.
+>>> import boto3
+Traceback (most recent call last):
+  File "<stdin>", line 1, in <module>
+ImportError: No module named boto3
+>>>
+```
+
 
 ## Step 3: Install the plugin from the NAR web store
 
-1. Add the NAR web store to your QGIS web stores. 
+1. Add the [NAR web store](http://riverscapes.northarrowresearch.com/plugins.xml) to your QGIS web stores. 
 2. You should then see `Riverscapes Toolbar` as an option. You can click "Install Plugin" button from here. 
 
 ***NB: Currently there is a bug where plugins from the NAR are not found after clicking the install button. Closing and re-opening QGIS fixes this problem.***
+
+Once you have enabled the plugin you will see a blue "R" icon
 
 ----------
 
