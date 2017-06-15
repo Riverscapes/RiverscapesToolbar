@@ -161,7 +161,11 @@ class ProjectTreeItem():
             filepathNode = self.refNode.find('Path')
             if filepathNode is not None:
                 # normalize the slashes and trim whitespace
-                filepath = re.sub('[\\\/]+', path.sep, filepathNode.text.strip())
+                filepath = filepathNode.text.strip()
+                if path.sep == "/":
+                    filepath = filepath.replace("\\", "/")
+                else:
+                    filepath = filepath.replace("/", "\\")
 
                 # make it an absolute path
                 absfilepath = path.join(ProjectTreeItem.projectRootDir, filepath)
