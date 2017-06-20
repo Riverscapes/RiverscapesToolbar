@@ -27,6 +27,4 @@ RAVE is scalable and intended to accommodate additional riverscapes projects ove
 
 ### License
 
-
-
-
+Licensed under the [GNU General Public License Version 3](https://github.com/Riverscapes/RiverscapesToolbar/blob/master/LICENSE).
