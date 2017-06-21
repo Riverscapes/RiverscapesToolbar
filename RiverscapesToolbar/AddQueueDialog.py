@@ -78,6 +78,7 @@ class AddQueueDialog(QtGui.QDialog, FORM_CLASS):
             if op.direction == S3Operation.Direction.DOWN:
                 destpath = op.abspath
             else:
+                # Uploads need a special path
                 destpath = '/'.join(['s3://', op.bucket, op.fullkey])
 
             newItem.setText(1, destpath)

@@ -54,7 +54,7 @@ class DockWidgetTabProject():
         settings = Settings()
         filename = QtGui.QFileDialog.getExistingDirectory(self.dockwidget, "Open a project folder", settings.getSetting('DataDir'))
         if filename is not None and filename != "":
-            self.projectLoad(path.join(filename, program.ProjectFile))
+            self.projectLoad(path.join(filename, program.ProjectFile), outside=True)
 
     def projectUpload(self):
         dialog = AddQueueDialog(S3Operation.Direction.UP, DockWidgetTabProject.project)
@@ -201,13 +201,14 @@ class DockWidgetTabProject():
             QgsMapLayerRegistry.instance().mapLayersByName(nodeData.name)[0].triggerRepaint()
 
     @staticmethod
-    def projectLoad(relProjPath):
+    def projectLoad(absProjPath, outside=False):
         """
         Load the XML file into the tree
         :param xmlPath: 
         :return: 
         """
-        DockWidgetTabProject.project = Project(relProjPath)
+
+        DockWidgetTabProject.project = Project(absProjPath, outside=outside)
         DockWidgetTabProject.project.load()
 
         if DockWidgetTabProject.project is None or not path.isfile(DockWidgetTabProject.project.absProjectFile):
