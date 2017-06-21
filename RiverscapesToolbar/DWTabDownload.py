@@ -174,7 +174,7 @@ class QueueItem(QObject):
         # print "DWTabDownload: {} -- {} -- {} -- {}".format(*progtuple)
         for idx in range(self.qTreeWItem.childCount()):
             child = self.qTreeWItem.child(idx)
-            if child.data(0, Qt.UserRole).abspath == progtuple[0]:
+            if child.data(0, Qt.UserRole)[1].abspath == progtuple[0]:
                 if progtuple[1] < 100:
                     progstr = "{}%".format(progtuple[1])
                 else:
