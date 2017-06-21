@@ -70,8 +70,7 @@ class AddQueueDialog(QtGui.QDialog, FORM_CLASS):
             newItem.setText(1, row['value'])
 
     def populateList(self):
-        # IF this is an upload then cram some
-
+        # If this is an upload then cram some
         for key,op in self.qItem.opstore.iteritems():
             newItem = QTreeWidgetItem(self.treeFiles)
             newItem.setText(0, op.op)

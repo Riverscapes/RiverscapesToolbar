@@ -18,6 +18,7 @@ class Project():
         self.relPath = relPath
         self.pathArr = relPath.split("/")
         self.qItem = None
+        self.rtItem = None
         self.remotePrefix = self.getRemoteS3Prefix()
         self.absProjectFile = self.getAbsProjFile()
         self.localprojroot = self.getAbsProjRoot()

@@ -1,4 +1,4 @@
-from PyQt4.QtGui import QMenu, QDesktopServices, QIcon
+from PyQt4.QtGui import QMenu, QDesktopServices, QIcon, QTreeWidgetItem
 from PyQt4.QtCore import Qt, QUrl
 from os import path, makedirs
 
@@ -97,7 +97,7 @@ class DockWidgetTabRepository():
         theData = item.data(Qt.UserRole)
 
         if theData.type=="product" and theData.local:
-            self.dockwidget.TabProject.openProject(theData)
+            self.dockwidget.TabProject.openProject(theData.project)
 
 
     def createFolder(self, rtItem):
@@ -133,9 +133,9 @@ class DockWidgetTabRepository():
 
         if (theData.type=="product"):
 
-            openReceiver = lambda data=theData: self.dockwidget.TabProject.openProject(data)
-            downloadReceiver = lambda data=theData: self.addProjectToDownloadQueue(data)
-            uploadReceiver = lambda data=theData: self.addProjectToUploadQueue(data)
+            openReceiver = lambda: self.dockwidget.TabProject.openProject(theData.project)
+            downloadReceiver = lambda: self.addProjectToDownloadQueue(theData)
+            uploadReceiver = lambda: self.addProjectToUploadQueue(theData)
 
             openAction = menu.addAction("Open Project", openReceiver)
 
@@ -162,7 +162,7 @@ class DockWidgetTabRepository():
 
         # Groups and containers
         else:
-            dwnQueueReceiver = lambda data=theData: self.dockwidget.TabProject.openProject(data)
+            dwnQueueReceiver = lambda: self.dockwidget.TabProject.openProject(theData.project)
             refreshAction = menu.addAction("Reload", refreshReceiver)
             refreshAction.setEnabled(True)
             menu.addSeparator()
@@ -196,8 +196,23 @@ class DockWidgetTabRepository():
         qurl = QUrl.fromLocalFile(localpath)
         QDesktopServices.openUrl(qurl)
 
+
     @staticmethod
-    def expandToProject(rtItem):
-        DockWidgetTabRepository.treectl.setCurrentItem(rtItem.qTreeWItem)
+    def expandToProject(project, parent=None):
+        if parent is None:
+            parent = DockWidgetTabRepository.treectl.invisibleRootItem()
+
+        # Traverse the tree to find the item we care about
+        for idx in range(parent.childCount()):
+            childData = parent.child(idx).data(0, Qt.UserRole)
+
+            if childData is not None:
+                if childData.pathArr == project.pathArr:
+                    DockWidgetTabRepository.treectl.setCurrentItem(childData.qTreeWItem)
+                    childData.qTreeWItem.setExpanded(True)
+                    break
+                else:
+                    DockWidgetTabRepository.expandToProject(project, parent.child(idx))
+
 
 

@@ -36,7 +36,6 @@ class DockWidgetTabDownload():
 
         self.dockwidget.btnProjectRemove.clicked.connect(self.removeItemFromQueue)
 
-
         self.dockwidget.treeProjQueue.setColumnCount(2)
         self.dockwidget.treeProjQueue.setHeaderHidden(False)
 
@@ -56,23 +55,26 @@ class DockWidgetTabDownload():
         :return: 
         """
         item = self.treectl.selectedIndexes()[0]
-        theData = item.data(Qt.UserRole)[0]
-        theProject = item.data(Qt.UserRole)[1]
+
+        theProject = item.data(Qt.UserRole)[0]
+        theOp =  item.data(Qt.UserRole)[1]
         menu = QMenu()
 
         # Remove/Clear completed
-        # goto Folder
-        if isinstance(theData, S3Operation):
-            findReceiver = lambda theProject: self.findFolder(theProject.absProjectFile)
+        # Is this a root node or a child
+        if isinstance(theOp, S3Operation):
+            # Child ==> Op ==> Individual file options
+            findReceiver = lambda: self.findFolder(theOp.abspath)
             findReceiverAction = menu.addAction("Find file", findReceiver)
-            findReceiverAction.setEnabled(path.isfile(theData.absProjectFile))
+            findReceiverAction.setEnabled(path.isfile(theOp.abspath))
         else:
-            rootDir = theData.getAbsProjRoot()
-            projFile = theData.getAbsProjFile()
-            findReceiver = lambda theProject: self.findFolder(theProject.absProjectFile)
+            # root node ==> Project
+            rootDir = theProject.getAbsProjRoot()
+            projFile = theProject.getAbsProjFile()
+            findReceiver = lambda: self.findFolder(rootDir)
 
-            findinrepoReceiver = lambda theData: self.findInRepo(theData)
-            openProjectReceiver = lambda theData: self.openProject(theData)
+            findinrepoReceiver = lambda: self.findInRepo(theProject)
+            openProjectReceiver = lambda: self.dockwidget.TabProject.openProject(theProject)
 
             findinrepoReceiverAction = menu.addAction("Find project folder", findReceiver)
             locateReceiverAction = menu.addAction("Locate in Repository", findinrepoReceiver)
@@ -81,18 +83,21 @@ class DockWidgetTabDownload():
             done = progress == 100
 
             findinrepoReceiverAction.setEnabled(path.isdir(rootDir))
-            locateReceiverAction.setEnabled(theData.local or theData.remote)
+            locateReceiverAction.setEnabled(True)
             openProjectReceiverAction.setEnabled(path.isfile(projFile))
 
 
         menu.exec_(self.treectl.mapToGlobal(pt))
 
     def findFolder(self, filepath):
-        qurl = QUrl.fromLocalFile(path.dirname(filepath))
+        if path.isfile(filepath):
+            qurl = QUrl.fromLocalFile(path.dirname(filepath))
+        else:
+            qurl = QUrl.fromLocalFile(filepath)
         QDesktopServices.openUrl(qurl)
 
-    def findInRepo(self, rtItem):
-        self.dockwidget.TabRepo.expandToProject(rtItem)
+    def findInRepo(self, project):
+        self.dockwidget.TabRepo.expandToProject(project)
         self.dockwidget.tabWidget.setCurrentIndex(self.dockwidget.REPO_TAB)
 
 
@@ -193,7 +198,7 @@ class QueueItem(QObject):
 
         # Set the data backwards so we can find this object later
         self.project.qItem = self
-        self.qTreeWItem.setData(0, Qt.UserRole, [self.project, self.project])
+        self.qTreeWItem.setData(0, Qt.UserRole, [self.project, None])
         setFontBold(self.qTreeWItem, 0)
         for key, op in self.opstore.iteritems():
             newTransferItem = QTreeWidgetItem(self.qTreeWItem)
@@ -201,7 +206,7 @@ class QueueItem(QObject):
             newTransferItem.setText(1, "--")
             newTransferItem.setIcon(1, icon)
             setFontColor(newTransferItem, "#666666", 0)
-            newTransferItem.setData(0, Qt.UserRole, op)
+            newTransferItem.setData(0, Qt.UserRole, [self.project, op])
 
         Qs.queuePush(self)
 

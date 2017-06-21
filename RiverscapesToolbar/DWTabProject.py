@@ -126,8 +126,8 @@ class DockWidgetTabProject():
         QDesktopServices.openUrl(qurl)
 
 
-    def openProject(self, rtItem):
-        localpath = path.join("/".join(rtItem.pathArr))
+    def openProject(self, project):
+        localpath = path.join("/".join(project.pathArr))
         # Switch to the project tab
         self.dockwidget.TabProject.projectLoad(localpath)
         self.dockwidget.tabWidget.setCurrentIndex(self.dockwidget.PROJECT_TAB)
