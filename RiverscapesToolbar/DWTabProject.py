@@ -166,6 +166,13 @@ class DockWidgetTabProject():
         symbology = nodeData.symbology
         filepath = nodeData.filepath
 
+        # First off if this isn't a map type just open it using windows explorer or OSX
+        if nodeData.maptype == 'other':
+            # Anything else
+            qurl = QUrl.fromLocalFile(filepath)
+            QDesktopServices.openUrl(qurl)
+            return
+
         print "ADDING TO MAP::", nodeData.filepath
         # Loop over all the parent group layers for this raster
         # ensuring they are in the tree in correct, nested order
@@ -184,7 +191,6 @@ class DockWidgetTabProject():
             elif nodeData.maptype == 'raster':
                 # Raster
                 rOutput = QgsRasterLayer(filepath, nodeData.name)
-
 
             elif nodeData.maptype == 'tilelayer':
                 print "WARNING:::  not implemented yet"

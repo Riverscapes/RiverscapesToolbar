@@ -17,6 +17,9 @@
                 <Repeater label="Vector Layers" xpath="//Vector">
                   <Node xpathlabel="Name" type="vector" symbology=""/>
                 </Repeater>
+                <Repeater label="Image Layers" xpath="//Image">
+                  <Node xpathlabel="Name" type="other"/>
+                </Repeater>
               </Children>
             </Node>
           </Children>
