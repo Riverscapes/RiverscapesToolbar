@@ -58,6 +58,7 @@ class ProjectTreeItem():
         self.xpath = None
         self.maptype = None
         self.symbology = None
+        self.localorder = 0
 
         # RootNode Stuff. We've got to keep the parser in line and tracking the project node
         if self.parseNode is None:
@@ -108,6 +109,8 @@ class ProjectTreeItem():
         """
         self.qTreeWItem.setText(0, self.name)
 
+        if self.qTreeWItem.parent():
+            self.localorder = self.qTreeWItem.parent().indexOfChild(self.qTreeWItem)
         # Walk back up the tree and hide things that have no value
         self.backwardRefresh()
 
@@ -284,7 +287,7 @@ class ProjectTreeItem():
         ancestry = []
         parent = self.rtParent
         while parent is not None:
-            ancestry.append(parent.name)
+            ancestry.append((parent.name, parent.localorder))
             parent = parent.rtParent
         ancestry.reverse()
         return ancestry

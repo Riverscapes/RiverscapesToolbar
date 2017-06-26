@@ -18,7 +18,7 @@
                   <Node xpathlabel="Name" type="vector" symbology=""/>
                 </Repeater>
                 <Repeater label="Image Layers" xpath="//Image">
-                  <Node xpathlabel="Name" type="other"/>
+                  <Node xpathlabel="Name" type="file"/>
                 </Repeater>
               </Children>
             </Node>

@@ -23,12 +23,17 @@ class DockWidgetTabProject():
     dockwidget = None
     project = None
 
+    layerlibrary = []
+
     def __init__(self, dockWidget):
 
         DockWidgetTabProject.treectl = dockWidget.treeProject
         DockWidgetTabProject.dockwidget = dockWidget
         self.treectl.setColumnCount(1)
         self.treectl.setHeaderHidden(True)
+
+        # This will hopefully allow custom triggering of layer re-ordering
+        # QgsMapLayerRegistry.instance().legendLayersAdded.connect(self.rearrangeLayers)
 
         # Load the symbolizer plugins
         self.symbology = Symbology()
@@ -62,22 +67,30 @@ class DockWidgetTabProject():
             self.dockwidget.TabDownload.addToQueue(dialog.qItem)
 
 
+    # @staticmethod
+    # def rearrangeLayers(layers):
+    #     print "hello"
+    #     # order = iface.layerTreeCanvasBridge().customLayerOrder()
+    #     # for layer in layers:  # How many layers we need to move
+    #     #     order.insert(0, order.pop())  # Last layer to first position
+    #     # iface.layerTreeCanvasBridge().setCustomLayerOrder(order)
+
     def doubleClicked(self, index):
         """
         Tree item double clicks
         :param index: 
         :return: 
         """
-        item = self.treectl.selectedIndexes()[0]
-        theData = item.data(Qt.UserRole)
+        itemind = self.treectl.selectedIndexes()[0]
+        theData = itemind.data(Qt.UserRole)
 
         if theData.maptype is not None:
 
             addEnabled = theData.maptype != "file"
             if addEnabled:
-                self.addlayertomap(item)
+                self.addlayertomap(itemind)
             else:
-                self.findFolder(item)
+                self.externalOpen(itemind)
 
     def openMenu(self, position):
         """
@@ -133,7 +146,7 @@ class DockWidgetTabProject():
         self.dockwidget.tabWidget.setCurrentIndex(self.dockwidget.PROJECT_TAB)
 
     @staticmethod
-    def _addgrouptomap(sGroupName, parentGroup):
+    def _addgrouptomap(sGroupName, sGroupOrder, parentGroup):
         """
         Add a hierarchical group to the layer manager
         :param sGroupName: 
@@ -148,13 +161,11 @@ class DockWidgetTabProject():
         # Attempt to find the specified group in the parent
         thisGroup = parentGroup.findGroup(sGroupName)
         if not thisGroup:
-            thisGroup = parentGroup.insertGroup(0, sGroupName)
+            thisGroup = parentGroup.insertGroup(sGroupOrder, sGroupName)
 
         return thisGroup
 
-
-    @staticmethod
-    def addlayertomap(layer):
+    def addlayertomap(self, qindex):
         """
         Add a layer to the map
         :param layer: 
@@ -162,16 +173,13 @@ class DockWidgetTabProject():
         """
         # Loop over all the parent group layers for this raster
         # ensuring they are in the tree in correct, nested order
-        nodeData = layer.data(Qt.UserRole)
+        nodeData = qindex.data(Qt.UserRole)
         symbology = nodeData.symbology
         filepath = nodeData.filepath
 
-        # First off if this isn't a map type just open it using windows explorer or OSX
-        if nodeData.maptype == 'other':
-            # Anything else
-            qurl = QUrl.fromLocalFile(filepath)
-            QDesktopServices.openUrl(qurl)
-            return
+        # DEBUG
+        item = DockWidgetTabProject.treectl.itemFromIndex(qindex)
+        order = item.parent().indexOfChild(item)
 
         print "ADDING TO MAP::", nodeData.filepath
         # Loop over all the parent group layers for this raster
@@ -179,7 +187,8 @@ class DockWidgetTabProject():
         parentGroup = None
         if len(filepath) > 0:
             for aGroup in nodeData.getTreeAncestry():
-                parentGroup = DockWidgetTabProject._addgrouptomap(aGroup, parentGroup)
+                # aGroup comes back as a tuple (name, order)
+                parentGroup = DockWidgetTabProject._addgrouptomap(aGroup[0], aGroup[1], parentGroup)
 
         assert parentGroup, "All rasters should be nested and so parentGroup should be instantiated by now"
 
@@ -196,7 +205,7 @@ class DockWidgetTabProject():
                 print "WARNING:::  not implemented yet"
 
             QgsMapLayerRegistry.instance().addMapLayer(rOutput, False)
-            parentGroup.addLayer(rOutput)
+            parentGroup.insertLayer(order, rOutput)
 
             # Symbolize this layer
             Symbology().symbolize(rOutput, symbology)
