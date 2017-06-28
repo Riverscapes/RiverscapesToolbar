@@ -77,9 +77,9 @@ ImportError: No module named boto3
 7. Click  `OK`
 8. You should then see `Riverscapes Toolbar` as an option. You can click "Install Plugin" button from there. 
 
-![Plugin installation](/images/plugin_management.png)
+![Plugin installation]({{site.baseurl}}/assets/images/plugin_management.png)
 
-Once you have enabled the plugin you will see a blue "R" icon in the toolbar area of QGIS. ![icon]({{site_url}}/images/toolbar_icon.png) Click this R button to open the RAVE dockable window.
+Once you have enabled the plugin you will see a blue "R" icon in the toolbar area of QGIS. ![icon]({{site.baseurl}}/assets/images/toolbar_icon.png) Click this R button to open the RAVE dockable window.
 
 ----------
 
