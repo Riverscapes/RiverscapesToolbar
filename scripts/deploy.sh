@@ -12,7 +12,7 @@ git push --all
 
 # Now make a zip and upload it
 pb_tool zip
-aws s3 cp RiverscapesToolbar.zip s3://qgis.northarrowresearch.com/plugins/riverscapestoolbar/riverscapestoolbar-$NEWVERSION.zip
+aws s3 cp RiverscapesToolbar.zip s3://qgis.northarrowresearch.com/plugins/riverscapestoolbar/v$NEWVERSION/RiverscapesToolbar.zip
 rm RiverscapesToolbar.zip
 
 # Now let dev catchup

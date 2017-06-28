@@ -39,9 +39,16 @@ class DockWidgetTabDownload():
         self.dockwidget.treeProjQueue.setColumnCount(2)
         self.dockwidget.treeProjQueue.setHeaderHidden(False)
 
+        # Override the resize event
+        self.treectl.resizeEvent = self.resizeEvent
+
         self.dockwidget.treeProjQueue.setContextMenuPolicy(Qt.CustomContextMenu)
         self.dockwidget.treeProjQueue.customContextMenuRequested.connect(self.openMenu)
 
+    def resizeEvent(self, event):
+        width = self.dockwidget.treeProjQueue.width()
+        self.dockwidget.treeProjQueue.setColumnWidth(1, width * 0.1999)
+        self.dockwidget.treeProjQueue.setColumnWidth(0, width * 0.8)
 
     @staticmethod
     def addToQueue(QueueItem):
