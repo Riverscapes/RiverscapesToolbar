@@ -9,6 +9,10 @@ If you installed the plugin first you do not need to uninstall it. Just complete
 
 We are working to streamline and remove as many of these steps as we can but for now here are the instructions.
 
+***Q: How do I know if I have the developer or standalone version of QGIS installed?***
+
+A: Generally if you see a folder in your c:\ drive called `c:\OSGEO4W64` then you have the developer version of QGIS installed and should follow those instructions (below)
+
 ## Step 1: Install AWS CLI (Amazon Web Services Command-Line Interface)
 
 Installing the AWS CLI will allow you to set up your AWS credentials in the system in a place where the RAVE plugin can find them:
@@ -20,6 +24,19 @@ Installing the AWS CLI will allow you to set up your AWS credentials in the syst
 ## Step 2: Install `boto3`
 
 Boto3 is the library that allows QGIS to communicate with AWS using python.
+
+### QGIS Standalone Users:
+
+1. Click `Start` button and type `OSGEO4W` (yes, even in the standalone version)
+2. You should see program called "OSGEO4W Shell". Click that and you should get a DOS box in which you should type the following:
+
+```
+python -m pip install boto3 --user
+```
+
+### QGIS OSGEO4W64 (developer) Users 
+
+***NB: This assumes you have installed QGis OSGeo4W64 with `setup tools`***
 
 1. Navigate to `c:\OSGEO4W64` (if that is where you isntalled QGIS) and double-click `OSGeo4W.bat`. This will give you a command shell with all appropriate python libraries and environment variables set.
 2. type `easy_install pip` to install the python package manager (this may already have been done but no harm in doing it again).
