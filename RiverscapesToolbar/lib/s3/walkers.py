@@ -137,6 +137,9 @@ def s3GetFolderList(bucket, prefix):
             results.append(o['Prefix'].replace(prefix, '').replace('/', ''))
     return results
 
+
+
+
 def s3ProductWalker(bucket, patharr, currpath=[], currlevel=0):
     """
     Given a path array, ending in a Product, snake through the

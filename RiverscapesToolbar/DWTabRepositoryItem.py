@@ -1,7 +1,6 @@
 from os import path, listdir
 from functools import partial
 import datetime
-
 from program import Program
 from project import Project
 from lib.s3.walkers import s3GetFolderList, s3HeadData, s3Exists
@@ -195,8 +194,8 @@ class RepoTreeItem():
             self.childrenstate = self.NState.LOAD_REQ
 
         if self.type != 'product':
-            Qs.queuePush(partial(self.loadChildren, (loadlevels - 1)));
-
+            Qs.queuePush(partial(self.loadChildren, (loadlevels - 1)))
+            Qs.startWorker()
 
     def setToolTip(self):
         """

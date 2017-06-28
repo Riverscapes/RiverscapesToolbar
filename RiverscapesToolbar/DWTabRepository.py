@@ -1,9 +1,9 @@
-from PyQt4.QtGui import QMenu, QDesktopServices, QIcon, QTreeWidgetItem
+from PyQt4.QtGui import QMenu, QDesktopServices, QIcon, QMessageBox
 from PyQt4.QtCore import Qt, QUrl
 from os import path, makedirs
-
+from PopupDialog import okDlg
 from DWTabRepositoryItem import RepoTreeItem
-
+from lib.async import TreeLoadQueues
 from lib.s3.operations import S3Operation
 from AddQueueDialog import AddQueueDialog
 from resources import qTreeIconStates
@@ -42,6 +42,16 @@ class DockWidgetTabRepository():
         dockWidget.btnLocalOnly.clicked.connect(self.localOnly)
         dockWidget.btnLocalOnly.setIcon(QIcon(qTreeIconStates.UNPLUG))
 
+        Qs = TreeLoadQueues()
+        # Hook up our network errors
+        Qs.worker.error.connect(self.NetWorkFailDialog)
+
+        self.reloadRoot()
+
+    def NetWorkFailDialog(self, errobj):
+        okDlg("Network Error:", errobj[0].message, errobj[1], icon=QMessageBox.Warning)
+        self.dockwidget.btnLocalOnly.setChecked(True)
+        RepoTreeItem.localOnly = True
         self.reloadRoot()
 
     def localOnly(self, value):
@@ -74,6 +84,7 @@ class DockWidgetTabRepository():
         self.dockwidget.btnReload.setText("Loading...")
         self.dockwidget.btnReload.setEnabled(False)
 
+        # Remove the top level items
         DockWidgetTabRepository.treectl.takeTopLevelItem(0)
         rootItem = RepoTreeItem(treectl=self.treectl)
         rootItem.load(self.START_LEVELS)

@@ -65,6 +65,7 @@ class TreeLoadQueues(TreeLoadQueuesBorg):
             self.currentProject = None
 
         start = pyqtSignal(str)
+        error = pyqtSignal(object)
 
         @pyqtSlot()
         def run(self):
@@ -81,9 +82,11 @@ class TreeLoadQueues(TreeLoadQueuesBorg):
                         thePartial()
                 Qs._alive = False
             except Exception, e:
+                Qs.stopWorker()
+                Qs.load_q.empty()
                 print "TransferWorkerThread Exception: {}".format(str(e))
                 traceback.print_exc()
-
+                self.error.emit((e, traceback.format_exc()))
 
 class ToolbarQueuesBorg(object):
     _shared_state = {}

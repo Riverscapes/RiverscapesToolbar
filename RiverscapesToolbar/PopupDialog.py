@@ -1,6 +1,7 @@
 from PyQt4 import QtGui
 
-def okDlg(self, txt, infoText="", detailsTxt=None, icon=QtGui.QMessageBox.Information):
+
+def okDlg(txt, infoText="", detailsTxt=None, icon=QtGui.QMessageBox.Information):
     """
     Call it like this:
         self.okDlg("ERROR:", infoText=str(e), detailsTxt=detailstxt, icon=QtGui.QMessageBox.Critical)
