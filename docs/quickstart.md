@@ -7,9 +7,20 @@ Installing the RAVE plugin itself is relatively straightforward. It's a simple Q
 
 If you installed the plugin first you do not need to uninstall it. Just complete the steps you didn't already do below. There is also no harm in re-doing any of these steps.
 
-Some of the steps below differ if you are running the standalone version of QGIS versus the developer version. ***How do I know if I have the developer or standalone version of QGIS installed?*** Generally if you see in your `c:\` drive a folder called `c:\OSGEO4W64` then you have the developer version of QGIS installed and should follow those instructions (below).
 
-## Step 1: Install AWS CLI
+
+## Step 1: Install QGIS
+
+If you haven't done so already, go ahead and install QGIS. If you plan on simply browsing and consuming products from the riverscapes data warehouse then you should simply download and install the regular, *standalone* version of QGIS.
+
+If you plan on developing riverscapes tools and products then you should download the OSGeox64 installer that includes QGIS as well as lots of other tools such as Python and GDAL that are essential for software development.
+
+Some of the steps below differ if you are running the standalone version of QGIS versus the developer version. **How do I know if I have the developer or standalone version of QGIS installed?** Generally if you see in your `c:\` drive a folder called `c:\OSGEO4W64` then you have the developer version of QGIS installed and should follow those instructions (below).
+
+
+
+
+## Step 2: Install AWS CLI
 
 Installing the AWS command line interface (CLI) will allow you to set up your AWS credentials in the system in a place where the RAVE plugin can find them:
 
@@ -17,7 +28,9 @@ Installing the AWS command line interface (CLI) will allow you to set up your AW
 2. Open a command prompt and type `aws configure`
 3. Type your credentials as given to you. Contact North Arrow Research (email info [`aT`] northarrowresearch.com) if you need keys.
 
-## Step 2: Install `boto3`
+
+
+## Step 3: Install `boto3`
 
 Boto3 is the library that allows QGIS to communicate with AWS using python. It essentially sits between the AWS CLI and RAVE.
 
@@ -66,7 +79,8 @@ ImportError: No module named boto3
 ```
 
 
-## Step 3: Install the plugin from the NAR web store
+
+## Step 4: Install the plugin from the NAR web store
 
 1. Start QGIS
 2. On the `Plugins` menu, click `Manage and Install Plugins...`
@@ -83,6 +97,11 @@ Once you have enabled the plugin you will see a blue "R" icon in the toolbar are
 
 ----------
 
-## First time Setup
+## Step 5: First Time RAVE Setup
 
-If this is your first time using the RAVE toolbar you'll need to click the **settings** button and make sure it's pointing to a valid XML file for the remote and a valid, existing folder for the local data.
+First time RAVE users should perform the following steps:
+
+1. With the RAVE dockable window open (see previous step) click on the `Settings` button at the bottom left. 
+2. Enter the local folder on your computer where you want riverscapes products downloaded. Any products that you download will get placed here in the same folder structure as the online, remote data warehouse.
+3. You can leave the `Delete` and `Force` checkboxes unchecked.
+4. Click OK.
