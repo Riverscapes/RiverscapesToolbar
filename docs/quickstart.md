@@ -85,11 +85,12 @@ ImportError: No module named boto3
 1. Start QGIS
 2. On the `Plugins` menu, click `Manage and Install Plugins...`
 3. Switch to the `Settings` tab
-4. Click `Add...` in the bottom right.
-5. Enter a name for this new pugin store, e.g. `NAR Plugins` 
-6. Paste the URL to the [NAR web store](http://riverscapes.northarrowresearch.com/plugins.xml)
-7. Click  `OK`
-8. You should then see `Riverscapes Toolbar` as an option. You can click "Install Plugin" button from there. 
+4. Check the `Show also experimental plugins` checkbox
+5. Click `Add...` in the bottom right.
+6. Enter a name for this new pugin store, e.g. `NAR Plugins` 
+7. Paste the URL to the [NAR web store](http://riverscapes.northarrowresearch.com/plugins.xml)
+8. Click  `OK`
+9. You should then see `Riverscapes Toolbar` as an option. You can click "Install Plugin" button from there. 
 
 ![Plugin installation]({{site.baseurl}}/assets/images/plugin_management.png)
 
