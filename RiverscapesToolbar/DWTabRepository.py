@@ -11,7 +11,7 @@ from resources import qTreeIconStates
 class DockWidgetTabRepository():
 
     treectl = None
-    START_LEVELS = 2
+    START_LEVELS = 3
     dockwidget = None
 
     def __init__(self, dockWidget):
@@ -88,7 +88,7 @@ class DockWidgetTabRepository():
         DockWidgetTabRepository.treectl.takeTopLevelItem(0)
         rootItem = RepoTreeItem(treectl=self.treectl)
         rootItem.load(self.START_LEVELS)
-        self.treectl.expandToDepth(self.START_LEVELS - 2)
+        self.treectl.expandToDepth(self.START_LEVELS)
 
         self.dockwidget.btnReload.setEnabled(True)
         self.dockwidget.btnReload.setText("Reload")

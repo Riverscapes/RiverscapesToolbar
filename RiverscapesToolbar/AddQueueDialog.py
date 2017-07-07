@@ -41,7 +41,6 @@ class AddQueueDialog(QtGui.QDialog, FORM_CLASS):
         self.buttonBox.button(QtGui.QDialogButtonBox.Cancel).clicked.connect(self.close)
         self.buttonBox.button(QtGui.QDialogButtonBox.Ok).clicked.connect(self.close)
 
-        self.project = Project("/".join(self.project.pathArr))
         isRemote = self.direction == S3Operation.Direction.DOWN
         self.project.load(remote=isRemote)
 

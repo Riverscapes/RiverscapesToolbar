@@ -19,7 +19,7 @@ def okDlg(txt, infoText="", detailsTxt=None, icon=QtGui.QMessageBox.Information)
 
     msg.setText(txt)
     msg.setInformativeText(infoText)
-    msg.setWindowTitle("Network Profiler")
+    msg.setWindowTitle("Riverscapes Toolbar")
     if detailsTxt is not None:
         msg.setDetailedText(detailsTxt)
     msg.setStandardButtons(QtGui.QMessageBox.Ok)
