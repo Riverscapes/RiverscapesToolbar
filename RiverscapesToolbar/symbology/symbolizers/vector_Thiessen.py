@@ -3,7 +3,7 @@ from qgis.core import QgsSymbolV2, QgsSingleSymbolRendererV2, QgsSimpleMarkerSym
 
 class VectorSymbolizer():
 
-    symbology = "VBET"
+    symbology = "Thiessen"
 
     def symbolize(self):
         # create a new single symbol renderer
@@ -11,7 +11,7 @@ class VectorSymbolizer():
         self.renderer = QgsSingleSymbolRendererV2(symbol)
 
         # create a new simple marker symbol layer, a green circle with a black border
-        properties = {'color': 'transparent', 'color_border': '#E64C00', 'width_border': '0.5'}
+        properties = {'color': 'transparent', 'color_border': '#000000', 'width_border': '0.3'}
         symbol_layer = QgsSimpleFillSymbolLayerV2.create(properties)
 
         # assign the symbol layer to the symbol

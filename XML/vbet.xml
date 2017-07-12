@@ -20,9 +20,9 @@
                                 </Node>
                                 <Node label="Drainage Network" xpath="DrainageNetworks">
                                     <Children>
-                                        <Node xpathlabel="Name" xpath="Network" type="vector" symbology=""/>
+                                        <Node xpathlabel="Name" xpath="Network" type="vector" symbology="Network"/>
                                         <Repeater label="Buffers" xpath="Network/Buffers">
-                                            <Node xpathlabel="Name" xpath="Buffer" type="vector" symbology=""/>
+                                            <Node xpathlabel="Name" xpath="Buffer" type="vector" symbology="Thiessen"/>
                                         </Repeater>
                                     </Children>
                                 </Node>
