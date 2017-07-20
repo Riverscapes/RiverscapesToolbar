@@ -12,6 +12,9 @@ $(document).ready(function (){
 	function treeize(pages){
 		var t = { leaves: [], branches: [] }
 		for (i in pages) {
+			// Only care about HTML pages
+			if (pages[i].url.indexOf(".htm") == -1) continue
+
 			urlArr = pages[i].url.split('/');
 			currLevel = urlArr.shift();
 			var pointer = t;
