@@ -18,7 +18,7 @@ Using this tool you can:
 
 ### Development
 
-The RAVE plugin is under active development by [North Arrow Research](http://northarrowresearch.com) with contributions from [South Fork Research](http://southforkresearch.org) and the [Fluvial Habitats](http://fluvialhabitats.org) at Utah State University. Funding for these tools was provided by the Bonneville Power Administration (BPA Proposal # 2011-006-00 & BPA Project: 2003-017-00) and NOAA as part of the [Columbia Habitat Monitoring Program](http://www.champmonitoring.org/) (CHaMP).
+The RAVE plugin is under active development by [North Arrow Research](http://www.northarrowresearch.com) with contributions from [South Fork Research](http://southforkresearch.org) and the [Fluvial Habitats](http://fluvialhabitats.org) at Utah State University. Funding for these tools was provided by the Bonneville Power Administration (BPA Proposal # 2011-006-00 & BPA Project: 2003-017-00) and NOAA as part of the [Columbia Habitat Monitoring Program](https://www.champmonitoring.org/) (CHaMP).
 
 RAVE is scalable and intended to accommodate additional riverscapes projects over time. Model owners are encouraged to contact North Arrow Research if they want to integrate their model into the riverscapes framework. There are currently two things that model owners can contribute to the riverscapes project to help their projects be visible and usable within the RAVE plugin:
 

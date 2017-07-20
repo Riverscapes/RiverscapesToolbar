@@ -2,7 +2,7 @@
 title: Riverscapes Toolbar QGIS Plugin
 description: > # this means to ignore newlines until "baseurl:"
   Online help and documentation site for the CHaMP Workbench
-url: https://riverscapes.github.io/
+url: https://riverscapes.github.io
 baseurl: "/RiverscapesToolbar"
 port: 4001
 # Build settings
