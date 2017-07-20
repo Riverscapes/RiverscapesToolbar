@@ -19,6 +19,7 @@ $(document).ready(function (){
 			// Now loop until we're deep enough
 			while (urlArr.length > 1) {
 				key = urlArr[0].length == 0 ? "EMPTY" : urlArr[0];
+				key = key.replace("_"," ").replace("%20", " ");
 				var newDir;
 				if (key in pointer.branches){
 					newDir = pointer.branches[key];
