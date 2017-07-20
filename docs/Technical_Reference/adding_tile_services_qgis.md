@@ -1,6 +1,5 @@
 ---
 title: Adding Tile Layers to QGIS
-
 ---
 
 # Adding Tile Layers to QGIS
