@@ -8,7 +8,7 @@ class VectorSymbolizer():
     def symbolize(self):
         # define ranges: label, lower value, upper value, color name
         cond_cat = (
-            ('-9999', -9999, -0.01, '#808080')
+            ('-9999', -9999, -0.01, '#808080'),
             ('0-1', 0.0, 1.0, '#195ABA'),
             ('1-2', 1.0, 2.0, '#3674B6'),
             ('2-3', 2.0, 3.0, '#548EB1'),
