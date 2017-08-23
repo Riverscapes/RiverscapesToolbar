@@ -25,9 +25,19 @@ module.exports = function(grunt) {
             }]
         }
     },
-
+    watch: {
+        scss: {
+            files: ['src/scss/**/*'],
+            tasks: ['sass'],
+            options: {
+                spawn: false,
+            },
+        },
+    },
   });
 
+
+  
   // Define the modules we need for these tasks:
   grunt.loadNpmTasks('grunt-sass');
 

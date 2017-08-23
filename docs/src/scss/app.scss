@@ -144,37 +144,58 @@ header {
     font-size: 95%;
   }
   li a {
-    padding: 0.3rem 1rem;
+    padding: 0.3rem 1rem 0.3rem 1rem;
     line-height: 1.2;
   }
   li>a:before{
-    @extend .fa, .fa-file-text;
     color: $primary-color;
     display: block;
     position: relative;
     left: -4px;
     float: left;
   }
+  li.branch > a > i.icon {
+    @extend .fa;
+    @extend .fa-folder;
+    padding-right: 0.3rem;
+  }
+  li.leaf > a > i.icon {
+    @extend .fa;
+    @extend .fa-file-text;
+    padding-right: 0.3rem;
+  }
+  li.leaf a:hover {
+    text-decoration: underline;
+  }
   a.menuActive {
-    &:before{
-      color: black;
-    }
+    &:before{ color: black; }
     font-weight: bold;
     color: black;
   }
   li.is-accordion-submenu-parent{
     &>a{
-      &:before{
-        @extend .fa, .fa-folder;
-        color: #444444;
-      }
+      &:before{ color: #444444; }
       color: #444444;      
     }
+    &>a.reallink{
+      &:hover{ text-decoration: underline; }
+      &:before{
+        color:  $primary-color;
+      }
+      color: $primary-color;    
+    }
+  }
+  .submenu-toggle {
+    width: 20px;
+    height: 20px;
   }
   #menuCtls {
     margin: 0;
     position: relative;
-    float: right;    
+    float: right;  
+    .button{
+      padding: 0.45em 0.5em;
+    }  
   }
 }
 

@@ -11,31 +11,39 @@ $(document).ready(function (){
 	// Now place each item in the tree
 	function treeize(pages){
 		var t = { leaves: [], branches: [] }
+		
 		for (i in pages) {
-			// Only care about HTML pages
-			if (pages[i].url.indexOf(".htm") == -1) continue
-
-			urlArr = pages[i].url.split('/');
-			currLevel = urlArr.shift();
+			
+			var urlArr = pages[i].url.split('/');
+			var currLevel = urlArr.shift();
 			var pointer = t;
 
 			// Now loop until we're deep enough
 			while (urlArr.length > 1) {
-				key = urlArr[0].length == 0 ? "EMPTY" : urlArr[0];
+				var key = urlArr[0].length == 0 ? "EMPTY" : urlArr[0];
 				key = key.replace("_"," ").replace("%20", " ");
-				var newDir;
-				if (key in pointer.branches){
-					newDir = pointer.branches[key];
+				var newDir = null;
+
+				var thebranch = pointer.branches.filter(br => br.key == key)
+				if (thebranch.length > 0){
+					newDir = thebranch[0];
 				}
 				else {
-					newDir = { leaves: [], branches: {} }
-					pointer.branches[key] = newDir;					
+					newDir = { key: key, leaves: [], branches: [] }
+					pointer.branches.push(newDir);					
 				}
 				pointer = newDir;
 				currLevel = urlArr.shift();
 			}
-			pointer.leaves.push(pages[i]);		
-		}
+			if (urlArr[0] == "index.html" || urlArr[0] == ""){
+				pointer.title = pages[i].title;
+				pointer.index = pages[i];
+			}
+			else{
+				pointer.title = pointer.key;
+				pointer.leaves.push(pages[i]);				
+			}			
+		}	
 		traverseandsort(t)
 		return t
 	}
@@ -46,6 +54,20 @@ $(document).ready(function (){
 	 * @return {[type]}
 	 */
 	function traverseandsort(t) {
+		// Now sort branches at this level
+		t.branches.sort(function(a,b) {
+			a.weight = a.index && a.index.weight ? parseInt(a.index.weight) : 999;
+			b.weight = b.index && b.index.weight ? parseInt(b.index.weight) : 999;
+
+			if (a.weight == b.weight) {
+				return a.title < b.title ? -1 : (a.title > b.title ? 1 : 0);
+			}
+			else {
+				return a.weight < b.weight ? -1 : (a.weight > b.weight ? 1 : 0);
+			}
+			return true;
+		});
+
 		// Sort the leaves by weight and then by title
 		t.leaves.sort(function(a, b) {
 
@@ -58,8 +80,9 @@ $(document).ready(function (){
 			else {
 				return a.weight < b.weight ? -1 : (a.weight > b.weight ? 1 : 0);
 			}
-
 		});
+
+
 		// Now go find more branches to sort their leaves
 		for (br in t.branches) {
 			traverseandsort(t.branches[br])
@@ -111,32 +134,44 @@ $(document).ready(function (){
 	 */
 	function accordionize(t, $mUL) {
 		if (!$mUL) {
-			$mUL = $('<ul class="vertical menu" data-accordion-menu></ul>');
+			$mUL = $('<ul id="topmenu" class="vertical menu accordion-menu" data-accordion-menu data-submenu-toggle="true"></ul>');
 		}
 		// Now go find more branches to sort their leaves
 		for (lf in t.leaves) {
-			$li = $('<li><a href="' + t.leaves[lf].absurl + '">' + t.leaves[lf].title + '</a></li>');
+			$li = $('<li class="leaf"><a href="' + t.leaves[lf].absurl + '"><i class="icon"/>' + t.leaves[lf].title + '</a></li>');
 			var extSplit = t.leaves[lf].url.split('.');
 			if (extSplit.length == 1 || extSplit[extSplit.length -1] == "html") 
 				$mUL.append($li);
 		}				
 		// Now go find more branches to sort their leaves
-		for (br in t.branches) {
-			$newmLi = $('<li></li>');
-			$newmA = $('<a href="#">'+ br +'</a>');
+		for (brind in t.branches) {
+			$newmLi = $('<li class="branch"></li>');
+			var br = t.branches[brind];
+
+			if (br.index){
+				$newmA = $('<a class="reallink" href="' + br.index.absurl + '"><i class="icon"/>' + br.index.title + '</a>');
+			}
+			else{
+				$newmA = $('<a class="nolink" href="#"><i class="icon"/>'+ br.title +'</a>');
+			}
 			$newmUl = $('<ul class="menu vertical nested"></ul>');
 			$newmLi.append($newmA);
 			$newmLi.append($newmUl);
 			$mUL.append($newmLi);
-			accordionize(t.branches[br], $newmUl);
+			accordionize(br, $newmUl);
 		}
 		return $mUL;			
 	}
 
 	function expandCurentAccordion($sidebar) {
 		$menuEl = $sidebar.find("[href='"+window.location.pathname+"']");
-		$menuEl.addClass('menuActive')
-		menuancestry = $menuEl.parentsUntil($sidebar)
+		$menuEl.addClass('menuActive');
+
+		$immediateChild = $menuEl.parent().find('ul');
+		$immediateChild.addClass('menuActive');
+		$sidebar.foundation('down', $immediateChild);
+		
+		menuancestry = $menuEl.parentsUntil($sidebar);
 		menuancestry.each(function(key, val){
 			$sidebar.foundation('down', $(val));
 		})
@@ -152,9 +187,19 @@ $(document).ready(function (){
 
 	// Initialize our UI framework
 	$(document).foundation();
-	var elem = new Foundation.AccordionMenu($sidebarnav);
 	expandCurentAccordion($sidebarnav);
 
+	// Rewrite a few of the interactions with the menu3
+	$('#topmenu i.icon').click(e => {
+			e.stopPropagation();
+			e.preventDefault();
+			$(e.toElement).parent().siblings('button').click();
+	})
+	$('#topmenu li.branch a.nolink').click(e => {
+		e.preventDefault();
+		$(e.toElement).siblings('button').click();
+})
+	
 	// Bind our buttons to menu actions
 	$('#menuCtls #expand').click(function(){
 		$sidebarnav.foundation('showAll');
@@ -168,4 +213,3 @@ $(document).ready(function (){
 	$('#toc').prepend('<h4><span class="fa fa-file-text"></span> Page Contents:</h4>')
 
 });
-
