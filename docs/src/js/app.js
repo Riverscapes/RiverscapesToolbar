@@ -90,55 +90,87 @@ $(document).ready(function (){
 	}	
 
 	/**
-	 * Turn a tree structure from treeize into a topbar
+	 * Turn a tree structure from SiteSettings.topmenu into a foundation topbar
 	 * @param  {[type]}
 	 * @return {[type]}
 	 */
-	function topbarize(tree, title) {
-		var $topbar = $('<div class="top-bar"></div>');
+	function topbarize() {
+		// The Mobile menu
+		$topbarContainer = $('<div></div>')
+		
+		if (!SiteSettings.topmenu || SiteSettings.topmenu.length < 1){
+			// No menu found or there was a problem
+			$mobilediv = $('<div class="title-bar hide-for-medium"></div>');
+			$mobilediv.append($('<div class="title-bar-title"><a href="' + NAVHome + '/">'+NAVTitle+'</a></div>'))
+			$topbarContainer.append($mobilediv)
+			return $topbarContainer						
+		}
+
+		var tree = SiteSettings.topmenu
+
+		// Otherwise we get a proper menu
+		$mobilediv = $('<div class="title-bar" data-responsive-toggle="responsive-menu" data-hide-for="medium"></div>');
+		$mobilediv.append($('<button class="menu-icon" type="button" data-toggle="responsive-menu"></button>'))
+		$mobilediv.append($('<div class="title-bar-title"><a href="' + NAVHome + '/">'+NAVTitle+'</a></div>'))
+		
+		$topbarContainer.append($mobilediv)
+
+		var $topbar = $('<div class="top-bar" id="responsive-menu"></div>');
 		var $topbarleft = $('<div class="top-bar-left"></div>');
 		$topbar.append($topbarleft);
-		var $title = $('<li><a href="'+NAVHome+'">'+NAVTitle+'</li>');
-
-		function menutraverse(t, $mUL) {
-			if (!$mUL) {
-				$mUL = $('<ul class="dropdown menu" data-dropdown-menu></ul>');
+		
+		function menutraverse(t, first=false) {
+			// First time round
+			var $mUL = $('<ul class="submenu menu vertical" data-submenu></ul>');
+			if (first){
+				var $mUL = $('<ul class="dropdown menu" data-dropdown-menu></ul>');
+				var $title = $('<li class="show-for-medium"><a href="'+NAVHome+'/">'+NAVTitle+'</li>');
 				$mUL.append($title);
 			}
-			// Now go find more branches to sort their leaves
-			for (lf in t.leaves) {
-				$li = $('<li><a href="' + t.leaves[lf].absurl + '">' + t.leaves[lf].title + '</a></li>');
-				$mUL.append($li);
-			}				
-			// Now go find more branches to sort their leaves
-			for (br in t.branches) {
-				$newmLi = $('<li></li>');
-				$newmA = $('<a href="#">'+ br +'</a>');
-				$newmUl = $('<ul class="menu vertical"></ul>');
-				$newmLi.append($newmA);
-				$newmLi.append($newmUl);
-				$mUL.append($newmLi);
-				menutraverse(t.branches[br], $newmUl);
+		
+			// Loop over the immediate children
+			for (cind in t) {
+				// Now go find more branches to sort their leaves m656
+				if (t[cind].children && t[cind].children.length > 0){
+					var url = t[cind].url ? t[cind].url : "#";
+					var $li = $('<li class="has-submenu"><a href="' + url + '">' + t[cind].title + '</a></li>');
+					$li.append(menutraverse(t[cind].children));
+					$mUL.append($li);
+				}
+				else {
+					var $mLi = $('<li><a href="' + t[cind].url + '">' + t[cind].title + '</li>');
+					$mUL.append($mLi);
+				}
 			}
+
 			return $mUL;			
 		}
 
-		$topbarleft.append(menutraverse(tree));
-		return $topbar
+		$topbarleft.append(menutraverse(tree, true));
+		$topbarContainer.append($topbar)
+		return $topbarContainer
 	}
 
 	/**
-	 * Turn a tree structure from treeize into a topbar
+	 * Turn a tree structure from treeize into a foundation sidebar accordion 
 	 * @param  {[type]}
 	 * @return {[type]}
 	 */
 	function accordionize(t, $mUL) {
+		// The first time we have to build the ul
 		if (!$mUL) {
 			$mUL = $('<ul id="topmenu" class="vertical menu accordion-menu" data-accordion-menu data-submenu-toggle="true"></ul>');
+			// If we've elected to have a home item then use it
+			try {
+				if (SiteSettings.sideMenu.homeItem === true){
+					$li = $('<li class="leaf home"><a href="' + NAVHome + '/"><i class="icon"/>Home</a></li>');
+					$mUL.append($li);
+				}
+			} catch (error) {}
 		}
 		// Now go find more branches to sort their leaves
 		for (lf in t.leaves) {
-			$li = $('<li class="leaf"><a href="' + t.leaves[lf].absurl + '"><i class="icon"/>' + t.leaves[lf].title + '</a></li>');
+			$li = $('<li class="leaf page"><a href="' + t.leaves[lf].absurl + '"><i class="icon"/>' + t.leaves[lf].title + '</a></li>');
 			var extSplit = t.leaves[lf].url.split('.');
 			if (extSplit.length == 1 || extSplit[extSplit.length -1] == "html") 
 				$mUL.append($li);
@@ -163,6 +195,11 @@ $(document).ready(function (){
 		return $mUL;			
 	}
 
+	/**
+	 * This  is our function for expanding to the current item (page)
+	 * 
+	 * @param {any} $sidebar 
+	 */
 	function expandCurentAccordion($sidebar) {
 		$menuEl = $sidebar.find("[href='"+window.location.pathname+"']");
 		$menuEl.addClass('menuActive');
@@ -179,7 +216,7 @@ $(document).ready(function (){
 
 	// Do all the things to get the tree
 	tree = treeize(NAVPages);
-	$topbar = topbarize(tree);
+	$topbar = topbarize();
 	$sidebarnav = accordionize(tree);
 
 	$('#topbarnav').append($topbar);
@@ -201,6 +238,9 @@ $(document).ready(function (){
 })
 	
 	// Bind our buttons to menu actions
+	if (SiteSettings.sideMenu.startExpanded){
+		$sidebarnav.foundation('showAll');
+	}
 	$('#menuCtls #expand').click(function(){
 		$sidebarnav.foundation('showAll');
 	});
@@ -210,6 +250,6 @@ $(document).ready(function (){
 	});
 
 	$('#toc').toc();
-	$('#toc').prepend('<h4><span class="fa fa-file-text"></span> Page Contents:</h4>')
+	// $('#toc').prepend('<h4 class="show-for-medium"><span class="fa fa-file-text"></span> Page Contents:</h4>')
 
 });
