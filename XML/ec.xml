@@ -11,9 +11,8 @@
                     <Children collapsed="false">
                         <Node label="Inputs" xpath="Inputs">
                             <Children>
-                                <Repeater label="Vectors" xpath="Vector">
-                                    <Node xpathlabel="Name" xpath="Vector" type="vector" symbology=""/>
-                                </Repeater>
+                                <Node xpathlabel="Name" xpath="Vector[@id='CATCH_POLY']" type="vector" symbology="input_catchmentarea"/>
+                                <Node xpathlabel="Name" xpath="Vector[@id='STRM_LINE']" type="vector" symbology="input_streamnetwork"/>
                             </Children>
                         </Node>
                         <Node label="Analyses" xpath="Analyses">
