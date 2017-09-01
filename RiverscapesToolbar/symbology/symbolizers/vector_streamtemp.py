@@ -1,5 +1,6 @@
+from PyQt4.QtCore import *
 from PyQt4.QtGui import QColor
-from qgis.core import QgsSymbolV2, QgsRendererRangeV2, QgsGraduatedSymbolRendererV2
+from qgis.core import QgsField, QgsSymbolV2, QgsRendererRangeV2, QgsGraduatedSymbolRendererV2
 
 class VectorSymbolizer():
 
@@ -7,40 +8,42 @@ class VectorSymbolizer():
 
     def symbolize(self):
         # define ranges: label, lower value, upper value, color name
-        cond_cat = (
-            ('-9999', -9999, -0.01, '#808080'),
-            ('0-1', 0.0, 1.0, '#195ABA'),
-            ('1-2', 1.0, 2.0, '#3674B6'),
-            ('2-3', 2.0, 3.0, '#548EB1'),
-            ('3-4', 3.0, 4.0, '#71A9AD'),
-            ('4-5', 4.0, 5.0, '#8EC3A9'),
-            ('5-6', 5.0, 6.0, '#ABDDA4'),
-            ('6-7', 6.0, 7.0, '#B7DF83'),
-            ('7-8', 7.0, 8.0, '#C3E162'),
-            ('8-9', 8.0, 9.0, '#CFE341'),
-            ('9-10', 9.0, 10.0, '#DBE520'),
-            ('10-11', 10.0, 11.0, "#E7E700"),
-            ('11-12', 11.0, 12.0, "#ECDC13"),
-            ('12-13', 12.0, 13.0, "#F0D126"),
-            ('13-14', 13.0, 14.0, "#F5C53A"),
-            ('14-15', 14.0, 15.0, "#F9BA4D"),
-            ('15-16', 15.0, 16.0, "#FDAE61"),
-            ('16-17', 16.0, 17.0, "#F69053"),
-            ('17-18', 17.0, 18.0, "#EE7245"),
-            ('18-19', 18.0, 19.0, "#E75437"),
-            ('19-20', 19.0, 20.0, "#DF3729"),
-            ('20-100', 20.0, 100.0, "#D7191C")
+        temp_cat = (
+            ('0-10', 0.0, 10.0, '#0024E3'),
+            ('10-12', 10.0, 12.0, '#0087CD'),
+            ('12-14', 12.0, 14.0, '#16F45A'),
+            ('14-16', 14.0, 16.0, '#73FF1A'),
+            ('16-18', 16.0, 18.0, '#BDFF0C'),
+            ('18-20', 18.0, 20.0, '#FFDD00'),
+            ('20-22', 20.0, 22.0, '#FF9000'),
+            ('22-24', 22.0, 24.0, '#FF4400'),
+            ('24-26', 24.0, 26.0, '#FF1D00'),
+            ('26-28', 26.0, 28.0, '#F70000'),
+            ('>28', 28.0, 40.0, '#AA0000')
         )
 
-        # create a category for each item in animals
+        # create categories
         ranges = []
-        for label, lower, upper, color in cond_cat:
+        for label, lower, upper, color in temp_cat:
             symbol = QgsSymbolV2.defaultSymbol(self.layer.geometryType())
             symbol.setColor(QColor(color))
-            symbol.setWidth(0.5)
+            symbol.setWidth(0.3)
             rng = QgsRendererRangeV2(lower, upper, symbol, label)
             ranges.append(rng)
 
+        # get list of existing fields in stream temperature shapefile
+        field_names = [field.name() for field in self.layer.pendingFields()]
+
+        # add temporary virtual field to store mean temperature values
+        mn_field = QgsField('mean_temp', QVariant.Double)
+        exp = "({0}+{1}+{2}+{3}+{4})/6".format(field_names[29],
+                                               field_names[30],
+                                               field_names[31],
+                                               field_names[32],
+                                               field_names[33])
+        self.layer.addExpressionField(exp, mn_field)
+        self.layer.updateFields()
+
         # create the renderer and assign it to a layer
-        expression = 'Tmn_14_129'  # field name
+        expression = 'mean_temp'
         self.renderer = QgsGraduatedSymbolRendererV2(expression, ranges)
