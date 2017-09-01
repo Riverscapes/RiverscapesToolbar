@@ -26,7 +26,7 @@ module.exports = function(grunt) {
         }
     },
 
-    // Watch a file for changes
+    // Watch a file(s) for changes
     watch: {
         scss: {
             files: ['scss/**/*'],
@@ -44,7 +44,7 @@ module.exports = function(grunt) {
         },
     },
 
-    // Grunt-concat
+    // Grunt-concat: Concatenate files (mostly javascript)
     concat: {
         options: {
             separator: ';\n\n',

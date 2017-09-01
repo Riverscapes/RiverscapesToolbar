@@ -47,20 +47,21 @@ settings:
     homeItem: true
     startExpanded: false
   # Arbitrary multi-level topbar menu
+  # IF you don't need this just comment out everything below
   # ----------------------------------
   # topmenu:
   #   - title: About
-  #     url: about.html
+  #     url: ThingsA
   #   - title: Submenu
   #     children:
   #       - title: subsub
-  #         url: thing.html
+  #         url: ThingsB/subpageB.html
   #       - title: SubSUBmenu
   #         children:
-  #           - title: subsubsub
-  #             url: thing.html
+  #           - title: Google
+  #             url: https://google.com
   #   - title: Config
-  #     url: configuration.html
+  #     url: index.html
   #   - title: Deploy
-  #     url: deployment.html
+  #     url: index.html
 

@@ -30,7 +30,7 @@ $(document).ready(function (){
 	 * @return {[type]}
 	 */
 	// Now place each item in the tree
-	function treeize(pages){
+	function treeize(pages) {
 		var t = { leaves: [], branches: [] }
 		
 		for (i in pages) {
@@ -38,6 +38,9 @@ $(document).ready(function (){
 			var urlArr = pages[i].url.split('/');
 			var currLevel = urlArr.shift();
 			var pointer = t;
+
+			// For some reason the GH Pages jekyll detects style.css as a page.
+			if (urlArr[0] === "assets") continue
 
 			// Now loop until we're deep enough
 			while (urlArr.length > 1) {
@@ -149,17 +152,36 @@ $(document).ready(function (){
 				$mUL.append($title);
 			}
 		
+			function urlize(item){
+				var newurl = "#";
+				var target = "";
+				var title = item.title;
+				if (item.url){
+					// Is the URL absolute or relative?
+					if (item.url.indexOf("http") != 0) {
+						newurl = NAVHome + '/' + item.url;	
+					}
+					else{
+						newurl = item.url;
+						target = 'target="_blank"';							
+					}	
+				}				
+				return $('<a href="' + newurl + '" ' + target + '>' + title + '</a>');
+			}
+
 			// Loop over the immediate children
 			for (cind in t) {
 				// Now go find more branches to sort their leaves m656
 				if (t[cind].children && t[cind].children.length > 0){
-					var url = t[cind].url ? t[cind].url : "#";
-					var $li = $('<li class="has-submenu"><a href="' + url + '">' + t[cind].title + '</a></li>');
+
+					var $li = $('<li class="has-submenu"></li>');
+					$li.append(urlize(t[cind]))
 					$li.append(menutraverse(t[cind].children));
 					$mUL.append($li);
 				}
 				else {
-					var $mLi = $('<li><a href="' + t[cind].url + '">' + t[cind].title + '</li>');
+					var $mLi = $('<li></li>');
+					$mLi.append(urlize(t[cind]))
 					$mUL.append($mLi);
 				}
 			}
@@ -205,7 +227,8 @@ $(document).ready(function (){
 				$newmA = $('<a class="reallink" href="' + br.index.absurl + '"><i class="icon"/>' + br.index.title + '</a>');
 			}
 			else{
-				$newmA = $('<a class="nolink" href="#"><i class="icon"/>'+ br.title +'</a>');
+				var title = br.title || br.key;
+				$newmA = $('<a class="nolink" href="#"><i class="icon"/>'+ title +'</a>');
 			}
 			$newmUl = $('<ul class="menu vertical nested"></ul>');
 			$newmLi.append($newmA);
