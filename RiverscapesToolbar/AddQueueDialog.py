@@ -54,7 +54,10 @@ class AddQueueDialog(QtGui.QDialog, FORM_CLASS):
         self.populateList()
 
     def setMetaData(self):
-        # Set up name and type
+        """
+        We display metadata before operations
+        :return:
+        """
         rows = [
             {"name": "Project Name", "value": self.project.projname },
             {"name": "Project Type", "value": self.project.projtype },

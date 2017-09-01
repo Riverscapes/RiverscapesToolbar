@@ -68,7 +68,7 @@ def localProductWalker(projroot, filedict, currentdir=""):
         relpath = os.path.join(currentdir, pathseg).replace('\\', '/')
         abspath = os.path.join(projroot, relpath).replace('\\', '/')
         if os.path.isfile(abspath):
-            print spaces + relpath
+            print spaces + str(relpath)
             filedict[relpath] = {'src': abspath}
         elif os.path.isdir(abspath):
             print spaces + pathseg + '/'
@@ -77,7 +77,6 @@ def localProductWalker(projroot, filedict, currentdir=""):
 
 def s3Exists(bucket, prefix):
     """
-    Given a path array, ending in a Product, snake through the
     S3 bucket recursively and list all the products available
     :param patharr:
     :param path:
