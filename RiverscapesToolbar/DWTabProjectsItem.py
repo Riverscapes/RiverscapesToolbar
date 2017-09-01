@@ -59,6 +59,7 @@ class ProjectTreeItem():
         self.maptype = None
         self.symbology = None
         self.localorder = 0
+        self.startCollapsed = False
 
         # RootNode Stuff. We've got to keep the parser in line and tracking the project node
         if self.parseNode is None:
@@ -92,10 +93,10 @@ class ProjectTreeItem():
         """
         # Start by clearing out the previous children (this is a forced or first refresh)
 
-        if self.type == 'Node':
+        if self.type == self.NODE_TYPE:
             self.loadNode()
             self.loadChildren()
-        elif self.type == "Repeater":
+        elif self.type == self.REPEATER_TYPE:
             self.loadRepeater()
 
         self.name = self.getLabel()
@@ -111,7 +112,13 @@ class ProjectTreeItem():
 
         if self.qTreeWItem.parent():
             self.localorder = self.qTreeWItem.parent().indexOfChild(self.qTreeWItem)
+
         # Walk back up the tree and hide things that have no value
+        if self.startCollapsed:
+            self.qTreeWItem.setExpanded(False)
+        else:
+            self.qTreeWItem.setExpanded(True)
+
         self.backwardRefresh()
 
     def backwardRefresh(self):
@@ -156,7 +163,7 @@ class ProjectTreeItem():
             self.refNode = ProjectTreeItem.project.DOM.find(".//*[@id='{0}']".format(refID))
 
         # This node might be a leaf. If so we need to get some meta dat
-        if nodeType is not None:
+        if nodeType is not None and self.refNode is not None:
             self.maptype = nodeType
             setFontBold(self.qTreeWItem, column=0)
             setFontColor(self.qTreeWItem, "#444444", column=0)
@@ -182,6 +189,10 @@ class ProjectTreeItem():
         # Remember, repeaters can only contain one "pattern" <Node>
         xPatternNode = self.parseNode.find("Node")
 
+        collapsed = ProjectTreeItem.getAttr(self.parseNode, 'collapsed')
+        if str(collapsed).lower() == 'true':
+            self.startCollapsed = True
+
         # If there is an Xpath then reset the base project node to that.
         xpath = ProjectTreeItem.getAttr(self.parseNode, 'xpath')
 
@@ -198,6 +209,7 @@ class ProjectTreeItem():
             for xProjChild in xNewProjList:
                 newTreeItem = ProjectTreeItem(xPatternNode, xProjChild, self)
                 self.qTreeWItem.addChild(newTreeItem.qTreeWItem)
+
 
 
     def loadChildren(self):
@@ -230,7 +242,7 @@ class ProjectTreeItem():
         labellit = ProjectTreeItem.getAttr(self.parseNode, 'label')
         labelxpath = ProjectTreeItem.getAttr(self.parseNode, 'xpathlabel')
 
-        if labelxpath is not None:
+        if labelxpath is not None and self.refNode is not None:
             labelNode = self.refNode.find(labelxpath)
             if labelNode is not None:
                 label = labelNode.text

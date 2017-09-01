@@ -90,7 +90,7 @@ class DockWidgetTabProject():
             if addEnabled:
                 self.addlayertomap(itemind)
             else:
-                self.externalOpen(itemind)
+                self.externalOpen(theData)
 
     def openMenu(self, position):
         """
@@ -106,8 +106,8 @@ class DockWidgetTabProject():
         if theData.maptype is not None:
 
             addReceiver = lambda item=item: self.addlayertomap(item)
-            findFolderReceiver = lambda item=theData: self.findFolder(item)
-            externalOpenReceiver = lambda item=theData: self.externalOpen(item)
+            findFolderReceiver = lambda item=theData: self.findFolder(theData)
+            externalOpenReceiver = lambda item=theData: self.externalOpen(theData)
 
             findAction = menu.addAction("Open Containing Folder", findFolderReceiver)
 
@@ -237,4 +237,3 @@ class DockWidgetTabProject():
         else:
             DockWidgetTabProject.treectl.takeTopLevelItem(0)
             rootItem = ProjectTreeItem(dwtab=DockWidgetTabProject)
-            DockWidgetTabProject.treectl.expandToDepth(5)

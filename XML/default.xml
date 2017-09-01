@@ -20,6 +20,9 @@
                 <Repeater label="Image Layers" xpath="//Image">
                   <Node xpathlabel="Name" type="file"/>
                 </Repeater>
+                <Repeater collapsed="true" label="All Detected Files (Open externally)" xpath="//Name/../Path/..">
+                  <Node xpathlabel="Name" type="file"/>
+                </Repeater>
               </Children>
             </Node>
           </Children>
