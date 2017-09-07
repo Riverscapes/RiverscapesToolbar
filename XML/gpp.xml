@@ -9,11 +9,11 @@
                 <!-- this is a template for how each realization should render-->
                 <Node xpathlabel="Name">
                     <Children collapsed="false">
-                        <Repeater label="Inputs" xpath="Inputs/*">
-                             <Node xpathlabel="Name" xpath="Vector" type="vector" symbology="vector_GPP"/>
-                        </Repeater>
+                        <Node label="Conductivity" xpath="Inputs/Vector[@ref='cond1']" type="vector" symbology="Conductivity"/>
+                        <Node label="Solar" xpath="Inputs/Vector[@ref='solar1']" type="vector" symbology="Solar_Vector"/>
+                        <Node label="Temperature" xpath="Inputs/TemperatureModel" type="vector" symbology="StreamTemp"/>
                         <Repeater label="Analysis" xpath="Analyses/Analysis/Outputs/Vector">
-                            <Node xpathlabel="Name" xpath="Vector" type="vector" symbology="vector_GPP"/>
+                            <Node xpathlabel="Name" xpath="Vector" type="vector" symbology="GPP_Prediction"/>
                         </Repeater>
                     </Children>
                 </Node>
