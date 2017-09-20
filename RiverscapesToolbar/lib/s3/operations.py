@@ -21,12 +21,19 @@ class S3Operation():
         UP = "up"
         DOWN = "down"
 
-    class FileState:
+    class FileStates:
         # Kind of an enumeration
         LOCALONLY = "Local-Only"
         REMOTEONLY = "Remote-Only"
         UPDATENEEDED = "Update Needed"
         SAME = "Files Match"
+
+    class RunStates:
+        WAITING = "waiting"
+        IGNORED = "ignored"
+        INPROGRESS = "in-progress"
+        COMPLETE = "complete"
+        ERROR = "error"
 
     def __init__(self, key, fileobj, conf, progcb):
         """
@@ -34,7 +41,6 @@ class S3Operation():
         :param fileobj: the file object with 'src' and 'dst'
         :param conf: the configuration dictionary
         """
-
         self.log = logging.getLogger()
         self.log.setLevel(logging.ERROR)
         self.s3 = FileTransfer(conf.bucket)
@@ -42,10 +48,12 @@ class S3Operation():
         self.s3.progsignal.connect(self.updateProgress)
         self.key = key
         self.progress = 0
+        self.error = None
 
         # Set some sensible defaults
-        self.filestate = self.FileState.SAME
-        self.op = self.FileOps.IGNORE
+        self.filestate = S3Operation.FileStates.SAME
+        self.op = S3Operation.FileOps.IGNORE
+        self.runState = S3Operation.RunStates.WAITING
 
         self.delete = conf.delete
         self.force = conf.force
@@ -65,46 +73,46 @@ class S3Operation():
 
         # Figure out what we have
         if 'src' in fileobj and 'dst' not in fileobj:
-            self.filestate = self.FileState.LOCALONLY
+            self.filestate = self.FileStates.LOCALONLY
 
         if 'src' not in fileobj and 'dst' in fileobj:
-            self.filestate = self.FileState.REMOTEONLY
+            self.filestate = self.FileStates.REMOTEONLY
 
         if 'src' in fileobj and 'dst' in fileobj:
             if s3issame(fileobj['src'], fileobj['dst']):
-                self.filestate = self.FileState.SAME
+                self.filestate = self.FileStates.SAME
             else:
-                self.filestate = self.FileState.UPDATENEEDED
+                self.filestate = self.FileStates.UPDATENEEDED
 
         # The Upload Case
         # ------------------------------
         if self.direction == self.Direction.UP:
             # Two cases for uploading the file: New file or different file
-            if self.filestate == self.FileState.LOCALONLY or self.filestate == self.FileState.UPDATENEEDED:
+            if self.filestate == self.FileStates.LOCALONLY or self.filestate == self.FileStates.UPDATENEEDED:
                 self.op = self.FileOps.UPLOAD
 
             # If we've requested a force, do the upload anyway
-            elif self.FileState.SAME and self.force:
+            elif self.FileStates.SAME and self.force:
                 self.op = self.FileOps.UPLOAD
 
             # If the remote is there but the local is not and we're uploading then clean up the remote
             # this requires thed delete flag be set
-            elif self.filestate == self.FileState.REMOTEONLY and self.delete:
+            elif self.filestate == self.FileStates.REMOTEONLY and self.delete:
                 self.op = self.FileOps.DELETE_REMOTE
 
         # The Download Case
         # ------------------------------
         elif self.direction == self.Direction.DOWN:
-            if self.filestate == self.FileState.REMOTEONLY or self.filestate == self.FileState.UPDATENEEDED:
+            if self.filestate == self.FileStates.REMOTEONLY or self.filestate == self.FileStates.UPDATENEEDED:
                 self.op = self.FileOps.DOWNLOAD
 
             # If we've requested a force, do the download anyway
-            elif self.FileState.SAME and self.force:
+            elif self.FileStates.SAME and self.force:
                 self.op = self.FileOps.DOWNLOAD
 
             # If the local is there but the remote is not and we're downloading then clean up the local
             # this requires thed delete flag be set
-            elif self.filestate == self.FileState.LOCALONLY and self.delete:
+            elif self.filestate == self.FileStates.LOCALONLY and self.delete:
                 self.op = self.FileOps.DELETE_LOCAL
 
         self.log.info(str(self))
@@ -123,22 +131,37 @@ class S3Operation():
         :return:
         """
         self.progress = 0
-        if self.op == self.FileOps.IGNORE:
-            self.log.info(" [{0}] {1}: Nothing to do. Continuing.".format(self.op, self.key))
+        self.runState = S3Operation.RunStates.INPROGRESS
 
-        elif self.op == self.FileOps.UPLOAD:
-            self.upload()
+        try:
+            if self.op == self.FileOps.IGNORE:
+                self.log.info(" [{0}] {1}: Nothing to do. Continuing.".format(self.op, self.key))
+                self.runState = S3Operation.RunStates.IGNORED
 
-        elif self.op == self.FileOps.DOWNLOAD:
-            self.download()
+            elif self.op == self.FileOps.UPLOAD:
+                self.upload()
+                self.runState = S3Operation.RunStates.COMPLETE
 
-        elif self.op == self.FileOps.DELETE_LOCAL:
-            self.delete_local()
+            elif self.op == self.FileOps.DOWNLOAD:
+                self.download()
+                self.runState = S3Operation.RunStates.COMPLETE
 
-        elif self.op == self.FileOps.DELETE_REMOTE:
-            self.delete_remote()
+            elif self.op == self.FileOps.DELETE_LOCAL:
+                self.delete_local()
+                self.runState = S3Operation.RunStates.COMPLETE
 
-        self.progress = 100
+            elif self.op == self.FileOps.DELETE_REMOTE:
+                self.delete_remote()
+                self.runState = S3Operation.RunStates.COMPLETE
+
+            self.progress = 100
+
+        except Exception, e:
+            self.runState = S3Operation.RunStates.ERROR
+            self.error = e.message
+            self.progress = 0
+
+
 
     def __repr__(self):
         """
@@ -215,7 +238,6 @@ class S3Operation():
         self.log.info("Uploading: {0} ==> s3://{1}/{2}".format(self.abspath, self.bucket, self.fullkey))
         # This step prints straight to stdout and does not log
         self.s3.upload(self.abspath, self.fullkey)
-        print ""
         self.log.debug("Upload Completed: {0}".format(self.abspath))
 
 

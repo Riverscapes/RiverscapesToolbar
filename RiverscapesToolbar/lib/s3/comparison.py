@@ -2,8 +2,9 @@ import botocore
 import binascii
 import hashlib
 import os
-from transfers import FileTransfer
+from transfers import FileTransfer, AWSCreds
 import boto3
+
 import json
 
 def s3issame(filepath, s3obj):
@@ -32,7 +33,8 @@ def s3issame(filepath, s3obj):
 
 
 def getS3getFileContents(bucket, s3Key):
-    s3 = boto3.client('s3')
+    creds = AWSCreds()
+    s3 = boto3.client('s3', **creds.creds)
 
     obj = s3.get_object(Bucket=bucket, Key=s3Key)
     txt = obj['Body'].read()

@@ -2,6 +2,7 @@ from Queue import Queue
 from PyQt4.QtCore import QThread, pyqtSignal, QObject, pyqtSlot
 import traceback
 from debug import InitDebug
+from boto3.exceptions import RetriesExceededError, S3UploadFailedError
 
 class QueueStatus():
     STARTED = 1
@@ -182,22 +183,27 @@ class TransferWorker(QObject):
                 if Qs.transfer_q.qsize() > 0:
                     # If there's a file to download then download it.
                     transferitem = Qs.transfer_q.get()
-                    self.currentProject.updateTransferProgress((transferitem['op'].abspath, 0, 0, 0))
-                    transferitem['op'].execute()
-                    self.currentProject.updateTransferProgress((transferitem['op'].abspath, 100, 0, 0))
 
+                    # Pass these status objects around tell the UI how we're doing
+                    self.currentProject.updateTransferProgress(transferitem['op'])
+                    try:
+                        transferitem['op'].execute()
+                    except S3UploadFailedError, e:
+                        self.currentProject.updateTransferProgress(transferitem['op'])
+
+                    self.currentProject.updateTransferProgress(transferitem['op'])
                 else:
                     if self.currentProject is not None:
-                        self.currentProject.updateProjectStatus(100)
+                        self.currentProject.updateProjectStatus()
                         self.currentProject = None
+
                     # Transfer queue is empty. Find something else to do:
                     # Anything in the project Queue?
-
                     if Qs.project_q.qsize() > 0:
                         # Pop a project (if possible) into the download Queue
                         self.currentProject = Qs.popProject()
-                        self.currentProject.updateProjectStatus(0)
-            print "QUEUE STOPPED"
+                        self.currentProject.updateProjectStatus()
+
             Qs.running = False
             self.statusSignal.emit(QueueStatus.STOPPED)
         except Exception, e:

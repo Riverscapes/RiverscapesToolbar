@@ -47,7 +47,7 @@ class SettingsDialog(QtGui.QDialog, FORM_CLASS):
         self.chkS3Force.clicked.connect(self.dlgApply)
 
         self.AWSCheckBoxClick()
-        self.refreshTextBoxes()
+        self.refreshUIState()
 
         # Map functions to click events
         self._eventfilter = EventFilter(self)
@@ -111,14 +111,13 @@ class SettingsDialog(QtGui.QDialog, FORM_CLASS):
 
         self.dlgApply()
 
-
     def dlgApply(self):
         """
         Save all settings and close
         """
         if self.validate():
             settings = Settings()
-
+            settings.saveSetting("accessError", False)
             settings.saveSetting("DataDir", self.txtDataRoot.text())
             settings.saveSetting("ProgramXMLUrl", self.txtProgramXMLUrl.text())
 
@@ -140,13 +139,15 @@ class SettingsDialog(QtGui.QDialog, FORM_CLASS):
             self.btnBox.button(QtGui.QDialogButtonBox.Ok).setEnabled(True)
             self.btnBox.button(QtGui.QDialogButtonBox.Apply).setEnabled(False)
 
+            settings.setAWSCredentials()
+
     def dlgReset(self):
         """
         Reset the form to sensible defaults
         """
         print "Reset"
         self.settings.resetAll()
-        self.refreshTextBoxes()
+        self.refreshUIState()
 
     def addMsg(self,msg):
         """
@@ -159,13 +160,17 @@ class SettingsDialog(QtGui.QDialog, FORM_CLASS):
         self.lblMsgs.setText(self.lblMsgs.text() + msg)
 
 
-    def refreshTextBoxes(self):
+    def refreshUIState(self):
         """
         put the values in memory back into the text boxes
         :return: 
         """
         for key, val in self.txtSettingMap.iteritems():
             val.setText(self.settings.getSetting(key))
+
+        self.chkUseCustomCredentials.setChecked(self.settings.getSetting("UseCustomCredentials"))
+        self.chkS3Delete.setChecked(self.settings.getSetting("S3Delete"))
+        self.chkS3Force.setChecked(self.settings.getSetting("S3Force"))
 
 
     def browseDataFolder(self):

@@ -6,6 +6,20 @@ import boto3
 from boto3.s3.transfer import TransferConfig
 from PyQt4.QtCore import pyqtSignal, QObject, pyqtSlot
 
+class AWSCredsBorg(object):
+    _shared_state = {}
+    def __init__(self):
+        self.__dict__ = self._shared_state
+
+class AWSCreds(AWSCredsBorg):
+    """
+    Read up on the Borg pattern if you don't already know it. Super useful
+    """
+    def __init__(self, creds=None):
+        super(AWSCreds, self).__init__()
+        if creds is not None:
+            self.creds = creds
+
 class FileTransfer(QObject):
     # Max size in bytes before uploading in parts.
     # Specifying this is important as it affects
@@ -20,7 +34,8 @@ class FileTransfer(QObject):
 
         super(FileTransfer, self).__init__()
         # Get the service client
-        self.s3 = boto3.client('s3')
+        creds = AWSCreds()
+        self.s3 = boto3.client('s3', **creds.creds)
         self.bucket = bucket
         self.filepath = None
         self.filesize = 0
@@ -45,6 +60,7 @@ class FileTransfer(QObject):
         self.filepath = filepath
         self.filesize = self.getDiskSize(filepath)
         self.s3.upload_file(filepath, self.bucket, key, Config=self.S3Config, Callback=Progress(self.progCallback))
+
 
     def delete(self, key):
         self.s3.delete_object(Bucket=self.bucket, Key=key)

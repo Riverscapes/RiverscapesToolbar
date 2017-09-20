@@ -1,5 +1,6 @@
 from PyQt4.QtCore import QSettings
 from os import path
+from lib.s3.transfers import AWSCreds
 
 # BASE is the name we want to use inside the settings keys
 BASE="QGISRiverscapesToolbar"
@@ -50,6 +51,7 @@ class Settings(SettingsBorg):
                         self.resetDefault(key)
                 s.endGroup()
             # Must be the last thing we do in init
+            self.setAWSCredentials()
             self._initdone = True
 
 
@@ -74,6 +76,21 @@ class Settings(SettingsBorg):
             _SETTINGS[key]['value'] = _SETTINGS[key]['default']
         s.endGroup()
 
+    def setAWSCredentials(self):
+        """
+        Set the AWS credentials borg stte to be one way or the other.
+        :return:
+        """
+        if self.getSetting("UseCustomCredentials"):
+            AWSCreds({
+                "aws_access_key_id": self.getSetting("AWSAccessKeyID"),
+                "aws_secret_access_key": self.getSetting("AWSSecretAccessKey"),
+                "region_name": self.getSetting("AWSRegion"),
+            })
+        else:
+            # Pick up the credentials from the
+            AWSCreds({})
+
     def getSetting(self, key):
         """
         Get one setting from the in-memory store and if not present then the settings file
@@ -92,6 +109,7 @@ class Settings(SettingsBorg):
                 _SETTINGS[key]['value'] = value
             s.endGroup()
         return value
+
 
     def saveSetting(self, key, value):
         """

@@ -28,3 +28,5 @@ class qTreeIconStates:
     UPLOADBTN = ":/plugins/RiverscapesToolbar/uploadbtn.png"
 
     HIDDEN = ":/plugins/RiverscapesToolbar/hidden.png"
+
+    ERROR = ":/plugins/RiverscapesToolbar/error_red"

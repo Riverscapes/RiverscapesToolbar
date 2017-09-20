@@ -86,7 +86,9 @@ class AddQueueDialog(QtGui.QDialog, FORM_CLASS):
 
             newItem.setText(1, destpath)
 
-        if (len(self.treeFiles.children()) == 0):
+        allIgnored = all(op.op == S3Operation.FileOps.IGNORE for op in self.qItem.opstore.itervalues())
+
+        if (allIgnored or len(self.treeFiles.children()) == 0):
             self.lblState.setText("No file operations queued. Nothing to do")
             self.buttonBox.button(QtGui.QDialogButtonBox.Ok).setEnabled(False)
 
