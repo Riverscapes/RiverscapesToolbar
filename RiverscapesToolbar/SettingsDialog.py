@@ -2,7 +2,7 @@ import os
 from urlparse import urlparse
 
 from PyQt4 import QtGui
-from PyQt4.QtCore import pyqtSignal
+from PyQt4.QtCore import pyqtSignal, QObject, QEvent
 import PyQt4.uic as uic
 from settings import Settings
 from program import Program
@@ -17,6 +17,7 @@ class SettingsDialog(QtGui.QDialog, FORM_CLASS):
     def __init__(self, parent=None):
         """Constructor."""
         super(SettingsDialog, self).__init__(parent)
+        self.initialized = False
         # Set up the user interface from Designer.
         self.setupUi(self)
 
@@ -25,9 +26,12 @@ class SettingsDialog(QtGui.QDialog, FORM_CLASS):
 
         # Map settings keys to their respective text boxes
         self.settings = Settings()
-        self.settingMap = {
+        self.txtSettingMap = {
             'DataDir': self.txtDataRoot,
-            'ProgramXMLUrl': self.txtProgramXMLUrl
+            'ProgramXMLUrl': self.txtProgramXMLUrl,
+            'AWSAccessKeyID': self.txtAWSAccessKeyID,
+            'AWSSecretAccessKey': self.txtAWSSecretAccessKey
+
         }
         self.lblMsgs.setStyleSheet('QLabel { color: red }')
 
@@ -37,12 +41,21 @@ class SettingsDialog(QtGui.QDialog, FORM_CLASS):
         self.btnBox.button(QtGui.QDialogButtonBox.Ok).clicked.connect(self.dlgApply)
         self.btnBox.button(QtGui.QDialogButtonBox.Apply).clicked.connect(self.dlgApply)
         self.btnBox.button(QtGui.QDialogButtonBox.Reset).clicked.connect(self.dlgReset)
+        self.chkUseCustomCredentials.clicked.connect(self.AWSCheckBoxClick)
+
+        self.chkS3Delete.clicked.connect(self.dlgApply)
+        self.chkS3Force.clicked.connect(self.dlgApply)
+
+        self.AWSCheckBoxClick()
+        self.refreshTextBoxes()
 
         # Map functions to click events
-        for key, val in self.settingMap.iteritems():
-            val.textChanged.connect(self.validate)
+        self._eventfilter = EventFilter(self)
+        for key, val in self.txtSettingMap.iteritems():
+            # adjust for your QLineEdit
+            val.installEventFilter(self._eventfilter)
 
-        self.refreshTextBoxes()
+        self.validate()
 
     def validate(self):
         """
@@ -65,26 +78,67 @@ class SettingsDialog(QtGui.QDialog, FORM_CLASS):
             self.addMsg("ERROR: Program XML is not a valid url (http://something.com/a/b/c/Program.xml)")
             valid = False
 
+        if self.chkUseCustomCredentials.isChecked():
+            if len(self.txtAWSAccessKeyID.text()) < 20:
+                self.addMsg("ERROR: AWS Access Key ID is not valid.")
+                valid = False
+            if " " in self.txtAWSAccessKeyID.text():
+                self.addMsg("ERROR: AWS Access Key ID cannot contain spaces.")
+                valid = False
+
+            if len(self.txtAWSSecretAccessKey.text()) < 40:
+                self.addMsg("ERROR: AWS Secret Access Key is not valid.")
+                valid = False
+            if " " in self.txtAWSSecretAccessKey.text():
+                self.addMsg("ERROR: AWS Secret Access Key cannot contain spaces.")
+                valid = False
+
         self.btnBox.button(QtGui.QDialogButtonBox.Ok).setEnabled(valid)
         self.btnBox.button(QtGui.QDialogButtonBox.Apply).setEnabled(valid)
 
         return valid
+
+    def AWSCheckBoxClick(self):
+        """
+        Toggle using local credentials
+        :return:
+        """
+
+        if self.chkUseCustomCredentials.isChecked():
+            self.groupBoxAWS.setEnabled(True)
+        else:
+            self.groupBoxAWS.setEnabled(False)
+
+        self.dlgApply()
+
 
     def dlgApply(self):
         """
         Save all settings and close
         """
         if self.validate():
-
             settings = Settings()
+
             settings.saveSetting("DataDir", self.txtDataRoot.text())
             settings.saveSetting("ProgramXMLUrl", self.txtProgramXMLUrl.text())
 
+            # Refresh the programXML
+            settings = Settings()
+            if settings.getSetting("ProgramXMLUrl") != self.txtProgramXMLUrl.text():
+                program = Program(force=True)
+                if not program.valid:
+                    self.addMsg("WARNING: Program XML could not be retrieved at this address")
+
+            settings.saveSetting("AWSAccessKeyID", self.txtAWSAccessKeyID.text())
+            settings.saveSetting("AWSSecretAccessKey", self.txtAWSSecretAccessKey.text())
+            settings.saveSetting("AWSRegion", self.cmbAWSRegion.currentText())
+
+            settings.saveSetting("UseCustomCredentials", self.chkUseCustomCredentials.isChecked())
+            settings.saveSetting("S3Delete", self.chkS3Delete.isChecked())
+            settings.saveSetting("S3Force", self.chkS3Force.isChecked())
+
             self.btnBox.button(QtGui.QDialogButtonBox.Ok).setEnabled(True)
             self.btnBox.button(QtGui.QDialogButtonBox.Apply).setEnabled(False)
-
-            # Refresh the programXML
-            program = Program(force=True)
 
     def dlgReset(self):
         """
@@ -110,7 +164,7 @@ class SettingsDialog(QtGui.QDialog, FORM_CLASS):
         put the values in memory back into the text boxes
         :return: 
         """
-        for key, val in self.settingMap.iteritems():
+        for key, val in self.txtSettingMap.iteritems():
             val.setText(self.settings.getSetting(key))
 
 
@@ -122,3 +176,18 @@ class SettingsDialog(QtGui.QDialog, FORM_CLASS):
         dataDir = QtGui.QFileDialog.getExistingDirectory(self, "Open a folder", os.path.expanduser("~"), QtGui.QFileDialog.ShowDirsOnly)
         self.txtDataRoot.setText(dataDir)
         self.validate()
+
+
+class EventFilter(QObject):
+    def __init__(self, dialog):
+        super(EventFilter, self).__init__()
+        self.dialog = dialog
+
+    def eventFilter(self, widget, event):
+        # FocusOut event
+        if QEvent is not None and event.type() == QEvent.FocusOut:
+            self.dialog.validate()
+
+        # return False so that the widget will also handle the event
+        # otherwise it won't focus out
+        return False

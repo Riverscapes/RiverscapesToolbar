@@ -16,17 +16,24 @@ class Program(ProgramBorg):
     def __init__(self, force=False):
         super(Program, self).__init__()
         if not self._initdone or force:
+            self.valid = False
             print "Init ProgramXML"
 
             settings = Settings()
+            self.log = logging.getLogger()
             self.DOM = None
-            self.getProgram(settings.getSetting('ProgramXMLUrl'))
+            try:
+                self.getProgram(settings.getSetting('ProgramXMLUrl'))
+                self.valid = True
+            except Exception, e:
+                self.log.error("Error retrieving program XML")
+                return
+
             self.Collections = {}
             self.Groups = {}
             self.Products = {}
             self.Hierarchy = {}
             self.Bucket = None
-            self.log = logging.getLogger()
 
             # Populate everything
             self.getBucket()

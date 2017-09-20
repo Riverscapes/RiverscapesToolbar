@@ -15,8 +15,6 @@ from AddQueueDialog import AddQueueDialog
 from project import Project
 
 
-program = Program()
-
 class DockWidgetTabProject():
 
     treectl = None

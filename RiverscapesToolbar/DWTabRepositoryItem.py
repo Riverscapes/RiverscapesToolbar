@@ -56,6 +56,10 @@ class RepoTreeItem():
         self.nItem = nItem
         self.rtParent = rtParent
 
+        if not program.valid:
+            print "NO PROGRAM FILE FOUND. BAILING"
+            return
+
         # RootNode Stuff
         if not self.nItem:
             self.nItem = program.Hierarchy
@@ -133,6 +137,10 @@ class RepoTreeItem():
         :return:
         """
 
+        if not program.valid:
+            print "NO PROGRAM FILE FOUND. BAILING"
+            return
+
         if self.state == self.NState.INITIALIZED:
             # There's no asynchronous loading for nodes so we jump straight to loaded
             self.state = self.NState.LOADED
@@ -188,7 +196,6 @@ class RepoTreeItem():
 
             self.formatNode()
             self.backwardRefresh()
-
 
         if self.childrenstate == self.NState.INITIALIZED:
             self.childrenstate = self.NState.LOAD_REQ

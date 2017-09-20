@@ -3,7 +3,6 @@ from lib.s3.walkers import s3BuildOps
 from PyQt4.QtGui import QMenu, QTreeWidgetItem, QIcon, QDesktopServices
 from PyQt4.QtCore import Qt, QObject, pyqtSlot, QUrl
 from settings import Settings
-from program import Program
 from project import Project
 from lib.async import ToolbarQueues, QueueStatus
 from lib.treeitem import *
@@ -21,7 +20,6 @@ class DockWidgetTabDownload():
     def __init__(self, dockWidget):
         print "init DockWidgetTabDownload"
         self.settings = Settings()
-        self.program = Program()
 
         DockWidgetTabDownload.dockwidget = dockWidget
         DockWidgetTabDownload.treectl = self.dockwidget.treeProjQueue

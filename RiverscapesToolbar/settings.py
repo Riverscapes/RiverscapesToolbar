@@ -10,6 +10,15 @@ _SETTINGS = {
     },
     "ProgramXMLUrl": {
         "default": "https://raw.githubusercontent.com/Riverscapes/Program/master/Program/Riverscapes.xml"
+    },
+    "UseCustomCredentials": {
+        "default": False,
+    },
+    "S3Delete": {
+        "default": False,
+    },
+    "S3Force": {
+        "default": False,
     }
 }
 
@@ -26,7 +35,7 @@ class Settings(SettingsBorg):
     Read up on the Borg pattern if you don't already know it. Super useful
     """
     def __init__(self):
-        super(SettingsBorg, self).__init__()
+        super(Settings, self).__init__()
         if not self._initdone:
             print "Init Settings"
             s = QSettings()
@@ -37,7 +46,7 @@ class Settings(SettingsBorg):
                     self.resetDefault(key)
                 else:
                     val = self.getSetting(key)
-                    if len(val) == 0 or val is None:
+                    if (type(val) in [str, unicode] and len(val) == 0) or val is None:
                         self.resetDefault(key)
                 s.endGroup()
             # Must be the last thing we do in init
@@ -60,7 +69,7 @@ class Settings(SettingsBorg):
         """
         s = QSettings()
         s.beginGroup(BASE)
-        if key in _SETTINGS and "default" in _SETTINGS[key]:
+        if key == _SETTINGS and "default" in _SETTINGS[key]:
             s.setValue(key, _SETTINGS[key]['default'])
             _SETTINGS[key]['value'] = _SETTINGS[key]['default']
         s.endGroup()
@@ -78,6 +87,8 @@ class Settings(SettingsBorg):
             s.beginGroup(BASE)
             if key in s.childKeys():
                 value = s.value(key)
+                if not key in _SETTINGS:
+                    _SETTINGS[key] = {}
                 _SETTINGS[key]['value'] = value
             s.endGroup()
         return value
@@ -94,6 +105,9 @@ class Settings(SettingsBorg):
         # Set it in the file
         s.setValue(key, value)
         # Don't forget to save it back to memory
+        if not key in _SETTINGS:
+            _SETTINGS[key] = {}
+
         _SETTINGS[key]['value'] = value
         s.endGroup()
 

@@ -45,13 +45,14 @@ class AddQueueDialog(QtGui.QDialog, FORM_CLASS):
         self.project.load(remote=isRemote)
 
         # TODO: Delete and force should probably come from the dialog, not settings.
-        conf = QueueItem.TransferConf(program.Bucket, self.project.localprojroot, self.project.remotePrefix, self.direction,
-                                      settings.getSetting("force"),
-                                      settings.getSetting("delete"))
+        if program.valid:
+            conf = QueueItem.TransferConf(program.Bucket, self.project.localprojroot, self.project.remotePrefix, self.direction,
+                                          settings.getSetting("force"),
+                                          settings.getSetting("delete"))
 
-        self.qItem = QueueItem(self.project, conf)
-        self.setMetaData()
-        self.populateList()
+            self.qItem = QueueItem(self.project, conf)
+            self.setMetaData()
+            self.populateList()
 
     def setMetaData(self):
         """

@@ -60,7 +60,7 @@ class Project():
         :return:
         """
         if self.DOM is None:
-            if remote:
+            if remote and program.valid:
                 self.DOM = loadS3XMLFile(program.Bucket, self.relPath)
             else:
                 self.DOM = loadLocalXMLFile(self.absProjectFile)
@@ -96,6 +96,7 @@ class Project():
 
         # Now go get the product node from the program XML
         patharr = program.findprojpath(projType)
+        assert program.valid is not None, "ERROR: Program must be loaded for this to work"
         assert patharr is not None,  "ERROR: Product '{0}' not found anywhere in the program XML".format(projType)
 
         extpath = ''
