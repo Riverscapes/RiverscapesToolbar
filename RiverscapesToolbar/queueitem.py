@@ -68,7 +68,7 @@ class QueueItem(QObject):
 
         anyInProgress = any(op.runState == S3Operation.RunStates.INPROGRESS for op in self.opstore.itervalues())
         anyErrors = any(op.runState == S3Operation.RunStates.ERROR for op in self.opstore.itervalues())
-        allComplete = all(op.runState == S3Operation.RunStates.ERROR for op in self.opstore.itervalues())
+        allComplete = all(op.runState == S3Operation.RunStates.COMPLETE for op in self.opstore.itervalues())
         allIgnored = all(op.op == S3Operation.FileOps.IGNORE for op in self.opstore.itervalues())
 
         totalprogpercent = 0

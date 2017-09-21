@@ -119,10 +119,16 @@ class DockWidgetTabDownload():
 
     def clearCompleted(self):
         print "clear completed"
+
+        finishedStates = [S3Operation.RunStates.ERROR, S3Operation.RunStates.COMPLETE, S3Operation.RunStates.IGNORED]
+
         for idx in range(0, self.treectl.topLevelItemCount()):
             child = self.treectl.topLevelItem(idx)
             theData = child.data(0, Qt.UserRole)[0]
-            if theData.qItem.progress == 100:
+
+            allComplete = all(op.runState in finishedStates for op in theData.qItem.opstore.itervalues())
+
+            if allComplete:
                 taken = self.treectl.takeTopLevelItem(idx)
 
     def removeItemFromQueue(self):
