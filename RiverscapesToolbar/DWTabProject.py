@@ -14,6 +14,7 @@ from lib.s3.operations import S3Operation
 from AddQueueDialog import AddQueueDialog
 from project import Project
 
+program = Program()
 
 class DockWidgetTabProject():
 

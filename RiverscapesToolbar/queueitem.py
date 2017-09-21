@@ -145,7 +145,7 @@ class QueueItem(QObject):
 
                 elif op.runState == S3Operation.RunStates.INPROGRESS:
                     status = QueueItem.States.INPROGRESS
-                    progstr = "{}%".format(op.status)
+                    progstr = "{}%".format(op.progress)
                     child.setToolTip(0, "Downloading in progress.")
 
                 child.setText(1, progstr)
