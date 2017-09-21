@@ -29,4 +29,4 @@ class qTreeIconStates:
 
     HIDDEN = ":/plugins/RiverscapesToolbar/hidden.png"
 
-    ERROR = ":/plugins/RiverscapesToolbar/error_red"
+    ERROR = ":/plugins/RiverscapesToolbar/error_red.png"

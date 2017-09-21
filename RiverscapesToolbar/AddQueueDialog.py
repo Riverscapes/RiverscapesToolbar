@@ -8,8 +8,7 @@ from lib.treeitem import *
 from lib.s3.operations import S3Operation
 from PyQt4.QtGui import QTreeWidgetItem
 from PyQt4.QtCore import Qt
-from project import Project
-from DWTabDownload import QueueItem
+from queueitem import QueueItem
 
 FORM_CLASS, _ = uic.loadUiType(path.join(path.dirname(__file__), 'AddQueueDialog.ui'))
 

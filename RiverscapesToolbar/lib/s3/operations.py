@@ -174,9 +174,9 @@ class S3Operation():
     @pyqtSlot(tuple)
     def updateProgress(self, progtuple):
         self.progress = progtuple[1]
-        # print "OPERATIONS: {} -- {} -- {} -- {}".format(*progtuple)
         if self.progcb is not None:
-            self.progcb(progtuple)
+            self.progcb(self)
+
 
     def delete_remote(self):
         """

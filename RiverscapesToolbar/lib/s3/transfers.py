@@ -28,7 +28,7 @@ class FileTransfer(QObject):
     # Size of parts when uploading in parts
     AWS_UPLOAD_PART_SIZE = 6 * 1024 * 1024
 
-    progsignal = pyqtSignal(tuple)
+    progsignal = pyqtSignal(object)
 
     def __init__(self, bucket):
 

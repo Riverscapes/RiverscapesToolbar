@@ -54,9 +54,9 @@ class RiverscapesToolbarViewer:
         try:
             import boto3
         except ImportError:
-            from RiverscapesToolbar.PopupDialog import okDlg
+            from RiverscapesToolbar.DockWidget import RiverscapesToolbarDockWidget
             from PyQt4.QtGui import QMessageBox
-            okDlg("Boto3 Not Installed", "You must have boto3 installed for the Riverscapes Toolbar to work. <br/>For Instructions on how to do this click <a href=\"https://riverscapes.github.io/RiverscapesToolbar/quickstart.html#step-2-install-boto3\">here</a>", icon=QMessageBox.Critical)
+            RiverscapesToolbarDockWidget.okDlg("Boto3 Not Installed", "You must have boto3 installed for the Riverscapes Toolbar to work. <br/>For Instructions on how to do this click <a href=\"https://riverscapes.github.io/RiverscapesToolbar/quickstart.html#step-2-install-boto3\">here</a>", icon=QMessageBox.Critical)
 
         # Call our singletons the first time to set/reset settings if necessary
         Settings()

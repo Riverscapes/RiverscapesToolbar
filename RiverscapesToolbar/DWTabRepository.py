@@ -1,7 +1,6 @@
 from PyQt4.QtGui import QMenu, QDesktopServices, QIcon, QMessageBox
 from PyQt4.QtCore import Qt, QUrl
 from os import path, makedirs
-from PopupDialog import okDlg
 from DWTabRepositoryItem import RepoTreeItem
 from lib.async import TreeLoadQueues
 from lib.s3.operations import S3Operation
@@ -49,7 +48,7 @@ class DockWidgetTabRepository():
         self.reloadRoot()
 
     def NetWorkFailDialog(self, errobj):
-        okDlg("Network Error:", errobj[0].message, errobj[1], icon=QMessageBox.Warning)
+        self.dockwidget.okDlg("Network Error:", errobj[0].message, errobj[1], icon=QMessageBox.Warning)
         self.dockwidget.btnLocalOnly.setChecked(True)
         RepoTreeItem.localOnly = True
         self.reloadRoot()

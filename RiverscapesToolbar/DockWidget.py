@@ -27,6 +27,7 @@ from PyQt4 import QtGui
 import PyQt4.uic as uic
 from PyQt4.QtCore import pyqtSignal
 from SettingsDialog import SettingsDialog
+from PyQt4.QtGui import QIcon
 
 from DWTabRepository import DockWidgetTabRepository
 from DWTabDownload import DockWidgetTabDownload
@@ -38,6 +39,7 @@ FORM_CLASS, _ = uic.loadUiType(os.path.join(
 class RiverscapesToolbarDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
     closingPlugin = pyqtSignal()
+    showMessageBox = pyqtSignal(str, str, str, object)
 
     REPO_TAB = 0
     PROJECT_TAB = 1
@@ -59,6 +61,10 @@ class RiverscapesToolbarDockWidget(QtGui.QDockWidget, FORM_CLASS):
         self.btnSettings.clicked.connect(self.settingsLoad)
         self.tabWidget.setCurrentIndex(self.REPO_TAB)
 
+        # For asynchronous tasks we need to only ever call the okdlg on the
+        # Main thread
+        self.showMessageBox.connect(self.okDlg)
+
         # The code that runs our tabs lives in a different class
         self.TabRepo = DockWidgetTabRepository(self)
         self.TabDownload = DockWidgetTabDownload(self)
@@ -74,3 +80,35 @@ class RiverscapesToolbarDockWidget(QtGui.QDockWidget, FORM_CLASS):
 
     def recalc_state(self):
         print "recalc state"
+
+    @staticmethod
+    def okDlg(txt, infoText="", detailsTxt=None, icon=QtGui.QMessageBox.Information):
+        """
+        Call it like this:
+            self.okDlg("ERROR:", infoText=str(e), detailsTxt=detailstxt, icon=QtGui.QMessageBox.Critical)
+        :param self:
+        :param txt:
+        :param infoText:
+        :param detailsTxt:
+        :param icon:
+        :return:
+        """
+
+        # Just a helper box to display an OK dialog prompt.
+        msg = QtGui.QMessageBox()
+        msg.setIcon(icon)
+
+        msg.setText(txt)
+        msg.setInformativeText(infoText)
+        msg.setWindowTitle("Riverscapes Toolbar")
+        if detailsTxt is not None:
+            msg.setDetailedText(detailsTxt)
+        msg.setStandardButtons(QtGui.QMessageBox.Ok)
+        msg.buttonClicked.connect(msg.close)
+
+        # This is a hack to be able to resize the box
+        horizontal_spacer = QtGui.QSpacerItem(500, 0, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        layout = msg.layout()
+        layout.addItem(horizontal_spacer, layout.rowCount(), 0, 1, layout.columnCount())
+
+        msg.exec_()
