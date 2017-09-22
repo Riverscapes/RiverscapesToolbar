@@ -2,15 +2,16 @@ from PyQt4.QtCore import QSettings
 from os import path
 from lib.s3.transfers import AWSCreds
 
+
 # BASE is the name we want to use inside the settings keys
 BASE="QGISRiverscapesToolbar"
 # DEFAULT SETTINGS: We may need to externalize this somehow
 _SETTINGS = {
     "DataDir": {
-        "default": path.join(path.expanduser("~"), "RiverscapesData")
+        "default": path.join(path.expanduser("~"), "RiverscapesData"),
     },
     "ProgramXMLUrl": {
-        "default": "https://raw.githubusercontent.com/Riverscapes/Program/master/Program/Riverscapes.xml"
+        "default": "https://raw.githubusercontent.com/Riverscapes/Program/master/Program/Riverscapes.xml",
     },
     "UseCustomCredentials": {
         "default": False,
@@ -47,7 +48,7 @@ class Settings(SettingsBorg):
                     self.resetDefault(key)
                 else:
                     val = self.getSetting(key)
-                    if (type(val) in [str, unicode] and len(val) == 0) or val is None:
+                    if ((type(val) in [str, unicode] and len(val) == 0)) or val is None:
                         self.resetDefault(key)
                 s.endGroup()
             # Must be the last thing we do in init
@@ -71,7 +72,7 @@ class Settings(SettingsBorg):
         """
         s = QSettings()
         s.beginGroup(BASE)
-        if key == _SETTINGS and "default" in _SETTINGS[key]:
+        if key in _SETTINGS and "default" in _SETTINGS[key]:
             s.setValue(key, _SETTINGS[key]['default'])
             _SETTINGS[key]['value'] = _SETTINGS[key]['default']
         s.endGroup()
@@ -104,6 +105,12 @@ class Settings(SettingsBorg):
             s.beginGroup(BASE)
             if key in s.childKeys():
                 value = s.value(key)
+                # In windows QSettings uses the registry and doesn't type things so we have to
+                if  key in _SETTINGS and type(_SETTINGS[key]['default']) is bool:
+                    if value.lower() == "true":
+                        value = True
+                    else:
+                        value = False
                 if not key in _SETTINGS:
                     _SETTINGS[key] = {}
                 _SETTINGS[key]['value'] = value

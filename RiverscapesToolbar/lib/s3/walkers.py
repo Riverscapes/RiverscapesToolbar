@@ -1,5 +1,4 @@
 import os
-import logging
 from operations import S3Operation
 from transfers import FileTransfer
 
@@ -125,8 +124,6 @@ def s3GetFolderList(bucket, prefix):
     :param currlevel:
     :return:
     """
-    log = logging.getLogger()
-    log.setLevel(logging.ERROR)
     s3 = FileTransfer(bucket)
     results = []
     # list everything at this collection
@@ -148,8 +145,6 @@ def s3ProductWalker(bucket, patharr, currpath=[], currlevel=0):
     :param currlevel:
     :return:
     """
-    log = logging.getLogger()
-    log.setLevel(logging.ERROR)
     s3 = FileTransfer(bucket)
     if currlevel >= len(patharr):
         return

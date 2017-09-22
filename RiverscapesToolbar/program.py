@@ -1,6 +1,6 @@
 import urllib2
 import re
-import logging
+from lib.loghelper import QGSLogger
 from settings import Settings
 import xml.etree.ElementTree as ET
 
@@ -20,13 +20,12 @@ class Program(ProgramBorg):
             print "Init ProgramXML"
 
             settings = Settings()
-            self.log = logging.getLogger()
             self.DOM = None
             try:
                 self.getProgram(settings.getSetting('ProgramXMLUrl'))
                 self.valid = True
             except Exception, e:
-                self.log.error("Error retrieving program XML")
+                QGSLogger.error("Error retrieving program XML")
                 return
 
             self.Collections = {}
@@ -79,7 +78,7 @@ class Program(ProgramBorg):
                 self.DOM = ET.fromstring(data)
             except:
                 err = "ERROR: Could not download <{0}>".format(progpath)
-                self.log.error(err)
+                QGSLogger.error(err)
                 raise ValueError(err)
         else:
             self.DOM = ET.parse(progpath).getroot()
@@ -122,7 +121,7 @@ class Program(ProgramBorg):
                         bGood = True
                         continue
                 except Exception as e:
-                    self.log.error("Something went wrong with the allow RegEx in the Program XML file", e)
+                    QGSLogger.error("Something went wrong with the allow RegEx in the Program XML file", e)
                     raise e
             else:
                 if allow['name'] == desiredName:
@@ -196,33 +195,33 @@ class Program(ProgramBorg):
     def getProjectFile(self):
         try:
             self.ProjectFile = self.DOM.find("MetaData/Meta[@name='projectfile']").text.strip()
-            self.log.info("Project File we're looking for: {0}".format(self.ProjectFile))
+            QGSLogger.info("Project File we're looking for: {0}".format(self.ProjectFile))
         except:
             msg = "ERROR: No <Meta Name='projectfile'>project.rs.xml</Meta> tag found in program XML"
-            self.log.error(msg)
+            QGSLogger.error(msg)
             raise ValueError(msg)
 
     def getBucket(self):
         try:
             self.Bucket = self.DOM.find("MetaData/Meta[@name='s3bucket']").text.strip()
-            self.log.info("S3 Bucket Detected: {0}".format(self.Bucket))
+            QGSLogger.info("S3 Bucket Detected: {0}".format(self.Bucket))
         except:
             msg = "ERROR: No <Meta Name='s3bucket'>riverscapes</Meta> tag found in program XML"
-            self.log.error(msg)
+            QGSLogger.error(msg)
             raise ValueError(msg)
 
     def getProdPath(self, prodName):
 
-        self.log.title('Getting remote path structure...')
+        QGSLogger.info('Getting remote path structure...')
 
         # First let's get the project type
         assert not _strnullorempty(prodName), "ERROR: <ProjectType> not found in project XML."
-        self.log.info("Project Type Detected: {0}".format(prodName))
+        QGSLogger.info("Project Type Detected: {0}".format(prodName))
 
         # Now go get the product node from the program XML
         patharr = self.findprojpath(prodName)
         assert patharr is not None, "ERROR: Product '{0}' not found anywhere in the program XML".format(prodName)
-        self.log.title("Building Path to Product: ".format(prodName))
+        QGSLogger.info("Building Path to Product: ".format(prodName))
 
         return patharr
 
