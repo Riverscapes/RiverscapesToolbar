@@ -62,7 +62,7 @@ class SettingsDialog(QtGui.QDialog, FORM_CLASS):
         Make sure our settings are sane
         :return:
         """
-        print "validating"
+        # print "validating"
         self.lblMsgs.setText("")
         valid = True
 
@@ -145,7 +145,7 @@ class SettingsDialog(QtGui.QDialog, FORM_CLASS):
         """
         Reset the form to sensible defaults
         """
-        print "Reset"
+        # print "Reset"
         self.settings.resetAll()
         self.refreshUIState()
 

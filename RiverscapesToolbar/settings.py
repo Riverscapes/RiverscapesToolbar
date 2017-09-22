@@ -39,7 +39,7 @@ class Settings(SettingsBorg):
     def __init__(self):
         super(Settings, self).__init__()
         if not self._initdone:
-            print "Init Settings"
+            # print "Init Settings"
             s = QSettings()
             # Do a sanity check and reset anything that looks fishy
             for key in _SETTINGS.iterkeys():
@@ -106,7 +106,7 @@ class Settings(SettingsBorg):
             if key in s.childKeys():
                 value = s.value(key)
                 # In windows QSettings uses the registry and doesn't type things so we have to
-                if  key in _SETTINGS and type(_SETTINGS[key]['default']) is bool:
+                if key in _SETTINGS and type(_SETTINGS[key]['default']) is bool and type(value) is not bool:
                     if value.lower() == "true":
                         value = True
                     else:

@@ -112,7 +112,7 @@ class S3Operation():
             elif self.filestate == self.FileStates.LOCALONLY and self.delete:
                 self.op = self.FileOps.DELETE_LOCAL
 
-        print str(self)
+        # print str(self)
 
     def getS3Key(self):
         # Not using path.join because can't be guaranteed a unix system
@@ -132,7 +132,7 @@ class S3Operation():
 
         try:
             if self.op == self.FileOps.IGNORE:
-                print " [{0}] {1}: Nothing to do. Continuing.".format(self.op, self.key)
+                # print " [{0}] {1}: Nothing to do. Continuing.".format(self.op, self.key)
                 self.runState = S3Operation.RunStates.IGNORED
 
             elif self.op == self.FileOps.UPLOAD:
@@ -179,10 +179,10 @@ class S3Operation():
         """
         Delete a Remote file
         """
-        print "Deleting: {0} ==> ".format(self.fullkey)
+        # print "Deleting: {0} ==> ".format(self.fullkey)
         # This step prints straight to stdout and does not log
         self.s3.delete(self.fullkey)
-        print "S3 Deletion Completed: {0}".format(self.fullkey)
+        # print "S3 Deletion Completed: {0}".format(self.fullkey)
 
     def delete_local(self):
         """
@@ -190,15 +190,15 @@ class S3Operation():
         """
         dirname = os.path.dirname(self.abspath)
         os.remove(self.abspath)
-        print "Deleting Local file: {0} ==> ".format(self.abspath)
+        # print "Deleting Local file: {0} ==> ".format(self.abspath)
         # now walk backwards and clean up empty folders
         try:
             os.removedirs(dirname)
-            print 'Cleaning up folders: {0}'.format(dirname)
+            # print 'Cleaning up folders: {0}'.format(dirname)
         except:
-            'Folder cleanup stopped since there were still files: {0}'.format(dirname)
+            # 'Folder cleanup stopped since there were still files: {0}'.format(dirname)
             pass
-        print "Local Deletion Completed: {0}".format(self.abspath)
+        # print "Local Deletion Completed: {0}".format(self.abspath)
 
 
     def download(self):
@@ -218,10 +218,10 @@ class S3Operation():
             except Exception as e:
                 raise Exception("ERROR: Directory `{0}` could not be created.".format(dirpath))
 
-        print "Downloading: {0} ==> ".format(self.fullkey)
+        # print "Downloading: {0} ==> ".format(self.fullkey)
         # This step prints straight to stdout and does not log
         self.s3.download(self.fullkey, self.abspath, size=self.s3size)
-        print "Download Completed: {0}".format(self.abspath)
+        # print "Download Completed: {0}".format(self.abspath)
 
     def upload(self):
         """
@@ -232,10 +232,10 @@ class S3Operation():
         :return:
         """
 
-        print "Uploading: {0} ==> s3://{1}/{2}".format(self.abspath, self.bucket, self.fullkey)
+        # print "Uploading: {0} ==> s3://{1}/{2}".format(self.abspath, self.bucket, self.fullkey)
         # This step prints straight to stdout and does not log
         self.s3.upload(self.abspath, self.fullkey)
-        print "Upload Completed: {0}".format(self.abspath)
+        # print "Upload Completed: {0}".format(self.abspath)
 
 
 

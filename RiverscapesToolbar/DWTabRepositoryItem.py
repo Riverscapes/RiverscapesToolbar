@@ -57,7 +57,7 @@ class RepoTreeItem():
         self.rtParent = rtParent
 
         if not program.valid:
-            print "NO PROGRAM FILE FOUND. BAILING"
+            # print "NO PROGRAM FILE FOUND. BAILING"
             return
 
         # RootNode Stuff
@@ -88,7 +88,7 @@ class RepoTreeItem():
         When we right click and choose refresh
         :return:
         """
-        print "Refreshing"
+        # print "Refreshing"
         self.reset()
         self.calcPresent(force=True)
         self.load(loadlevels=1)
@@ -138,7 +138,7 @@ class RepoTreeItem():
         """
 
         if not program.valid:
-            print "NO PROGRAM FILE FOUND. BAILING"
+            # print "NO PROGRAM FILE FOUND. BAILING"
             return
 
         if self.state == self.NState.INITIALIZED:

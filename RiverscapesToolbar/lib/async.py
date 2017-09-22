@@ -21,7 +21,7 @@ class TreeLoadQueues(TreeLoadQueuesBorg):
     def __init__(self):
         super(TreeLoadQueues, self).__init__()
         if not self._initdone:
-            print "Init TreeLoadQueues"
+            # print "Init TreeLoadQueues"
             self.load_q = Queue()
 
             # These are the thread processes that run the downloading processes
@@ -47,7 +47,7 @@ class TreeLoadQueues(TreeLoadQueuesBorg):
             self.worker.start.emit("start")
 
     def stopWorker(self):
-        print "Attempting TreeLoadQueues Stop:"
+        # print "Attempting TreeLoadQueues Stop:"
         self.worker.killrequested = True
 
     def resetQueue(self):
@@ -85,7 +85,7 @@ class TreeLoadQueues(TreeLoadQueuesBorg):
             except Exception, e:
                 Qs.stopWorker()
                 Qs.load_q.empty()
-                print "TransferWorkerThread Exception: {}".format(str(e))
+                # print "TransferWorkerThread Exception: {}".format(str(e))
                 traceback.print_exc()
                 self.error.emit((e, traceback.format_exc()))
 
@@ -102,7 +102,7 @@ class ToolbarQueues(ToolbarQueuesBorg):
     def __init__(self):
         super(ToolbarQueues, self).__init__()
         if not self._initdone:
-            print "Init ToolbarQueues"
+            # print "Init ToolbarQueues"
             self.project_q = Queue()
             self.transfer_q = Queue()
 
@@ -133,12 +133,12 @@ class ToolbarQueues(ToolbarQueuesBorg):
         return project
 
     def startWorker(self):
-        print "Attempting Queue Start:"
+        # print "Attempting Queue Start:"
         self.worker.killrequested = False
         self.worker.start.emit("start")
 
     def stopWorker(self):
-        print "Attempting Queue Stop:"
+        # print "Attempting Queue Stop:"
         self.worker.killrequested = True
 
     def resetQueue(self):
@@ -176,7 +176,7 @@ class TransferWorker(QObject):
         InitDebug()
         Qs = ToolbarQueues()
         try:
-            print "QUEUE STARTED"
+            # print "QUEUE STARTED"
             Qs.running = True
             self.statusSignal.emit(QueueStatus.STARTED)
             while not self.killrequested:
@@ -207,7 +207,7 @@ class TransferWorker(QObject):
             Qs.running = False
             self.statusSignal.emit(QueueStatus.STOPPED)
         except Exception, e:
-            print "TransferWorkerThread Exception: {}".format(str(e))
+            # print "TransferWorkerThread Exception: {}".format(str(e))
             traceback.print_exc()
 
 

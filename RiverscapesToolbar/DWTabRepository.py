@@ -111,7 +111,7 @@ class DockWidgetTabRepository():
 
 
     def createFolder(self, rtItem):
-        print "createfolder"
+        # print "createfolder"
         if rtItem.type == "product":
             localpath = path.join(RepoTreeItem.localrootdir, path.sep.join(rtItem.pathArr[:-1]))
         else:
@@ -187,13 +187,13 @@ class DockWidgetTabRepository():
         menu.exec_(self.treectl.mapToGlobal(pt))
 
     def addProjectToDownloadQueue(self, rtItem):
-        print "Adding to download Queue: " + '/'.join(  rtItem.pathArr)
+        # print "Adding to download Queue: " + '/'.join(  rtItem.pathArr)
         dialog = AddQueueDialog(S3Operation.Direction.DOWN, rtItem.project)
         if dialog.exec_():
             self.dockwidget.TabDownload.addToQueue(dialog.qItem)
 
     def addProjectToUploadQueue(self, rtItem):
-        print "Adding to Upload Queue: " + '/'.join(rtItem.pathArr)
+        # print "Adding to Upload Queue: " + '/'.join(rtItem.pathArr)
         dialog = AddQueueDialog(S3Operation.Direction.UP, rtItem.project)
         if dialog.exec_():
             self.dockwidget.TabDownload.addToQueue(dialog.qItem)

@@ -180,7 +180,7 @@ class DockWidgetTabProject():
         item = DockWidgetTabProject.treectl.itemFromIndex(qindex)
         order = item.parent().indexOfChild(item)
 
-        print "ADDING TO MAP::", nodeData.filepath
+        # print "ADDING TO MAP::", nodeData.filepath
         # Loop over all the parent group layers for this raster
         # ensuring they are in the tree in correct, nested order
         parentGroup = None
@@ -201,7 +201,8 @@ class DockWidgetTabProject():
                 rOutput = QgsRasterLayer(filepath, nodeData.name)
 
             elif nodeData.maptype == 'tilelayer':
-                print "WARNING:::  not implemented yet"
+                pass
+                # print "WARNING:::  not implemented yet"
 
             QgsMapLayerRegistry.instance().addMapLayer(rOutput, False)
             parentGroup.insertLayer(order, rOutput)
@@ -211,7 +212,7 @@ class DockWidgetTabProject():
 
         # if the layer already exists trigger a refresh
         else:
-            print "REFRESH"
+            # print "REFRESH"
             QgsMapLayerRegistry.instance().mapLayersByName(nodeData.name)[0].triggerRepaint()
 
     @staticmethod

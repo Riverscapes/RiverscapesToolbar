@@ -231,7 +231,7 @@ class ProjectTreeItem():
         When we right click and choose refresh
         :return:
         """
-        print "refreshing"
+        # print "refreshing"
         self.load()
 
     def getLabel(self):

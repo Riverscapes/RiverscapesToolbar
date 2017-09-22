@@ -34,4 +34,5 @@ def setFontItalic(qtreeitem, column=None):
 
 def setItemIcon(qtreeitem, icon):
     # TODO: Need to figure out fonts
-    print "coming soon"
+    # print "coming soon"
+    return

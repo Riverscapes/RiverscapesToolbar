@@ -17,7 +17,7 @@ class DockWidgetTabDownload():
     dockwidget = None
 
     def __init__(self, dockWidget):
-        print "init DockWidgetTabDownload"
+        # print "init DockWidgetTabDownload"
         self.settings = Settings()
 
         # We reset this setting so you only ever get the Access denied error once
@@ -110,7 +110,7 @@ class DockWidgetTabDownload():
 
 
     def emptyQueueRequest(self):
-        print "empty queue"
+        # print "empty queue"
         Qs.stopWorker()
         Qs.resetQueue()
 
@@ -118,7 +118,7 @@ class DockWidgetTabDownload():
             self.treectl.takeTopLevelItem(idx)
 
     def clearCompleted(self):
-        print "clear completed"
+        # print "clear completed"
 
         finishedStates = [S3Operation.RunStates.ERROR, S3Operation.RunStates.COMPLETE, S3Operation.RunStates.IGNORED]
 
@@ -141,6 +141,7 @@ class DockWidgetTabDownload():
 
 
     def recalcState(self):
-        print "do it"
+        return
+        # print "do it"
 
 

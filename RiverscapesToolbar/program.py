@@ -17,7 +17,7 @@ class Program(ProgramBorg):
         super(Program, self).__init__()
         if not self._initdone or force:
             self.valid = False
-            print "Init ProgramXML"
+            # print "Init ProgramXML"
 
             settings = Settings()
             self.DOM = None

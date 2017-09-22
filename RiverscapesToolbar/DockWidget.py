@@ -79,7 +79,8 @@ class RiverscapesToolbarDockWidget(QtGui.QDockWidget, FORM_CLASS):
         event.accept()
 
     def recalc_state(self):
-        print "recalc state"
+        return
+        # print "recalc state"
 
     @staticmethod
     def okDlg(txt, infoText="", detailsTxt=None, icon=QtGui.QMessageBox.Information):

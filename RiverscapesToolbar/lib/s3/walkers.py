@@ -13,17 +13,17 @@ def s3BuildOps(conf, progcb=None):
 
     prefix = "{0}/".format(conf.keyprefix).replace("//", "/")
 
-    print 'The following locations were found:'
+    # print 'The following locations were found:'
     if conf.direction == S3Operation.Direction.UP:
         tostr = 's3://{0}/{1}'.format(conf.bucket, conf.keyprefix)
         fromstr = conf.localroot
     else:
         fromstr = 's3://{0}/{1}'.format(conf.bucket, conf.keyprefix)
         tostr = conf.localroot
-    print 'FROM: {0}'.format(fromstr)
-    print 'TO  : {0}'.format(tostr)
+    # print 'FROM: {0}'.format(fromstr)
+    # print 'TO  : {0}'.format(tostr)
 
-    print 'The following operations are queued:'
+    # print 'The following operations are queued:'
 
     response = s3.list(prefix)
 
@@ -47,7 +47,8 @@ def s3BuildOps(conf, progcb=None):
         opstore[relname] = S3Operation(relname, fileobj, conf, progcb)
 
     if len(opstore) == 0:
-        print "-- NO Operations Queued --"
+        pass
+        # print "-- NO Operations Queued --"
 
     return opstore
 
@@ -67,10 +68,10 @@ def localProductWalker(projroot, filedict, currentdir=""):
         relpath = os.path.join(currentdir, pathseg).replace('\\', '/')
         abspath = os.path.join(projroot, relpath).replace('\\', '/')
         if os.path.isfile(abspath):
-            print spaces + str(relpath)
+            # print spaces + str(relpath)
             filedict[relpath] = {'src': abspath}
         elif os.path.isdir(abspath):
-            print spaces + pathseg + '/'
+            # print spaces + pathseg + '/'
             localProductWalker(projroot, filedict, relpath)
 
 
@@ -89,7 +90,7 @@ def s3Exists(bucket, prefix):
         response = s3.list(prefix, Delimiter='/')
         if 'Contents' in response or 'CommonPrefixes' in response:
             result = True
-            print "FoundPrefix:: " + prefix
+            # print "FoundPrefix:: " + prefix
     except:
         pass
     return result
@@ -109,7 +110,7 @@ def s3HeadData(bucket, key):
     # list everything at this collection
     try:
         head = s3.head(key)
-        print "FoundKey:: " + key
+        # print "FoundKey:: " + key
     except:
         pass
     return head
@@ -172,7 +173,8 @@ def s3ProductWalker(bucket, patharr, currpath=[], currlevel=0):
         if 'Contents' in result:
             for c in result['Contents']:
                 if os.path.splitext(c['Key'])[1] == '.xml':
-                    print 'Project: {0} (Modified: {1})'.format(c['Key'], c['LastModified'])
+                    pass
+                    # print 'Project: {0} (Modified: {1})'.format(c['Key'], c['LastModified'])
         return
 
 # def menuwalk(program, nodes=None, currpath=[]):

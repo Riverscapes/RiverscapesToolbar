@@ -71,9 +71,12 @@ class Project():
             # Now print all the metadata values for reference
             metaNodes = self.DOM.findall('MetaData/Meta')
             for node in metaNodes:
+                val = node.text
+                if val is None:
+                    val = ""
                 self.meta.append({
                     "name": node.attrib['name'],
-                    "value": node.text.strip()
+                    "value": val.strip()
                 })
 
     # Here are different forms the path can take
@@ -92,7 +95,7 @@ class Project():
         # First let's get the project type
         projType = self.DOM.find('./ProjectType').text.strip()
         assert not _strnullorempty(projType), "ERROR: <ProjectType> not found in project XML."
-        print "Project Type Detected: {0}".format(projType)
+        # print "Project Type Detected: {0}".format(projType)
 
         # Now go get the product node from the program XML
         patharr = program.findprojpath(projType)
@@ -103,23 +106,23 @@ class Project():
         for idx, level in enumerate(patharr):
             if level['type'] == 'collection':
                 col = self.getcollection(level['name'])
-                print "{0}/collection:{1} => {2}".format(idx*'  ', level['name'], col)
+                # print "{0}/collection:{1} => {2}".format(idx*'  ', level['name'], col)
                 name = col
                 if program.testAllowedCollection(level['id'], col):
                     name = program.getAllowedLookup(level['id'], col)
                 extpath += '/' + name
             elif level['type'] == 'group':
-                print "{0}/group:{1}".format(idx * '  ', level['name'])
+                # print "{0}/group:{1}".format(idx * '  ', level['name'])
                 extpath += '/' + level['folder']
             elif level['type'] == 'product':
-                print "{0}/product:{1}".format(idx * '  ', level['name'])
+                # print "{0}/product:{1}".format(idx * '  ', level['name'])
                 extpath += '/' + level['folder']
 
         # Trim the first slash for consistency elsewhere
         if len(extpath) > 0 and extpath[0] == '/':
             extpath = extpath[1:]
 
-        print "Final remote path to product: {0}".format(extpath)
+        # print "Final remote path to product: {0}".format(extpath)
 
         return "/".join([extpath, program.ProjectFile])
 
